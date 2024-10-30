@@ -1,0 +1,91 @@
+// Animation Mixins
+@mixin flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  // Keyframes
+  @keyframes slideIn {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes widthGrow {
+    from {
+      width: 0;
+    }
+    to {
+      width: 50px;
+    }
+  }
+  
+  // Variables
+  $primary-color: #ff6b6b;
+  $text-color: #666;
+  $bg-color: #f8f9fa;
+  $white: white;
+  $shadow-color: rgba(0, 0, 0, 0.1);
+  
+  // Main Styles
+  .animation-container {
+    @include flex-center;
+    min-height: 100vh;
+    background: $bg-color;
+  
+    .animation-content {
+      text-align: center;
+      padding: 2rem;
+      animation: slideIn 0.5s ease-out;
+  
+      .animation-text {
+        background: $white;
+        padding: 2rem 3rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px $shadow-color;
+        animation: fadeIn 0.5s ease-out 0.5s both;
+  
+        h1 {
+          color: $primary-color;
+          font-size: 2rem;
+          margin-bottom: 1rem;
+          position: relative;
+  
+          &:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: $primary-color;
+            animation: widthGrow 0.5s ease-out 1s forwards;
+          }
+        }
+  
+        p {
+          color: $text-color;
+          font-size: 1.1rem;
+          margin-top: 1.5rem;
+          opacity: 0;
+          animation: fadeIn 0.5s ease-out 1s forwards;
+        }
+      }
+    }
+  }

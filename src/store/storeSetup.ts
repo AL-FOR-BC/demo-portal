@@ -72,4 +72,6 @@ export function injectReducer<S>(key: string, reducer: Reducer<S, Action>) {
 
 export type AppDispatch = typeof store.dispatch
 
+export { persistor }
+
 export default store

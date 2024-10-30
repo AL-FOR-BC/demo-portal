@@ -10,12 +10,12 @@ import { useState } from "react";
 import useAuth from "../../utils/hooks/useAuth.ts";
 import { toast } from "react-toastify";
 import { COMPANY_EMAIL } from "../../constants/app.constants.ts";
-import { PlusIcon } from "../../Components/common/icons/icons.tsx";
+import {EyeIcon, EyeInvisibleIcon } from "../../Components/common/icons/icons.tsx";
 
 
 const Login = () => {
     const [disableLogin, setDisableLogin] = useState(false);
-    // const [show_password, setShow_password] = useState(false)
+    const [showPassword, setShowPassword] = useState(false);
     const { signIn, getToken } = useAuth();
     const validation = useFormik({
         enableReinitialize: true,
@@ -124,26 +124,29 @@ const Login = () => {
                                             </div>
                                             <div className="mb-3">
                                                 <Label className="form-label">Password</Label>
-                                                <Input
-                                                    name="password"
-                                                    value={validation.values.password || ""}
-                                                    type= 'password'
-                                                    onChange={validation.handleChange}
-                                                    onBlur={validation.handleBlur}
-                                                    invalid={
-                                                        !!(validation.touched.password && validation.errors.password)
-                                                    }
-
-
-                                                />
-                                                {validation.touched.password && validation.errors.password ? (
-                                                    <FormFeedback
-                                                        type="invalid">{validation.errors.password}</FormFeedback>
-                                                ) : null}
-                                                <PlusIcon
-                                                    className=""
-                                                />
-
+                                                <div className="position-relative">
+                                                    <Input
+                                                        name="password"
+                                                        value={validation.values.password || ""}
+                                                        type={showPassword ? "text" : "password"}
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        invalid={
+                                                            !!(validation.touched.password && validation.errors.password)
+                                                        }
+                                                    />
+                                                    <div 
+                                                        className="position-absolute top-50 end-0 translate-middle-y pe-2" 
+                                                        style={{ cursor: 'pointer' }}
+                                                        onClick={() => setShowPassword(!showPassword)}
+                                                    >
+                                                        {showPassword ? <EyeInvisibleIcon /> : <EyeIcon />}
+                                                    </div>
+                                                    {validation.touched.password && validation.errors.password ? (
+                                                        <FormFeedback
+                                                            type="invalid">{validation.errors.password}</FormFeedback>
+                                                    ) : null}
+                                                </div>
                                             </div>
                                             <div className="form-check">
 

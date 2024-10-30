@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { SLICE_BASE_NAME } from "./constants.ts";
 
+
 export interface SessionState {
   signedIn: boolean;
   token: string | null;
@@ -32,6 +33,11 @@ const sessionSlice = createSlice({
       state.signedIn = false;
       state.token = null;
       state.bcToken = null;
+      
+    
+     
+      //clear local storage
+      
     },
   },
 });

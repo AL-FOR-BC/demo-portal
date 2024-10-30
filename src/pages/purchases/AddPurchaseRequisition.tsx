@@ -168,7 +168,7 @@ function AddPurchaseRequisition() {
             const resLocationCodes = await apiLocation(companyId);
             let locationOptions: options[] = [];
             resLocationCodes.data.value.map((e) => {
-                locationOptions.push({ label: e.code, value: e.code })
+                locationOptions.push({ label: `${e.code}::${e.name}`, value: e.code })
             });
             setLocationOptions(locationOptions)
 

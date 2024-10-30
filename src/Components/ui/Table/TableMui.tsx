@@ -98,6 +98,35 @@ const TableMui: React.FC<TableComponentProps> = ({
     page * rowsPerPage + rowsPerPage
   );
 
+  const CustomTablePagination = () => (
+    <div className="d-flex justify-content-end align-items-center mt-3">
+      <TablePagination
+        component="div"
+        count={filteredData?.length || 0}
+        page={page}
+        onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPageOptions={[5, 10, 25]}
+        sx={{
+          '.MuiTablePagination-toolbar': {
+            padding: 0,
+          },
+          '.MuiTablePagination-selectLabel': {
+            marginBottom: 0,
+          },
+          '.MuiTablePagination-displayedRows': {
+            marginBottom: 0,
+          },
+          '.MuiTablePagination-select': {
+            paddingTop: 0,
+            paddingBottom: 0,
+          }
+        }}
+      />
+    </div>
+  );
+
   return (
     <LoadingOverlayWrapper
       active={isLoading}
@@ -202,15 +231,7 @@ const TableMui: React.FC<TableComponentProps> = ({
                             ))}
                           </TableBody>
                         </Table>
-                        <TablePagination
-                          rowsPerPageOptions={[10, 25, 50, 100]}
-                          component="div"
-                          count={filteredData?.length || 0}
-                          rowsPerPage={rowsPerPage}
-                          page={page}
-                          onPageChange={handleChangePage}
-                          onRowsPerPageChange={handleChangeRowsPerPage}
-                        />
+                        <CustomTablePagination />
                       </TableContainer>
                     </>
                   ) : (

@@ -5,6 +5,7 @@ import { TbPlus, TbX } from "react-icons/tb";
 import { FaBusAlt } from "react-icons/fa";
 import Icon from '@mdi/react';
 import { mdiBadgeAccountHorizontal, mdiBagSuitcase, mdiCartPlus, mdiFormatListCheckbox, mdiLoginVariant, mdiMicrosoftAzure, mdiReceipt, mdiTeaOutline } from '@mdi/js';
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 
 export const PencilIcon = (props: React.SVGProps<SVGAElement>) => <MdEdit {...props} />;
@@ -96,3 +97,6 @@ export const LoginVariantIcon = () =>
         size={1}
         className="mdi-24px"
     />
+
+export const EyeIcon = (props: React.SVGProps<SVGAElement>) => <AiOutlineEye {...props} />;
+export const EyeInvisibleIcon = (props: React.SVGProps<SVGAElement>) => <AiOutlineEyeInvisible {...props} />;

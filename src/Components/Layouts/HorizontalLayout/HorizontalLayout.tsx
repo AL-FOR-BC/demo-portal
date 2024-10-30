@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from "./components/Header.tsx";
 import Views from "../../../pages/Views.tsx";
 import Footer from "./components/Footer.tsx";
@@ -6,13 +6,16 @@ import NavBar from "./components/NavBar.tsx";
 import { employees } from "../../../services/DashBoardService.ts";
 import { useAppDispatch, useAppSelector } from "../../../store/hook.ts";
 import Swal from "sweetalert2";
-import {  setBcAdmin, setEmployeeData, setEmployeeNo, signOutSuccess } from "../../../store/slices/auth";
+import { setBcAdmin, setEmployeeData, setEmployeeNo, signOutSuccess } from "../../../store/slices/auth";
 import { toast } from "react-toastify";
 import { jwtDecode } from 'jwt-decode';
 import UseAuth from '../../../utils/hooks/useAuth.ts';
+import { EmployeeData } from '../../../@types/employee.dto.ts';
+import { persistor } from '../../../store/storeSetup.ts';
 
 function HorizontalLayout() {
     const { token } = useAppSelector((state) => state.auth.session);
+    const [employeeList, setEmployeeList] = useState < EmployeeData[] > ([]);
     const { handleSignOutAzure } = UseAuth();
     // const [isMenuOpened, setIsMenuOpened] = useState(false);
     const isMenuOpened = false;
@@ -34,20 +37,26 @@ function HorizontalLayout() {
                 }
                 const filterQuery = `&$filter=(CompanyEMail eq '${email}') or (CompanyEMail eq '${email}') or (CompanyEMail eq '${email}')`;
                 const res = await employees(companyId, filterQuery);
+                setEmployeeList(res.data.value);
                 if (res.data.value.length == 0) {
                     Swal.fire({
-                        title: 'Login Failed!',
-                        text: 'Failed to get your staff details. Please contact Admin.',
-                        confirmButtonColor: 'green'
+                        icon: 'error',
+                        title: 'Access Denied',
+                        text: 'Unable to verify your employee details. Please contact your system administrator.',
+                        confirmButtonColor: '#3085d6'
                     }).then(function () {
                         if (token) {
-                            const azureToken = jwtDecode<{ aud: string }>(token);
+                            const azureToken = jwtDecode < { aud: string } > (token);
                             if (azureToken?.aud === "https://api.businesscentral.dynamics.com") {
                                 handleSignOutAzure();
                                 dispatch(signOutSuccess())
                             }
                         }
-                        toast.info("Failed to get your staff details. Please contact Admin.")
+                        toast.info("Failed to get your staff details. Please contact Admin.",
+                            {
+                                autoClose: 10000
+                            }
+                        )
                         dispatch(signOutSuccess())
                     })
                     return
@@ -67,15 +76,25 @@ function HorizontalLayout() {
 
             } catch (error) {
                 console.error("Error fetching employees:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'Please contact Admin.',
+                    confirmButtonColor: '#3085d6'
+                }).then(async function () {
+                    dispatch(signOutSuccess())
+                    await persistor.purge();
+                })
                 setTimeout(() => {
                     if (error.response.status === 404) {
                         Swal.fire({
                             title: 'Login Failed!',
                             text: 'Network Error Please contact Admin.',
                             confirmButtonColor: 'green'
-                        }).then(function () {
+                        }).then(async function () {
                             // toast.info("Failed to get your staff details. Please contact Admin.")
                             dispatch(signOutSuccess())
+                            await persistor.purge();
                         })
                     }
                 }, 2000);
@@ -111,20 +130,28 @@ function HorizontalLayout() {
                     </div>
                 </div>
             </div>
-
-            <div id="layout-wrapper">
-                <Header
+            {employeeList.length > 0 && (
+                <div id="layout-wrapper">
+                    <Header
                     // theme={topbarTheme}
                     // isMenuOpened={isMenuOpened}
                     // openLeftMenuCallBack={openMenu}
-                />
-                <NavBar menuOpen={isMenuOpened} />
-                <div className="main-content">
-                    {/*{props.children}*/}
-                    <Views />
+                    />
+                    <NavBar menuOpen={isMenuOpened} />
+                    <div className="main-content">
+                        {/*{props.children}*/}
+                        <Views />
+                    </div>
+                    <Footer />
                 </div>
-                <Footer />
-            </div>
+            )}
+            {employeeList.length === 0 && (
+                <div id="layout-wrapper">
+
+
+                </div>
+            )}
+
 
             {/*{showRightSidebar ? <RightSidebar /> : null}*/}
 

@@ -30,6 +30,7 @@ interface ModelProps {
     isEdit: boolean;
     handleSubmit: () => void;
     handleUpdateLine: () => void;
+    fade?: boolean;
 }
 
 export default function Model({

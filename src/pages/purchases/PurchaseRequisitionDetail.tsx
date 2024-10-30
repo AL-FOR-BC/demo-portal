@@ -73,8 +73,7 @@ function PurchaseRequisitionDetail() {
                 disabled: status === 'Open' ? false : true,
                 id: 'departmentCode',
                 options: dimensionValues,
-                onChange: (e: options) => setSelectedDimension([{ label: e.label, value: e.value }]),
-                onBlur: async () => {
+                onChange: async (e: options) => {
                     if (purchaseRequisitionLines.length > 0) {
                         Swal.fire({
                             title: 'Are you sure?',
@@ -88,13 +87,34 @@ function PurchaseRequisitionDetail() {
                             if (result.isConfirmed) {
                                 deleteAllLines();
                                 quickUpdate({ project: selectedDimension[0]?.value })
+                                setSelectedDimension([{ label: e.label, value: e.value }])
+                                setSelectedWorkPlan([])
                             }
                         });
+                    } else if (selectedWorkPlan[0]?.value !== '') {
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "Changing this will require you to re-select the work plan",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, re-select work plan!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                quickUpdate({ project: selectedDimension[0]?.value })
+                                setSelectedDimension([{ label: e.label, value: e.value }])
+                                setSelectedWorkPlan([])
+                            }
+                        })
                     } else {
                         quickUpdate({ project: selectedDimension[0]?.value })
+                        setSelectedDimension([{ label: e.label, value: e.value }])
+
                     }
                 }
-            },
+            }
+
         ],
         [
             {
@@ -130,8 +150,12 @@ function PurchaseRequisitionDetail() {
                 value: selectedWorkPlan,
                 onChange: (e: options) => {
                     setSelectedWorkPlan([{ label: e.label, value: e.value }]);
-                    setBudgetCode((split(e.value, '::')[1]));
+                    setBudgetCode(split(e.value, '::')[1]);
+                    quickUpdate({ workPlanNo: split(selectedWorkPlan[0]?.value, '::')[0].trim() })
+
                 },
+                // onBlur: () => {
+                // },
                 id: 'workPlan',
                 disabled: status === 'Open' ? false : true,
             },
@@ -181,8 +205,6 @@ function PurchaseRequisitionDetail() {
                     setpurchaseRequisitionLines(data.purchaseRequisitionLines)
                     setSelectedCurrency(data.currencyCode ? [{ label: data.currencyCode, value: data.currencyCode }] : [{ label: 'UGX', value: '' }]);
                     setSelectedWorkPlan([{ label: `${data.workPlanNo}`, value: data.workPlanNo }]);
-                    setSelectedLocation([{ label: data.locationCode, value: data.locationCode }]);
-                    setSelectedDimension([{ label: data.project, value: data.project }]);
                     setSubjectOfProcurement(data.procurementDescription);
                     setExpectedReceiptDate(new Date(data.expectedReceiptDate));
                     setRequestNo(data.no);
@@ -203,12 +225,22 @@ function PurchaseRequisitionDetail() {
                 setCurrencyOptions(currencyOptions);
 
                 const resWorkPlans = await apiWorkPlans(companyId);
-                setWorkPlans(resWorkPlans.data.value.map(plan => ({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })));
+                let workPlansOptions: options[] = [];
+                resWorkPlans.data.value.map(plan => {
+                    workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+                    if (plan.shortcutDimension1Code === data.project) {
+                        setSelectedWorkPlan([{ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` }])
+                    }
+                })
+                setWorkPlans(workPlansOptions)
 
                 const resLocationCodes = await apiLocation(companyId);
                 let locationOptions: options[] = [];
                 resLocationCodes.data.value.map((e) => {
-                    locationOptions.push({ label: e.code, value: e.code })
+                    locationOptions.push({ label: `${e.code}:${e.name}`, value: e.code })
+                    if (e.code === data.locationCode) {
+                        setSelectedLocation([{ label: `${e.code}:${e.name}`, value: e.code }])
+                    }
                 });
                 setLocationOptions(locationOptions)
 
@@ -217,6 +249,9 @@ function PurchaseRequisitionDetail() {
                 let dimensionValues: options[] = [];
                 resDimensionValues.data.value.map((e) => {
                     dimensionValues.push({ label: `${e.code}::${e.name}`, value: e.code })
+                    if (e.code === data.project) {
+                        setSelectedDimension([{ label: `${e.code}::${e.name}`, value: e.code }])
+                    }
                 });
                 setDimensionValues(dimensionValues)
 
@@ -639,6 +674,7 @@ function PurchaseRequisitionDetail() {
             if (id) {
                 const response = await apiUpdatePurchaseRequisition(companyId, id, {
                     ...kwargs,
+
                     expectedReceiptDate: kwargs.expectedReceiptDate ? kwargs.expectedReceiptDate.toISOString() : undefined
                 }, '*');
                 if (response.status === 200) {
@@ -672,13 +708,13 @@ function PurchaseRequisitionDetail() {
             || (selectedLocation[0]?.value == null || selectedLocation[0]?.value == '' || selectedLocation[0]?.value == undefined)
             || (selectedDimension[0]?.value == null || selectedDimension[0]?.value == '' || selectedDimension[0]?.value == undefined)) {
             const missingField = (subjectOfProcurement == null || subjectOfProcurement == '' || subjectOfProcurement == undefined) ? "Subject of Procurement" :
-                (selectedCurrency[0]?.value == null  || selectedCurrency[0]?.value == undefined) ? "Currency" :
+                (selectedCurrency[0]?.value == null || selectedCurrency[0]?.value == undefined) ? "Currency" :
                     (selectedWorkPlan[0]?.value == null || selectedWorkPlan[0]?.value == '' || selectedWorkPlan[0]?.value == undefined) ? "Work Plan" :
                         (selectedLocation[0]?.value == null || selectedLocation[0]?.value == '' || selectedLocation[0]?.value == undefined) ? "Location" :
                             (selectedDimension[0]?.value == null || selectedDimension[0]?.value == '' || selectedDimension[0]?.value == undefined) ? "Dimension" : '';
             if (missingField) {
                 toast.error(`Please fill in ${missingField}`);
-                return false    
+                return false
             }
         }
         return true;
@@ -713,7 +749,7 @@ function PurchaseRequisitionDetail() {
                     addLink=""
                     addLabel=""
                     iconClassName=""
-                    
+
                     data={purchaseRequisitionLines}
                     columns={columns}
                     noDataMessage="No Purchase Requisition Lines found"

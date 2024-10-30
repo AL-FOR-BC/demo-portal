@@ -27,6 +27,7 @@ function UseAuth() {
   const signUp = async (values: SignUpCredential) => {
     try {
       const resp = await apiSignUp(values);
+      console.log(resp);
       if (resp.data) {
         dispatch(
           setUser(
@@ -81,7 +82,9 @@ function UseAuth() {
           dispatch(signInSuccess(token));
           dispatch(bcTokenSuccess(bcToken));
           dispatch(
-            setUser({ email, verified } || { email: "", verified: false })
+            setUser(
+              email ? { email, verified } : { email: "", verified: false }
+            )
           );
           dispatch(setAdmin(isAdmin));
         }
@@ -157,26 +160,29 @@ function UseAuth() {
   const handleSignOut = async () => {
     if (token) {
       const azureToken = jwtDecode(token);
-      console.log(azureToken);
-      if (typeof azureToken === 'object' && 'aud' in azureToken && azureToken.aud === "https://api.businesscentral.dynamics.com") {
-        handleSignOutAzure();
+      if (
+        typeof azureToken === "object" &&
+        "aud" in azureToken &&
+        azureToken.aud === "https://api.businesscentral.dynamics.com"
+      ) {
+        // handleSignOutAzure();
         dispatch(signOutSuccess());
-      dispatch(
-        setUser({
-          email: "",
-          verified: false,
-        })
-      );
-    } else {
-      dispatch(signOutSuccess());
-      dispatch(
-        setUser({
-          email: "",
-          verified: false,
-        })
-      );
+        dispatch(
+          setUser({
+            email: "",
+            verified: false,
+          })
+        );
+      } else {
+        dispatch(signOutSuccess());
+        dispatch(
+          setUser({
+            email: "",
+            verified: false,
+          })
+        );
+      }
     }
-  }
 
     console.log(token);
     // handleSignOutAzure();

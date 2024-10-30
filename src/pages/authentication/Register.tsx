@@ -11,25 +11,39 @@ import Swal from "sweetalert2"
 import useAuth from "../../utils/hooks/useAuth.ts";
 import {toast} from 'react-toastify';
 import appConfig from "../../configs/navigation.config/app.config.ts";
+import { EyeIcon, EyeInvisibleIcon } from "../../Components/common/icons/icons.tsx";
 
 
 const Register = () => {
     const [disableLogin, setDisableLogin] = useState(false)
     const navigate = useNavigate();
     const {signUp} = useAuth();
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const validation = useFormik({
         enableReinitialize: true,
         initialValues: {
             email: '',
             password: '',
+            confirmPassword: '',
         },
         validationSchema: Yup.object({
             email: Yup.string().email("Invalid Email Address").required("Please Enter Your Email"),
-            password: Yup.string().required("Please Enter Your Password"),
+            password: Yup.string()
+                .required("Please Enter Your Password")
+                .min(8, "Password must be at least 8 characters"),
+            confirmPassword: Yup.string()
+                .required("Please Confirm Your Password")
+                .oneOf([Yup.ref('password')], "Passwords must match"),
         }),
 
         onSubmit: async (values) => {
             try {
+                if (values.password !== values.confirmPassword) {
+                    toast.error("Passwords do not match");
+                    return;
+                }
+
                 setDisableLogin(true);
                 Swal.fire({
                     text: "Validating login details...",
@@ -46,25 +60,23 @@ const Register = () => {
                     password: values.password
                 }
                 const result = await signUp(loginDetails)
-                if (result?.status == "failed") {
+                if (result?.status === "failed") {
                     toast.error(result.message)
                 }
-                if (result?.status == "success") {
+                if (result?.status === "success") {
                     toast.success(result.message)
-                    navigate(appConfig.authenticatedEntryPath)
+                    navigate("/login")
                 }
             } catch (err) {
                 console.log(err)
+                toast.error("An error occurred during registration")
             } finally {
                 setTimeout(() => {
                     Swal.close()
                     setDisableLogin(false)
-
                 }, 1000)
             }
-
         }
-
     })
     return (
         <>
@@ -124,20 +136,55 @@ const Register = () => {
                                             </div>
                                             <div className="mb-3">
                                                 <Label className="form-label">Password</Label>
-                                                <Input
-                                                    name="password"
-                                                    value={validation.values.password || ""}
-                                                    type="password"
-                                                    onChange={validation.handleChange}
-                                                    onBlur={validation.handleBlur}
-                                                    invalid={
-                                                        !!(validation.touched.password && validation.errors.password)
-                                                    }
-                                                />
-                                                {validation.touched.password && validation.errors.password ? (
-                                                    <FormFeedback
-                                                        type="invalid">{validation.errors.password}</FormFeedback>
-                                                ) : null}
+                                                <div className="position-relative">
+                                                    <Input
+                                                        name="password"
+                                                        value={validation.values.password || ""}
+                                                        type={showPassword ? "text" : "password"}
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        invalid={
+                                                            !!(validation.touched.password && validation.errors.password)
+                                                        }
+                                                    />
+                                                    <div 
+                                                        className="position-absolute top-50 end-0 translate-middle-y pe-2" 
+                                                        style={{ cursor: 'pointer' }}
+                                                        onClick={() => setShowPassword(!showPassword)}
+                                                    >
+                                                        {showPassword ? <EyeInvisibleIcon /> : <EyeIcon />}
+                                                    </div>
+                                                    {validation.touched.password && validation.errors.password ? (
+                                                        <FormFeedback
+                                                            type="invalid">{validation.errors.password}</FormFeedback>
+                                                    ) : null}
+                                                </div>
+                                            </div>
+                                            <div className="mb-3">
+                                                <Label className="form-label">Confirm Password</Label>
+                                                <div className="position-relative">
+                                                    <Input
+                                                        name="confirmPassword"
+                                                        value={validation.values.confirmPassword || ""}
+                                                        type={showConfirmPassword ? "text" : "password"}
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        invalid={
+                                                            !!(validation.touched.confirmPassword && validation.errors.confirmPassword)
+                                                        }
+                                                    />
+                                                    <div 
+                                                        className="position-absolute top-50 end-0 translate-middle-y pe-2" 
+                                                        style={{ cursor: 'pointer' }}
+                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    >
+                                                        {showConfirmPassword ? <EyeInvisibleIcon /> : <EyeIcon />}
+                                                    </div>
+                                                    {validation.touched.confirmPassword && validation.errors.confirmPassword ? (
+                                                        <FormFeedback
+                                                            type="invalid">{validation.errors.confirmPassword}</FormFeedback>
+                                                    ) : null}
+                                                </div>
                                             </div>
                                             <div className="form-check">
 

@@ -16,7 +16,7 @@ import { Row, Col } from "reactstrap";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { closeModalPurchaseReq, editPurchaseReqLine, openModalPurchaseReq } from "../../../store/slices/Requisitions";
 import { PlusIcon, SearchIcon } from "../../common/icons/icons";
-import Model from "../Model/Model";
+import ModelMui from '../ModelMui/ModelMui';
 
 
 const StyledTableCell = styled(TableCell)(() => ({
@@ -115,9 +115,39 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
     page * rowsPerPage + rowsPerPage
   );
 
+  // Simplified pagination component
+  const CustomTablePagination = () => (
+    <div className="d-flex justify-content-end align-items-center mt-3">
+      <TablePagination
+        component="div"
+        count={filteredData.length}
+        page={page}
+        onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPageOptions={[5, 10, 25]}
+        sx={{
+          '.MuiTablePagination-toolbar': {
+            padding: 0,
+          },
+          '.MuiTablePagination-selectLabel': {
+            marginBottom: 0,
+          },
+          '.MuiTablePagination-displayedRows': {
+            marginBottom: 0,
+          },
+          '.MuiTablePagination-select': {
+            paddingTop: 0,
+            paddingBottom: 0,
+          }
+        }}
+      />
+    </div>
+  );
+
   return (
     <>
-      <Model
+      <ModelMui
         isOpen={isModalOpen}
         toggleModal={toggleModel}
         isEdit={isEdit}
@@ -126,7 +156,9 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
         fields={modelFields}
         handleSubmit={handleSubmitLines}
         handleUpdateLine={handleSubmitUpdatedLine}
+      
       />
+
 
       <Row className="mb-2">
         <Col sm="4">
@@ -221,15 +253,7 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
             ))}
           </TableBody>
         </Table>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredData.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        <CustomTablePagination />
       </TableContainer>
     </>
   );
