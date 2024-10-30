@@ -1,0 +1,54 @@
+import axios from "axios";
+import appConfig from "../configs/navigation.config/app.config.ts";
+import {PERSIST_STORE_NAME} from "../constants/app.constants.ts";
+import store from "../store/storeSetup.ts";
+import deepParseJson from "../utils/deepParseJson.ts";
+import {REQUEST_HEADER_AUTH_KEY, TOKEN_TYPE} from "../constants/api.constants.ts";
+// import { signOutSuccess } from "@/store";
+
+const unauthorizedCode = [401];
+
+const BaseService = axios.create({
+    timeout: 60000,
+    baseURL: appConfig.apiPrefix,
+});
+
+BaseService.interceptors.request.use(
+    (config) => {
+        const rawPersistData = localStorage.getItem(PERSIST_STORE_NAME)
+        const persistData = deepParseJson(rawPersistData)
+        console.log("persistData",persistData)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let accessToken = (persistData as any).auth.session.token
+
+        if (!accessToken) {
+            const { auth } = store.getState()
+            accessToken = auth.session.token
+        }
+
+        if (accessToken) {
+            config.headers[
+                REQUEST_HEADER_AUTH_KEY
+                ] = `${TOKEN_TYPE}${accessToken}`
+        }
+        return config
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+BaseService.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const { response } = error;
+
+        if (response && unauthorizedCode.includes(response.status)) {
+            // store.dispatch(signOutSuccess());
+        }
+
+        return Promise.reject(error);
+    }
+);
+
+export default BaseService;
