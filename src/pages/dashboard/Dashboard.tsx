@@ -31,7 +31,7 @@ function Dashboard() {
         }
     }, [dispatch, employeeNo, companyId]);
 
-    const documentCountSummary: DocumentCountSummaryTypes[] = [
+    const documentCountSummary = [
         {
             icon: <BusIcon />,
             title: "Leave Requests",
@@ -69,7 +69,7 @@ function Dashboard() {
             value: dashBoardData.travelRequests,
             url: "/travel-requests",
         },
-    ]
+    ] 
 
 
     return (

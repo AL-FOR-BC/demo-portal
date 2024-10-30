@@ -16,7 +16,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,
-    "suppressImplicitAnyIndexErrors": true,
     "ignoreDeprecations": "5.0",
     "useUnknownInCatchVariables": false
   },
