@@ -16,7 +16,10 @@ export default defineConfig({
 
     ),
     "import.meta.env.VITE_EHUB_BC_URL": JSON.stringify(
-      "https://api.businesscentral.dynamics.com/v2.0/df78e20f-3ca1-4018-9157-8bedb2673da2/Sandbox/"
+      // LOCAL
+      // "https://api.businesscentral.dynamics.com/v2.0/df78e20f-3ca1-4018-9157-8bedb2673da2/Sandbox/"
+      // PROD
+      "https://api.businesscentral.dynamics.com/v2.0/24528e89-fa53-4fc5-9847-429bb50802ff/ROMSandbox/"
     ),
   },
   build: {
