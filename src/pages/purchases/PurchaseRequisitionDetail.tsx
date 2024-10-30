@@ -1,0 +1,740 @@
+import { useNavigate, useParams } from "react-router-dom";
+import Header from "../../Components/ui/Header/Header";
+import { useAppDispatch, useAppSelector } from "../../store/hook";
+import { useEffect, useState } from "react";
+import { split } from "lodash";
+import { options } from "../../@types/common.dto";
+import { apiCreatePurchaseRequisitionLines, apiPurchaseRequisition, apiPurchaseRequisitionDetail, apiPurchaseRequisitionLines, apiUpdatePurchaseRequisition } from "../../services/RequisitionServices";
+import { apiCurrencyCodes, apiDimensionValue, apiGLAccountsApi, apiItem, apiLocation, apiVendors, apiWorkPlanLines, apiWorkPlans } from "../../services/CommonServices";
+import { toast } from "react-toastify";
+import Lines from "../../Components/ui/Lines/Lines";
+import { PurchaseRequisitionLinesSubmitData, PurchaseRequisitionLineType } from "../../@types/purchaseReq.dto";
+import { cancelApprovalButton, decodeValue, getErrorMessage } from "../../utils/common";
+import { ActionFormatterLines, numberFormatter } from "../../Components/ui/Table/TableUtils";
+import Swal from "sweetalert2";
+import { closeModalPurchaseReq, editPurchaseReqLine, modelLoadingPurchaseReq, openModalPurchaseReq } from "../../store/slices/Requisitions";
+import { handleSendForApproval } from "../../actions/actions";
+
+
+function PurchaseRequisitionDetail() {
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const { id } = useParams();
+
+    const { companyId } = useAppSelector(state => state.auth.session)
+    const { employeeNo, employeeName } = useAppSelector(state => state.auth.user)
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedCurrency, setSelectedCurrency] = useState < options[] > ([]);
+    const [selectedWorkPlan, setSelectedWorkPlan] = useState < options[] > ([]);
+    const [selectedLocation, setSelectedLocation] = useState < options[] > ([]);
+    const [selectedDimension, setSelectedDimension] = useState < options[] > ([]);
+
+
+    const [currencyOptions, setCurrencyOptions] = useState < { label: string; value: string }[] > ([]);
+    const [workPlans, setWorkPlans] = useState < { label: string; value: string }[] > ([]);
+    const [locationOptions, setLocationOptions] = useState < { label: string; value: string }[] > ([]);
+    const [subjectOfProcurement, setSubjectOfProcurement] = useState < string > ('');
+    const [expectedReceiptDate, setExpectedReceiptDate] = useState < Date > (new Date());
+    const [budgetCode, setBudgetCode] = useState < string > ('');
+    const [dimensionValues, setDimensionValues] = useState < options[] > ([]);
+    const [requestNo, setRequestNo] = useState < string > ('');
+    const [purchaseRequisitionLines, setpurchaseRequisitionLines] = useState < PurchaseRequisitionLineType[] > ([]);
+    const [status, setStatus] = useState < string > ('');
+
+
+
+    const [selectedAccountNo, setSelectedAccountNo] = useState < options[] > ([]);
+    const [selectedWorkPlanLine, setSelectedWorkPlanLine] = useState < options[] > ([]);
+    const [selectedVendor, setSelectedVendor] = useState < options[] > ([]);
+
+
+    const [accountType, setAccountType] = useState < options[] > ([]);
+
+
+    const [quantity, setQuantity] = useState < number > (0);
+    const [directUnitCost, setDirectUnitCost] = useState < number > (0);
+    const [description, setDescription] = useState < string > ('');
+
+    const [glAccounts, setGlAccounts] = useState < options[] > ([]);
+    const [workPlanLines, setWorkPlanLines] = useState < options[] > ([]);
+    const [isModalLoading, setIsModalLoading] = useState < boolean > (false);
+
+    const accountTypeOptions = [{ label: 'G/L Account', value: 'G/L Account' }, { label: 'Fixed Asset', value: 'Fixed Asset' }, { label: 'Item', value: 'Item' }]
+
+
+    const fields = [
+        [
+            { label: 'Requisition No', type: 'text', value: requestNo, disabled: true, id: 'requestNo' },
+            { label: 'Requestor No', type: 'text', value: employeeNo, disabled: true, id: 'empNo' },
+            { label: 'Requestor Name', type: 'text', value: employeeName, disabled: true, id: 'empName' },
+            {
+                label: 'Department Code', type: 'select',
+                value: selectedDimension,
+                disabled: status === 'Open' ? false : true,
+                id: 'departmentCode',
+                options: dimensionValues,
+                onChange: (e: options) => setSelectedDimension([{ label: e.label, value: e.value }]),
+                onBlur: async () => {
+                    if (purchaseRequisitionLines.length > 0) {
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "Changing the department code will delete all existing lines. This action cannot be undone!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, delete all lines!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                deleteAllLines();
+                                quickUpdate({ project: selectedDimension[0]?.value })
+                            }
+                        });
+                    } else {
+                        quickUpdate({ project: selectedDimension[0]?.value })
+                    }
+                }
+            },
+        ],
+        [
+            {
+                label: 'Expected Receipt Date',
+                type: 'date',
+                value: expectedReceiptDate,
+                onChange: (date: Date) => setExpectedReceiptDate(date),
+                id: 'requisitionDate',
+                disabled: status === 'Open' ? false : true,
+            },
+            {
+                label: 'Location',
+                type: 'select',
+                options: locationOptions,
+                value: selectedLocation,
+                onChange: (e: options) => setSelectedLocation([{ label: e.label, value: e.value }]),
+                id: 'location',
+                disabled: status === 'Open' ? false : true,
+            },
+            {
+                label: 'Currency',
+                type: 'select',
+                options: currencyOptions,
+                value: selectedCurrency,
+                onChange: (e: options) => setSelectedCurrency([{ label: e.label, value: e.value }]),
+                id: 'currency',
+                disabled: status === 'Open' ? false : true,
+            },
+            {
+                label: "WorkPlan",
+                type: 'select',
+                options: workPlans.filter(plan => split(plan.value, "::")[1] == selectedDimension[0]?.value),
+                value: selectedWorkPlan,
+                onChange: (e: options) => {
+                    setSelectedWorkPlan([{ label: e.label, value: e.value }]);
+                    setBudgetCode((split(e.value, '::')[1]));
+                },
+                id: 'workPlan',
+                disabled: status === 'Open' ? false : true,
+            },
+            {
+                label: "Budget Code",
+                type: 'text',
+                value: budgetCode,
+                disabled: true,
+                id: 'budgetCode',
+
+            },
+            {
+                label: "Status",
+                type: 'text', value: status,
+                disabled: true,
+                id: 'docStatus'
+            },
+            {
+                label: "Subject of Procurement", type: 'textarea', value: subjectOfProcurement, id: 'subjectOfProcurement',
+                rows: 2,
+                disabled: status === 'Open' ? false : true,
+
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                    setSubjectOfProcurement(e.target.value);
+                    // quickUpdate({ procurementDescription: e.target.value });
+                },
+                onBlur: (e: React.FocusEvent<HTMLTextAreaElement>) => {
+                    quickUpdate({ procurementDescription: e.target.value });
+                }
+            },
+
+
+
+        ]
+
+    ]
+    const populateData = async () => {
+        try {
+            setIsLoading(true)
+            if (id) {
+                const filterQueryPurhDetail = `$expand=purchaseRequisitionLines`
+                const res = await apiPurchaseRequisitionDetail(companyId, id, filterQueryPurhDetail);
+                const data = res.data;
+
+
+                if (data.no) {
+                    setpurchaseRequisitionLines(data.purchaseRequisitionLines)
+                    setSelectedCurrency(data.currencyCode ? [{ label: data.currencyCode, value: data.currencyCode }] : [{ label: 'UGX', value: '' }]);
+                    setSelectedWorkPlan([{ label: `${data.workPlanNo}`, value: data.workPlanNo }]);
+                    setSelectedLocation([{ label: data.locationCode, value: data.locationCode }]);
+                    setSelectedDimension([{ label: data.project, value: data.project }]);
+                    setSubjectOfProcurement(data.procurementDescription);
+                    setExpectedReceiptDate(new Date(data.expectedReceiptDate));
+                    setRequestNo(data.no);
+                    setBudgetCode(data.budgetCode);
+                    setSubjectOfProcurement(data.procurementDescription);
+                    setExpectedReceiptDate(new Date(data.expectedReceiptDate));
+                    setDimensionValues([{ label: data.project, value: data.project }]);
+                    setStatus(data.status);
+                }
+
+
+
+                const resCurrencyCodes = await apiCurrencyCodes(companyId);
+                let currencyOptions = [{ label: 'UGX', value: '' }]; // Add UGX as the first option
+                resCurrencyCodes.data.value.map((e) => {
+                    currencyOptions.push({ label: e.code, value: e.code });
+                });
+                setCurrencyOptions(currencyOptions);
+
+                const resWorkPlans = await apiWorkPlans(companyId);
+                setWorkPlans(resWorkPlans.data.value.map(plan => ({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })));
+
+                const resLocationCodes = await apiLocation(companyId);
+                let locationOptions: options[] = [];
+                resLocationCodes.data.value.map((e) => {
+                    locationOptions.push({ label: e.code, value: e.code })
+                });
+                setLocationOptions(locationOptions)
+
+                const dimensionFilter = `&$filter=globalDimensionNo eq 1`
+                const resDimensionValues = await apiDimensionValue(companyId, dimensionFilter);
+                let dimensionValues: options[] = [];
+                resDimensionValues.data.value.map((e) => {
+                    dimensionValues.push({ label: `${e.code}::${e.name}`, value: e.code })
+                });
+                setDimensionValues(dimensionValues)
+
+                const glAccounts = await apiGLAccountsApi(companyId);
+                let glAccountsOptions: options[] = [];
+                glAccounts.data.value.map((e) => {
+                    glAccountsOptions.push({ label: e.name, value: e.no })
+                });
+                setGlAccounts(glAccountsOptions)
+
+
+                // const vendors = await apiVendors(companyId);
+                // let vendorsOptions: options[] = [];
+                // vendors.data.value.map((e) => {
+                //     vendorsOptions.push({ label: e.name, value: e.no })
+                // });
+                // setVendors(vendorsOptions)
+
+            }
+
+        } catch (error) {
+            toast.error(`Error fetching data requisitions:${error}`)
+        } finally {
+            setIsLoading(false)
+        }
+
+    }
+    useEffect(() => {
+        populateData();
+    }, [])
+
+    const columns = (status == "Open") ? [
+        {
+            dataField: 'accountType',
+            text: 'Account Type',
+            sort: true,
+            formatter: (cell: any) => decodeValue(cell)
+        },
+        {
+            dataField: 'no',
+            text: 'No',
+            sort: true,
+        },
+        // {
+        //     dataField: 'faPostingGroup',
+        //     text: 'FA Posting Group',
+        //     sort: true,
+        // },
+        {
+            dataField: 'description',
+            text: 'Description',
+            sort: true,
+
+        },
+        {
+            dataField: 'description2',
+            text: 'Activity Description',
+            sort: true,
+
+        },
+        {
+            dataField: 'quantity',
+            text: 'Quantity',
+            sort: true
+        },
+        {
+            dataField: 'directUnitCost',
+            text: 'Direct Unit Cost',
+            sort: true,
+            formatter: numberFormatter
+        },
+        {
+            dataField: 'lineAmount',
+            text: 'Line Amount',
+            sort: true,
+            formatter: numberFormatter
+        }
+        ,
+        {
+            dataField: "action",
+            isDummyField: true,
+            text: "Action",
+
+            formatter: (row: any) => (
+                <ActionFormatterLines
+                    row={row}
+                    companyId={companyId}
+                    apiHandler={apiPurchaseRequisitionLines}
+                    handleEditLine={handleEditLine}
+                    populateData={populateData}
+
+                />
+            )
+        }
+    ] : [
+        {
+            dataField: 'accountType',
+            text: 'Account Type',
+            sort: true,
+            formatter: (cell: any) => decodeValue(cell)
+        },
+        {
+            dataField: 'no',
+            text: 'No',
+            sort: true,
+        },
+        {
+            dataField: 'description',
+            text: 'Description',
+            sort: true,
+
+        },
+        {
+            dataField: 'description3',
+            text: 'Activity Description',
+            sort: true,
+
+        },
+        {
+            dataField: 'quantity',
+            text: 'Quantity',
+            sort: true
+        },
+        {
+            dataField: 'directUnitCost',
+            text: 'Direct Unit Cost',
+            sort: true,
+            formatter: numberFormatter
+        },
+        {
+            dataField: 'lineAmount',
+            text: 'Line Amount',
+            sort: true,
+            formatter: numberFormatter
+        }
+    ];
+    const modalFields = [
+        [
+            {
+                label: "Account Type", type: "select",
+                value: accountType,
+                disabled: false,
+                options: accountTypeOptions,
+                onChange: async (e: options) => {
+                    if (e.value === "Item") {
+                        setSelectedAccountNo([])
+                        setSelectedWorkPlanLine([])
+                        const items = await apiItem(companyId)
+                        let itemOptions: options[] = []
+                        items.data.value.map((e) => {
+                            itemOptions.push({
+                                label: `${e.no}::${e.name}`, value: e.no
+                            })
+                        })
+                        setGlAccounts(itemOptions)
+                    }
+                    if (e.value === "G/L Account") {
+                        setSelectedAccountNo([])
+                        setSelectedWorkPlanLine([])
+                        setIsModalLoading(true)
+                        const glAccounts = await apiGLAccountsApi(companyId);
+                        let glAccountsOptions: options[] = [];
+                        glAccounts.data.value.map((e) => {
+                            glAccountsOptions.push({ label: e.name, value: e.no })
+                        });
+                        setGlAccounts(glAccountsOptions)
+                        setIsModalLoading(false)
+                    }
+                    // if 
+                    setAccountType([{ label: e.label, value: e.value }])
+                }
+
+            },
+            {
+                label: "Account No", type: "select", value: selectedAccountNo,
+                onChange: async (e: options) => {
+                    setSelectedWorkPlanLine([])
+                    setSelectedAccountNo([{ label: e.label, value: e.value }])
+                    const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${e?.value}'`
+                    const workPlanLines = await apiWorkPlanLines(companyId, filterQuery);
+                    let workPlanLinesOptions: options[] = [];
+                    workPlanLines.data.value.map((e) => {
+                        workPlanLinesOptions.push({
+                            label: e.entryNo + ':: ' + e.activityDescription,
+                            value: `${e.entryNo}`
+                        })
+                    });
+                    setWorkPlanLines(workPlanLinesOptions)
+                }
+                , options: glAccounts, isSearchable: true
+            },
+            {
+                label: "Work Entry No",
+                type: "select",
+                value: selectedWorkPlanLine,
+                options: workPlanLines,
+                disabled: false,
+                onChange: (e: options) => setSelectedWorkPlanLine([{ label: e.label, value: e.value }]),
+
+            }
+        ],
+        [
+            // {
+            //     label: "Buy-from Vendor",
+            //     type: 'select', value:
+            //         selectedVendor,
+            //     onChange: (e: options) => {
+            //         setSelectedVendor([{ label: e.label, value: e.value }])
+            //     },
+            //     options: vendors,
+            //     isSearchable: true
+            // },
+            { label: "Quantity", type: "number", value: quantity.toString(), onChange: (e) => setQuantity(Number(e.target.value)) },
+            {
+                label: "Direct Unit Cost", type: "number",
+                value: directUnitCost.toString(),
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) => setDirectUnitCost(Number(e.target.value))
+            },
+            {
+                label: "Description", type: "textarea",
+                rows: 2,
+                value: description,
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                    if (e.target.value.length > 50) {
+                        toast.error(`The length of the string is ${e.target.value.length}, but it must be less than or equal to 50 characters`)
+                        return;
+                    }
+                    setDescription(e.target.value)
+
+
+                }
+            },
+
+        ],
+
+    ];
+    const clearLineFields = () => {
+        setAccountType([])
+        setSelectedAccountNo([])
+        setSelectedWorkPlanLine([])
+        setSelectedVendor([])
+        setQuantity(0)
+        setDirectUnitCost(0)
+        setDescription("")
+    }
+
+
+    const handleSubmitLines = async () => {
+        if (selectedAccountNo[0]?.value == '' || selectedWorkPlanLine[0]?.value == '' || quantity == 0 || directUnitCost == 0 || description == '') {
+            const missingField = selectedAccountNo[0]?.value == '' ? 'Account No' : selectedWorkPlanLine[0]?.value == '' ? 'Work Entry No' : quantity == 0 ? 'Quantity' : directUnitCost == 0 ? 'Direct Unit Cost' : 'Description';
+            toast.error(`Please fill in ${missingField}`)
+            return;
+        }
+        try {
+            const data: PurchaseRequisitionLinesSubmitData = {
+                accountType: accountType[0]?.value,
+                documentType: "Purchase Requisition",
+                buyfromVendorNo: selectedVendor[0]?.value,
+                workPlanNo: selectedWorkPlan[0]?.value,
+                documentNo: requestNo,
+                no: selectedAccountNo[0]?.value,
+            }
+            console.log("Data", data)
+
+            const res = await apiCreatePurchaseRequisitionLines(companyId, data);
+
+            if (res.status == 201) {
+                updateLineAfterBudgetCheck(res.data.systemId, res.data["@odata.etag"])
+                // toast.success("Line added successfully")
+                // populateData()
+
+            }
+        } catch (error) {
+            toast.error(`Error adding line:${getErrorMessage(error.response.data.error.message)}`)
+
+        }
+    }
+
+    const updateLineAfterBudgetCheck = async (systemId: string, etag: string) => {
+
+        try {
+            const data = {
+                workPlanEntryNo: Number(selectedWorkPlanLine[0]?.value),
+                description2: description,
+                quantity: quantity,
+                directUnitCost: directUnitCost,
+
+            }
+            const res = await apiPurchaseRequisitionLines(companyId, "PATCH", data, systemId, etag);
+            if (res.status == 200) {
+                toast.success("Line added successfully")
+                populateData()
+                dispatch(closeModalPurchaseReq())
+            }
+        } catch (error) {
+            toast.error(`Error updating line:${getErrorMessage(error.response.data.error.message)}`)
+        }
+    }
+
+    const handleDelteLine = async (row: any) => {
+        console.log(row)
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const resDelteLine = await apiPurchaseRequisitionLines(companyId, "DELETE", undefined, row.systemId, row["@odata.etag"]);
+                if (resDelteLine.status == 204) {
+                    toast.success("Line deleted successfully")
+                }
+            }
+        })
+    }
+
+
+    const handleEditLine = async (row: any) => {
+        dispatch(openModalPurchaseReq())
+        dispatch(modelLoadingPurchaseReq(true))
+        dispatch(editPurchaseReqLine(true))
+
+        console.log("Row data new", row)
+        //clear all fields
+        setAccountType([])
+        setSelectedAccountNo([])
+        setSelectedWorkPlanLine([])
+        setSelectedVendor([])
+        setQuantity(0)
+        setDirectUnitCost(0)
+        setDescription("")
+
+        // get data
+        const vendorRes = await apiVendors(companyId);
+        const vendors = vendorRes.data.value.map(vendor => ({ label: vendor.name, value: vendor.no }));
+
+        const glAccounts = await apiGLAccountsApi(companyId);
+        const glAccountsOptions = glAccounts.data.value.map(account => ({ label: account.name, value: account.no }));
+
+        const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${row.no}'`
+        const workPlanEntryNoRes = await apiWorkPlanLines(companyId, filterQuery);
+        const workPlanLines = workPlanEntryNoRes.data.value.map(plan => ({ label: `${plan.entryNo}::${plan.activityDescription}`, value: `${plan.entryNo}` }));
+
+        //set values
+        const vendorData = vendors.filter(e => e.value === row.buyFromVendorNo);
+        vendorData.length > 0 ? setSelectedVendor([{ label: vendorData[0].label, value: vendorData[0].value }]) : setSelectedVendor([{ label: '', value: '' }]);
+
+        const glAccountData = glAccountsOptions.filter(e => e.value === row.no);
+        glAccountData.length > 0 ? setSelectedAccountNo([{ label: glAccountData[0].label, value: glAccountData[0].value }]) : setSelectedAccountNo([{ label: '', value: '' }]);
+
+        const workPlanEntryNo = workPlanLines.filter(e => e.value === row.workPlanEntryNo.toString());
+        workPlanEntryNo.length > 0 ? setSelectedWorkPlanLine([{ label: workPlanEntryNo[0].label, value: workPlanEntryNo[0].value }]) : setSelectedWorkPlanLine([{ label: '', value: '' }]);
+
+        setAccountType([{ label: decodeValue(row.accountType), value: decodeValue(row.accountType) }])
+        setQuantity(row.quantity);
+        setDirectUnitCost(row.directUnitCost);
+        setDescription(row.description2);
+
+
+        dispatch(modelLoadingPurchaseReq(false))
+
+
+    }
+
+    const handleSubmitUpdatedLine = async () => {
+        if (selectedAccountNo[0]?.value == '' || selectedWorkPlanLine[0]?.value == '' || quantity == 0 || directUnitCost == 0 || description == '') {
+            const missingField = selectedAccountNo[0]?.value == '' ? 'Account No' : selectedWorkPlanLine[0]?.value == '' ? 'Work Entry No' : quantity == 0 ? 'Quantity' : directUnitCost == 0 ? 'Direct Unit Cost' : 'Description';
+            toast.error(`Please fill in ${missingField}`)
+            return;
+        }
+        try {
+            const data = {
+                workPlanEntryNo: Number(selectedWorkPlanLine[0]?.value),
+                description2: description,
+                quantity: quantity,
+                directUnitCost: directUnitCost,
+
+            }
+            const res = await apiPurchaseRequisitionLines(companyId, "PATCH", data, purchaseRequisitionLines[0].systemId, purchaseRequisitionLines[0]["@odata.etag"]);
+            if (res.status == 200) {
+                toast.success("Line updated successfully")
+                dispatch(editPurchaseReqLine(false))
+                dispatch(closeModalPurchaseReq())
+                populateData()
+            }
+        } catch (error) {
+            toast.error(`Error updating line:${getErrorMessage(error.response.data.error.message)}`)
+        }
+    }
+
+
+
+    const handleCancelApproval = async () => {
+        const data = {
+            documentNo: requestNo
+        }
+        try {
+            const response = await cancelApprovalButton({ companyId, data, action: "Purchase Requisition", populateDoc: populateData, documentLines: purchaseRequisitionLines })
+            if (response) {
+                console.log("cancel response", response)
+            }
+        } catch (error) {
+        }
+    }
+
+    const handleDeletePurchaseRequisition = async () => {
+        const response = await apiPurchaseRequisition(companyId, "DELETE", undefined, undefined, id, undefined);
+        if (response.status == 204) {
+            toast.success("Purchase Requisition deleted successfully")
+            navigate('/purchase-requisitions')
+        }
+
+    }
+
+    const quickUpdate = async (kwargs) => {
+        try {
+            if (id) {
+                const response = await apiUpdatePurchaseRequisition(companyId, id, {
+                    ...kwargs,
+                    expectedReceiptDate: kwargs.expectedReceiptDate ? kwargs.expectedReceiptDate.toISOString() : undefined
+                }, '*');
+                if (response.status === 200) {
+                    toast.success("Updated successfully");
+                }
+            }
+        } catch (error) {
+            toast.error(`Error updating: ${getErrorMessage(error.message)}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const deleteAllLines = async () => {
+        try {
+            for (const line of purchaseRequisitionLines) {
+                await apiPurchaseRequisitionLines(companyId, "DELETE", undefined, line.systemId, line["@odata.etag"]);
+            }
+            await populateData();
+            toast.success("All lines deleted successfully");
+        } catch (error) {
+            toast.error(`Error deleting lines: ${getErrorMessage((error as Error).message)}`);
+        }
+    };
+
+
+    const handleValidateHeaderFields = () => {
+        if ((subjectOfProcurement == null || subjectOfProcurement == '' || subjectOfProcurement == undefined)
+            || (selectedCurrency[0]?.value == null || selectedCurrency[0]?.value == undefined)
+            || (selectedWorkPlan[0]?.value == null || selectedWorkPlan[0]?.value == '' || selectedWorkPlan[0]?.value == undefined)
+            || (selectedLocation[0]?.value == null || selectedLocation[0]?.value == '' || selectedLocation[0]?.value == undefined)
+            || (selectedDimension[0]?.value == null || selectedDimension[0]?.value == '' || selectedDimension[0]?.value == undefined)) {
+            const missingField = (subjectOfProcurement == null || subjectOfProcurement == '' || subjectOfProcurement == undefined) ? "Subject of Procurement" :
+                (selectedCurrency[0]?.value == null  || selectedCurrency[0]?.value == undefined) ? "Currency" :
+                    (selectedWorkPlan[0]?.value == null || selectedWorkPlan[0]?.value == '' || selectedWorkPlan[0]?.value == undefined) ? "Work Plan" :
+                        (selectedLocation[0]?.value == null || selectedLocation[0]?.value == '' || selectedLocation[0]?.value == undefined) ? "Location" :
+                            (selectedDimension[0]?.value == null || selectedDimension[0]?.value == '' || selectedDimension[0]?.value == undefined) ? "Dimension" : '';
+            if (missingField) {
+                toast.error(`Please fill in ${missingField}`);
+                return false    
+            }
+        }
+        return true;
+    }
+    return (
+        <>
+
+            <Header
+                title="Purchase Requisition Detail"
+                subtitle="Purchase Requisition Detail"
+                breadcrumbItem="Purchase Requisition Detail"
+                fields={fields}
+                isLoading={isLoading}
+
+                handleBack={() => navigate('/purchase-requisitions')}
+                pageType="detail"
+                status={status}
+                handleSendApprovalRequest={async () => {
+                    const documentNo = requestNo;
+                    const documentLines = purchaseRequisitionLines;
+                    const link = 'sendPurchaseHeaderApprovalReq'
+
+                    await handleSendForApproval(documentNo, documentLines, companyId, link, populateData)
+                }}
+                handleCancelApprovalRequest={handleCancelApproval}
+                handleDeletePurchaseRequisition={handleDeletePurchaseRequisition}
+                lines={<Lines
+                    clearLineFields={clearLineFields}
+                    title="Purchase Requisition Lines"
+                    subTitle="Purchase Requisition Lines"
+                    breadcrumbItem="Purchase Requisition Lines"
+                    addLink=""
+                    addLabel=""
+                    iconClassName=""
+                    
+                    data={purchaseRequisitionLines}
+                    columns={columns}
+                    noDataMessage="No Purchase Requisition Lines found"
+                    status={status}
+                    modalFields={modalFields}
+                    handleSubmitLines={handleSubmitLines}
+                    handleDeleteLines={handleDelteLine}
+                    handleSubmitUpdatedLine={handleSubmitUpdatedLine}
+                    isLoading={isModalLoading}
+                    handleValidateHeaderFields={handleValidateHeaderFields}
+
+
+
+
+                />}
+
+
+            />
+
+        </>
+    )
+}
+
+export default PurchaseRequisitionDetail
