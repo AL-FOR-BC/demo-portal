@@ -9,6 +9,7 @@ import { PurchaseRequisitionType } from '../../@types/purchaseReq.dto.ts';
 import { formatDate } from '../../utils/common.ts';
 import { options } from '../../@types/common.dto.ts';
 import { useNavigate } from 'react-router-dom';
+import HeaderMui from '../../Components/ui/Header/HeaderMui.tsx';
 
 function AddPurchaseRequisition() {
     const { companyId } = useAppSelector(state => state.auth.session)
@@ -196,7 +197,7 @@ function AddPurchaseRequisition() {
 
 
     return (
-        <Header
+        <HeaderMui
             title="Requisitions"
             subtitle="Purchase Requisitions"
             breadcrumbItem="Add Purchase Requisitions"

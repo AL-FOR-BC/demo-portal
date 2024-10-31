@@ -29,8 +29,21 @@ export default defineConfig({
       keep_classnames: true,
       compress: {
         drop_console: false, // Keep console logs if needed
-        pure_funcs: ['console.log'] // Or remove console.logs in production
+        pure_funcs: ['console.log'], // Or remove console.logs in production
+        arguments: false  // Add this line
+      },
+      mangle: {
+        keep_fnames: true,
+        keep_classnames: true
+      }
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
       }
     }
+  },
+  esbuild: {
+    keepNames: true
   }
 });
