@@ -48,35 +48,38 @@ interface HeaderProps {
     handleSubmitLines?: (data: any, id: string) => void
 }
 
-const Header = ({
-    title,
-    subtitle,
-    breadcrumbItem,
-    fields,
-    isLoading,
-    showError,
-    docError,
-    toggleError,
-    handleBack,
-    handleSubmit,
-    pageType,
-    handleSendApprovalRequest,
-    handleDeletePurchaseRequisition,
-    handleCancelApprovalRequest,
-    lines,
-    status,
-    companyId,
-    documentType,
-    requestNo,
-    editableLines,
-    // columns,
-    // rowLines,
-    // handleSubmitLines
-
-    // buttons = [], // Additional buttons
-}: HeaderProps) => {
+const Header: React.FC<HeaderProps> = (props) => {
     const [generalTab, setGeneralTab] = React.useState(true);
     const toggleGeneral = () => setGeneralTab(!generalTab);
+
+    const {
+        title,
+        subtitle,
+        breadcrumbItem,
+        fields,
+        isLoading,
+        showError,
+        docError,
+        toggleError,
+        handleBack,
+        handleSubmit,
+        pageType,
+        handleSendApprovalRequest,
+        handleDeletePurchaseRequisition,
+        handleCancelApprovalRequest,
+        lines,
+        status,
+        companyId,
+        documentType,
+        requestNo,
+        editableLines,
+        // columns,
+        // rowLines,
+        // handleSubmitLines
+
+        // buttons = [], // Additional buttons
+    } = props;
+
     return (
         <LoadingOverlayWrapper active={isLoading} spinner={<RiseLoader />} text='Please wait...'>
             <>
