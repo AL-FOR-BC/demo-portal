@@ -35,6 +35,8 @@ function AddPurchaseRequisition() {
     const [budgetCode, setBudgetCode] = useState < string > ('');
     const [dimensionValues, setDimensionValues] = useState < options[] > ([]);
 
+    const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
+
 
 
 
@@ -128,8 +130,7 @@ function AddPurchaseRequisition() {
                 onChange: (e: options) => {
 
                     setSelectedWorkPlan([{ label: e.label, value: e.value }]);
-
-                    setBudgetCode((split(e.value, '::')[1]));
+                    setBudgetCode(workPlansList.filter(plan => plan.no == split(e.value, '::')[0])[0].budgetCode)
                 },
                 id: 'workPlan'
             },
@@ -164,6 +165,7 @@ function AddPurchaseRequisition() {
             setCurrencyOptions(currencyOptions);
 
             const resWorkPlans = await apiWorkPlans(companyId);
+            setWorkPlansList(resWorkPlans.data.value)
             setWorkPlans(resWorkPlans.data.value.map(plan => ({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })));
 
             const resLocationCodes = await apiLocation(companyId);

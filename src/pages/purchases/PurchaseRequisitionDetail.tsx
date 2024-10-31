@@ -62,6 +62,7 @@ function PurchaseRequisitionDetail() {
 
     const accountTypeOptions = [{ label: 'G/L Account', value: 'G/L Account' }, { label: 'Fixed Asset', value: 'Fixed Asset' }, { label: 'Item', value: 'Item' }]
 
+    const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
 
     const fields = [
         [
@@ -90,6 +91,7 @@ function PurchaseRequisitionDetail() {
                                 quickUpdate({ project: selectedDimension[0]?.value })
                                 setSelectedDimension([{ label: e.label, value: e.value }])
                                 setSelectedWorkPlan([])
+                                setBudgetCode('')
                             }
                         });
                     } else if (selectedWorkPlan[0]?.value !== '') {
@@ -106,6 +108,7 @@ function PurchaseRequisitionDetail() {
                                 quickUpdate({ project: selectedDimension[0]?.value })
                                 setSelectedDimension([{ label: e.label, value: e.value }])
                                 setSelectedWorkPlan([])
+                                setBudgetCode('')
                             }
                         })
                     } else {
@@ -151,8 +154,8 @@ function PurchaseRequisitionDetail() {
                 value: selectedWorkPlan,
                 onChange: (e: options) => {
                     setSelectedWorkPlan([{ label: e.label, value: e.value }]);
-                    setBudgetCode(split(e.value, '::')[1]);
-                    quickUpdate({ workPlanNo: split(selectedWorkPlan[0]?.value, '::')[0].trim() })
+                    setBudgetCode(workPlansList.filter(workPlan => workPlan.no == split(e.value, '::')[0])[0].budgetCode)
+                    quickUpdate({ workPlanNo: split(e.value, '::')[0].trim() })
 
                 },
                 // onBlur: () => {
@@ -203,9 +206,16 @@ function PurchaseRequisitionDetail() {
 
 
                 if (data.no) {
+                    console.log("Data", data)
+                    console.log("workplano", data.workPlanNo)
                     setpurchaseRequisitionLines(data.purchaseRequisitionLines)
                     setSelectedCurrency(data.currencyCode ? [{ label: data.currencyCode, value: data.currencyCode }] : [{ label: 'UGX', value: '' }]);
-                    setSelectedWorkPlan([{ label: `${data.workPlanNo}`, value: data.workPlanNo }]);
+                    if (data.workPlanNo !== '') {
+                        setSelectedWorkPlan([{ label: `${data.workPlanNo}`, value: data.workPlanNo }]);
+                    } else {
+                        setSelectedWorkPlan([{ label: '', value: '' }])
+                    }
+
                     setSubjectOfProcurement(data.procurementDescription);
                     setExpectedReceiptDate(new Date(data.expectedReceiptDate));
                     setRequestNo(data.no);
@@ -226,11 +236,15 @@ function PurchaseRequisitionDetail() {
                 setCurrencyOptions(currencyOptions);
 
                 const resWorkPlans = await apiWorkPlans(companyId);
+                setWorkPlansList(resWorkPlans.data.value)
                 let workPlansOptions: options[] = [];
                 resWorkPlans.data.value.map(plan => {
                     workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+                    if (plan.no === data.workPlanNo) {
                     if (plan.shortcutDimension1Code === data.project) {
                         setSelectedWorkPlan([{ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` }])
+                        setBudgetCode(resWorkPlans.data.value.filter(workPlan => workPlan.no == plan.no)[0].budgetCode)
+                        }
                     }
                 })
                 setWorkPlans(workPlansOptions)
@@ -512,7 +526,7 @@ function PurchaseRequisitionDetail() {
             const data: PurchaseRequisitionLinesSubmitData = {
                 accountType: accountType[0]?.value,
                 documentType: "Purchase Requisition",
-                buyfromVendorNo: selectedVendor[0]?.value,
+                // buyfromVendorNo: selectedVendor[0]?.value,
                 workPlanNo: split(selectedWorkPlan[0].value, '::')[0],
                 documentNo: requestNo,
                 no: selectedAccountNo[0]?.value,

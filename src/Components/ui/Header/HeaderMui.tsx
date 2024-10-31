@@ -180,6 +180,72 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                                                             classNamePrefix="select"
                                                                             isSearchable={true}
                                                                             onBlur={onBlur}
+                                                                            styles={{
+                                                                                control: (baseStyles, state) => ({
+                                                                                    ...baseStyles,
+                                                                                    backgroundColor: 'white',
+                                                                                    borderColor: state.isFocused ? '#556ee6' : '#ced4da',
+                                                                                    '&:hover': {
+                                                                                        borderColor: '#556ee6'
+                                                                                    },
+                                                                                    boxShadow: state.isFocused ? '0 0 0 0.2rem rgba(85, 110, 230, 0.25)' : 'none',
+                                                                                    minHeight: '36px'
+                                                                                }),
+                                                                                menu: (baseStyles) => ({
+                                                                                    ...baseStyles,
+                                                                                    backgroundColor: 'white',
+                                                                                    zIndex: 9999
+                                                                                }),
+                                                                                menuList: (baseStyles) => ({
+                                                                                    ...baseStyles,
+                                                                                    maxHeight: '200px',
+                                                                                    '::-webkit-scrollbar': {
+                                                                                        width: '8px',
+                                                                                        height: '0px',
+                                                                                    },
+                                                                                    '::-webkit-scrollbar-track': {
+                                                                                        background: '#f1f1f1'
+                                                                                    },
+                                                                                    '::-webkit-scrollbar-thumb': {
+                                                                                        background: '#888',
+                                                                                        borderRadius: '4px',
+                                                                                    },
+                                                                                    '::-webkit-scrollbar-thumb:hover': {
+                                                                                        background: '#555'
+                                                                                    }
+                                                                                }),
+                                                                                option: (baseStyles, state) => ({
+                                                                                    ...baseStyles,
+                                                                                    backgroundColor: state.isSelected 
+                                                                                        ? '#556ee6' 
+                                                                                        : state.isFocused 
+                                                                                            ? '#f8f9fa' 
+                                                                                            : 'white',
+                                                                                    color: state.isSelected ? 'white' : '#495057',
+                                                                                    cursor: 'pointer',
+                                                                                    '&:active': {
+                                                                                        backgroundColor: '#556ee6'
+                                                                                    }
+                                                                                }),
+                                                                                placeholder: (baseStyles) => ({
+                                                                                    ...baseStyles,
+                                                                                    color: '#74788d'
+                                                                                }),
+                                                                                singleValue: (baseStyles) => ({
+                                                                                    ...baseStyles,
+                                                                                    color: '#495057'
+                                                                                })
+                                                                            }}
+                                                                            theme={(theme) => ({
+                                                                                ...theme,
+                                                                                colors: {
+                                                                                    ...theme.colors,
+                                                                                    primary: '#556ee6',
+                                                                                    primary25: '#f8f9fa',
+                                                                                    primary50: '#f8f9fa',
+                                                                                    neutral20: '#ced4da'
+                                                                                },
+                                                                            })}
                                                                         />
                                                                     ) : type === 'date' ? (
                                                                         <Flatpickr
