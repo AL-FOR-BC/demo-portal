@@ -12,7 +12,7 @@ import Lines from "../../Components/ui/Lines/Lines";
 import { cancelApprovalButton } from "../../utils/common";
 import { ActionFormatterLines } from "../../Components/ui/Table/TableUtils";
 import Swal from "sweetalert2";
-import { closeModalPurchaseReq, editPurchaseReqLine, modelLoadingPurchaseReq, openModalPurchaseReq } from "../../store/slices/Requisitions";
+import { closeModalPurchaseReq, editRequisitionLine, modelLoadingPurchaseReq, openModalPurchaseReq } from "../../store/slices/Requisitions";
 import { PaymentRequisition, PaymentRequisitionLineType, PaymentRequistionLinesSubmitData } from '../../@types/paymentReq.dto';
 import { handleSendForApproval } from '../../actions/actions';
 
@@ -572,7 +572,7 @@ function PaymentRequisitionDetail() {
   const handleEditLine = async (row: any) => {
     dispatch(openModalPurchaseReq())
     dispatch(modelLoadingPurchaseReq(true))
-    dispatch(editPurchaseReqLine(true))
+    dispatch(editRequisitionLine(true))
     console.log("Row data new", row)
     setAccountType([])
     setSelectedAccountNo([])

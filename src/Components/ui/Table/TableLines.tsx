@@ -17,7 +17,7 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 import ToolkitProvider from 'react-bootstrap-table2-toolkit';
 
 import Model from "../Model/Model";
-import { closeModalPurchaseReq, editPurchaseReqLine, openModalPurchaseReq, openModalRequisition } from "../../../store/slices/Requisitions";
+import { closeModalPurchaseReq, openModalRequisition } from "../../../store/slices/Requisitions";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { PlusIcon, SearchIcon } from "../../common/icons/icons";
 interface TableLinesComponentProps {
@@ -73,7 +73,7 @@ const TableLinesComponent: React.FC<TableLinesComponentProps> = ({
             } else {
                 clearLineFields();
                 dispatch(closeModalPurchaseReq())
-                dispatch(editPurchaseReqLine(false))
+                // dispatch(editPurchaseReqLine(false))
             }
         }
     }

@@ -14,7 +14,7 @@ import {
 import { Link } from "react-router-dom";
 import { Row, Col } from "reactstrap";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
-import { closeModalPurchaseReq, closeModalRequisition, editRequisitionLine, openModalPurchaseReq, openModalRequisition } from "../../../store/slices/Requisitions";
+import {  closeModalRequisition, editRequisitionLine, openModalRequisition } from "../../../store/slices/Requisitions";
 import { PlusIcon, SearchIcon } from "../../common/icons/icons";
 import ModelMui from '../ModelMui/ModelMui';
 
@@ -74,7 +74,7 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [searchTerm, setSearchTerm] = React.useState('');
 
-  const { isModalOpen, isModalLoading, isEdit, isModalRequisition, isModalRequisitionLoading } = useAppSelector((state) => state.purchaseRequisition.purchaseRequisition);
+  const {  isEdit, isModalRequisition, isModalRequisitionLoading } = useAppSelector((state) => state.purchaseRequisition.purchaseRequisition);
   const dispatch = useAppDispatch();
 
   const handleChangePage = (

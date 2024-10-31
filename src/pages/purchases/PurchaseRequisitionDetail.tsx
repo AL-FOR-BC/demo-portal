@@ -12,7 +12,7 @@ import { PurchaseRequisitionLinesSubmitData, PurchaseRequisitionLineType } from 
 import { cancelApprovalButton, decodeValue, getErrorMessage } from "../../utils/common";
 import { ActionFormatterLines, numberFormatter } from "../../Components/ui/Table/TableUtils";
 import Swal from "sweetalert2";
-import { closeModalPurchaseReq, closeModalRequisition, editRequisitionLine, modelLoadingRequisition, openModalRequisition } from "../../store/slices/Requisitions";
+import { closeModalRequisition, editRequisitionLine, modelLoadingRequisition, openModalRequisition } from "../../store/slices/Requisitions";
 import { handleSendForApproval } from "../../actions/actions";
 import HeaderMui from "../../Components/ui/Header/HeaderMui";
 

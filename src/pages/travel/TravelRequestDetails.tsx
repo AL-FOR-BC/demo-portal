@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import Header from '../../Components/ui/Header/Header';
+// import Header from '../../Components/ui/Header/Header';
 import Lines from '../../Components/ui/Lines/Lines';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -9,12 +9,13 @@ import { apiCreateTravelRequestsLines, apiTravelRequestDetail, apiTravelRequests
 
 
 import { cancelApprovalButton } from '../../utils/common';
-import { closeModalPurchaseReq, editPurchaseReqLine, modelLoadingPurchaseReq, openModalPurchaseReq } from '../../store/slices/Requisitions';
+import { closeModalPurchaseReq, editRequisitionLine, modelLoadingPurchaseReq, openModalPurchaseReq } from '../../store/slices/Requisitions';
 import Swal from 'sweetalert2';
 import { ActionFormatterLines } from '../../Components/ui/Table/TableUtils';
 import { handleSendForApproval } from '../../actions/actions';
 import { options } from '../../@types/common.dto';
 import { split } from 'lodash';
+import HeaderMui from '../../Components/ui/Header/HeaderMui';
 
 function TravelRequestDetails() {
     const { id } = useParams();
@@ -599,7 +600,7 @@ function TravelRequestDetails() {
     const handleEditLine = async (row: any) => {
         dispatch(openModalPurchaseReq())
         dispatch(modelLoadingPurchaseReq(true))
-        dispatch(editPurchaseReqLine(true))
+        dispatch(editRequisitionLine(true))
 
         clear()
 
@@ -686,7 +687,7 @@ function TravelRequestDetails() {
 
     return (
         <>
-            <Header
+            <HeaderMui
                 title="Travel Request Detail"
                 subtitle='Purchase Request Detail'
                 breadcrumbItem='Travel Request Detail'
