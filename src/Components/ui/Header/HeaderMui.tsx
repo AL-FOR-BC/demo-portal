@@ -2,7 +2,7 @@ import React from "react";
 import { RiseLoader } from "react-spinners";
 import LoadingOverlayWrapper from "react-loading-overlay-ts";
 import {
-  Box,
+//   Box,
   Container,
   Alert as MuiAlert,
   Card,
@@ -11,10 +11,10 @@ import {
 import Select from 'react-select';
 import { GridColDef } from "@mui/x-data-grid";
 import BreadCrumbs from "../../BreadCrumbs";
-import ApprovalEntries from "../../common/ApprovalEntry";
+// import ApprovalEntries from "../../common/ApprovalEntry";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
-import { ArrowBackIcon, CancelIcon, DeleteIcon, SaveIcon, SendIcon } from "../../common/icons/icons";
+import { ArrowBackIcon, DeleteIcon, SaveIcon, SendIcon } from "../../common/icons/icons";
 import classNames from "classnames";
 import { Button, Row, Col, Collapse, Input, Label } from "reactstrap";
 
@@ -69,19 +69,19 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
         pageType,
         handleSendApprovalRequest,
         handleDeletePurchaseRequisition,
-        handleCancelApprovalRequest,
+        // handleCancelApprovalRequest,
         lines,
         status,
-        companyId,
-        documentType,
-        requestNo,
+        // companyId,
+        // documentType,
+        // requestNo,
         editableLines,
     } = props;
 
     return (
         <LoadingOverlayWrapper active={isLoading} spinner={<RiseLoader />} text='Please wait...'>
             <div className="page-content">
-                <Container fluid={true}>
+                <Container maxWidth={false}>
                     <BreadCrumbs title={title} subTitle={subtitle} breadcrumbItem={breadcrumbItem} />
 
                     {pageType === 'add' && (
@@ -118,11 +118,11 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                             <SendIcon className="label-icon" />
                                             Send Approval Request
                                         </Button>
-                                        <ApprovalEntries
+                                        {/* <ApprovalEntries
                                             defaultCompany={companyId}
                                             docType={documentType}
                                             docNo={requestNo}
-                                        />
+                                        /> */}
                                         <Button color="danger" className="btn btn-label" onClick={handleDeletePurchaseRequisition}>
                                             <DeleteIcon className="label-icon" style={{ padding: "8px" }} />
                                             Delete Request
