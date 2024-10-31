@@ -63,6 +63,7 @@ interface ActionsFormatterLinesProps {
     companyId: string;
     apiHandler: (companyId: string, method: HttpMethod, data?: any, systemId?: string, etag?: string, filterQuery?: string) => Promise<any>;
     populateData: () => void;
+    handleDeleteLine: (row: { systemId: string | number }) => void;
 }
 export const ActionFormatter: React.FC<ActionFormatterProps> = ({
     cellContent,

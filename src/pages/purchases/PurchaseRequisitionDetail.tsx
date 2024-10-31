@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import Header from "../../Components/ui/Header/Header";
+// import Header from "../../Components/ui/Header/Header";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { useEffect, useState } from "react";
 import { split } from "lodash";
@@ -14,6 +14,7 @@ import { ActionFormatterLines, numberFormatter } from "../../Components/ui/Table
 import Swal from "sweetalert2";
 import { closeModalPurchaseReq, editPurchaseReqLine, modelLoadingPurchaseReq, openModalPurchaseReq } from "../../store/slices/Requisitions";
 import { handleSendForApproval } from "../../actions/actions";
+import HeaderMui from "../../Components/ui/Header/HeaderMui";
 
 
 function PurchaseRequisitionDetail() {
@@ -336,10 +337,12 @@ function PurchaseRequisitionDetail() {
             text: "Action",
 
             formatter: (row: any) => (
+                console.log("Row", row),
                 <ActionFormatterLines
                     row={row}
                     companyId={companyId}
                     apiHandler={apiPurchaseRequisitionLines}
+                    handleDeleteLine={handleDelteLine}
                     handleEditLine={handleEditLine}
                     populateData={populateData}
 
@@ -415,7 +418,7 @@ function PurchaseRequisitionDetail() {
                         const glAccounts = await apiGLAccountsApi(companyId);
                         let glAccountsOptions: options[] = [];
                         glAccounts.data.value.map((e) => {
-                            glAccountsOptions.push({ label: e.name, value: e.no })
+                            glAccountsOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
                         });
                         setGlAccounts(glAccountsOptions)
                         setIsModalLoading(false)
@@ -510,7 +513,7 @@ function PurchaseRequisitionDetail() {
                 accountType: accountType[0]?.value,
                 documentType: "Purchase Requisition",
                 buyfromVendorNo: selectedVendor[0]?.value,
-                workPlanNo: selectedWorkPlan[0]?.value,
+                workPlanNo: split(selectedWorkPlan[0].value, '::')[0],
                 documentNo: requestNo,
                 no: selectedAccountNo[0]?.value,
             }
@@ -722,7 +725,7 @@ function PurchaseRequisitionDetail() {
     return (
         <>
 
-            <Header
+            <HeaderMui
                 title="Purchase Requisition Detail"
                 subtitle="Purchase Requisition Detail"
                 breadcrumbItem="Purchase Requisition Detail"

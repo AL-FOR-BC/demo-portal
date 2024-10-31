@@ -14,7 +14,9 @@ const initialState: SessionState = {
   bcToken: null,
   token: null,
   // companyId:'0a8f9887-59e6-ee11-a200-6045bdac9e2f'
-  // companyId:'5b4cdecb-c648-ef11-bfe2-002248653'
+  //! development companyId
+  // companyId:"ea47417e-805f-ef11-bfe4-6045bd43ea3c"
+  //! production companyId
   companyId: "5219704f-f889-ef11-ac23-002248136f86",
 };
 const sessionSlice = createSlice({
