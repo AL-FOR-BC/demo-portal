@@ -1,22 +1,29 @@
-import React from 'react';
 import { 
     Dialog, 
-    DialogTitle, 
-    DialogContent, 
-    DialogActions, 
-    Button,
     Grid,
     Typography,
-    IconButton
+    IconButton,
+    Breakpoint
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
 import LoadingOverlayWrapper from "react-loading-overlay-ts";
 import { RiseLoader } from "react-spinners";
 import Select from 'react-select';
-import { Input, Label } from "reactstrap";
+import { Input, Label, Button as ReactstrapButton } from "reactstrap";
 import { customStyles } from "../../../utils/common.ts";
-import { Button as ReactstrapButton } from "reactstrap";
+
+interface ModelMuiProps {
+    title: string;
+    isOpen: boolean;
+    toggleModal: () => void;
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    isModalLoading?: boolean;
+    fields: any[];
+    isEdit?: boolean;
+    handleSubmit?: () => void;
+    handleUpdateLine?: () => void;
+}
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialog-paper': {
@@ -41,18 +48,18 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
     }
 }));
 
-export default function ModelMui({
+const ModelMui: React.FC<ModelMuiProps> = ({
     title,
     isOpen,
     toggleModal,
     size = 'xl',
-    isModalLoading,
+    isModalLoading = false,
     fields,
-    isEdit,
+    isEdit = false,
     handleSubmit,
     handleUpdateLine,
-}) {
-    const maxWidth = size;
+}) => {
+    const maxWidth = size as Breakpoint;
 
     return (
         <StyledDialog
@@ -135,4 +142,6 @@ export default function ModelMui({
             </div>
         </StyledDialog>
     );
-}
+};
+
+export default ModelMui;

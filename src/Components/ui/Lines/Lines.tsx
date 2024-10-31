@@ -38,7 +38,6 @@ function Lines({
     // iconClassName,
     status,
     modalFields,
-    isLoading,
     handleSubmitLines,
     handleSubmitUpdatedLine,
     clearLineFields,
