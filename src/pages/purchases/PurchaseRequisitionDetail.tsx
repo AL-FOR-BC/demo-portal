@@ -48,7 +48,7 @@ function PurchaseRequisitionDetail() {
     const [selectedWorkPlanLine, setSelectedWorkPlanLine] = useState < options[] > ([]);
     const [selectedVendor, setSelectedVendor] = useState < options[] > ([]);
 
-
+    console.log("Selected Vendor", selectedVendor)
     const [accountType, setAccountType] = useState < options[] > ([]);
 
 

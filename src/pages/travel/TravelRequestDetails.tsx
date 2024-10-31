@@ -248,6 +248,7 @@ function TravelRequestDetails() {
                             companyId={companyId}
                             apiHandler={apiTravelRequestsLines}
                             handleEditLine={handleEditLine}
+                            handleDeleteLine={handleDelteLine}
                             populateData={populateData}
                         />
                     )

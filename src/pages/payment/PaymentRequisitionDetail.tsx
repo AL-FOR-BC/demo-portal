@@ -348,6 +348,7 @@ function PaymentRequisitionDetail() {
               companyId={companyId}
               apiHandler={apiPaymentRequisitionLines}
               handleEditLine={handleEditLine}
+              handleDeleteLine={handleDelteLine}
               populateData={populateData}
             />
           )
