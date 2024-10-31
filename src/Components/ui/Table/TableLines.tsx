@@ -17,7 +17,7 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 import ToolkitProvider from 'react-bootstrap-table2-toolkit';
 
 import Model from "../Model/Model";
-import { closeModalPurchaseReq, editPurchaseReqLine, openModalPurchaseReq } from "../../../store/slices/Requisitions";
+import { closeModalPurchaseReq, editPurchaseReqLine, openModalPurchaseReq, openModalRequisition } from "../../../store/slices/Requisitions";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { PlusIcon, SearchIcon } from "../../common/icons/icons";
 interface TableLinesComponentProps {
@@ -57,7 +57,7 @@ const TableLinesComponent: React.FC<TableLinesComponentProps> = ({
     //     dataField: 'SystemId',
     //     order: 'asc'
     // }];
-    const { isModalOpen, isModalLoading, isEdit } = useAppSelector((state) => state.purchaseRequisition.purchaseRequisition);
+    const { isModalRequisitionLoading, isEdit, isModalRequisition } = useAppSelector((state) => state.purchaseRequisition.purchaseRequisition);
     const dispatch = useAppDispatch();
 
     const [isModelOpenNw, setIsModelOpenNw] = React.useState(false);
@@ -68,7 +68,7 @@ const TableLinesComponent: React.FC<TableLinesComponentProps> = ({
             console.log(handleValidateHeaderFields())
             setIsModelOpenNw(!isModelOpenNw);
             if (isModelOpenNw) {
-                dispatch(openModalPurchaseReq())
+                dispatch(openModalRequisition())
 
             } else {
                 clearLineFields();
@@ -81,11 +81,11 @@ const TableLinesComponent: React.FC<TableLinesComponentProps> = ({
         <>
 
             <Model
-                isOpen={isModalOpen}
+                isOpen={isModalRequisition}
                 toggleModal={toggleModel}
                 isEdit={isEdit}
                 title="Requisition Line"
-                isModalLoading={isModalLoading}
+                isModalLoading={isModalRequisitionLoading}
                 fields={modelFields}
                 handleSubmit={handleSubmitLines}
                 handleUpdateLine={handleSubmitUpdatedLine}

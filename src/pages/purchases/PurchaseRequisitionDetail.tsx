@@ -12,7 +12,7 @@ import { PurchaseRequisitionLinesSubmitData, PurchaseRequisitionLineType } from 
 import { cancelApprovalButton, decodeValue, getErrorMessage } from "../../utils/common";
 import { ActionFormatterLines, numberFormatter } from "../../Components/ui/Table/TableUtils";
 import Swal from "sweetalert2";
-import { closeModalPurchaseReq, editPurchaseReqLine, modelLoadingPurchaseReq, openModalPurchaseReq } from "../../store/slices/Requisitions";
+import { closeModalPurchaseReq, closeModalRequisition, editRequisitionLine, modelLoadingRequisition, openModalRequisition } from "../../store/slices/Requisitions";
 import { handleSendForApproval } from "../../actions/actions";
 import HeaderMui from "../../Components/ui/Header/HeaderMui";
 
@@ -153,13 +153,30 @@ function PurchaseRequisitionDetail() {
                 options: workPlans.filter(plan => split(plan.value, "::")[1] == selectedDimension[0]?.value),
                 value: selectedWorkPlan,
                 onChange: (e: options) => {
-                    setSelectedWorkPlan([{ label: e.label, value: e.value }]);
-                    setBudgetCode(workPlansList.filter(workPlan => workPlan.no == split(e.value, '::')[0])[0].budgetCode)
-                    quickUpdate({ workPlanNo: split(e.value, '::')[0].trim() })
+                    if (purchaseRequisitionLines.length > 0) {
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "Changing the work plan will delete all existing lines. This action cannot be undone!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, delete all lines!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                deleteAllLines();
+                                setSelectedWorkPlan([{ label: e.label, value: e.value }]);
+                                setBudgetCode(workPlansList.filter(workPlan => workPlan.no == split(e.value, '::')[0])[0].budgetCode)
+                                quickUpdate({ workPlanNo: split(e.value, '::')[0].trim() })
+                            }
+                        })
+                    } else {
+                        setSelectedWorkPlan([{ label: e.label, value: e.value }]);
+                        setBudgetCode(workPlansList.filter(workPlan => workPlan.no == split(e.value, '::')[0])[0].budgetCode)
+                        quickUpdate({ workPlanNo: split(e.value, '::')[0].trim() })
+                    }
 
                 },
-                // onBlur: () => {
-                // },
                 id: 'workPlan',
                 disabled: status === 'Open' ? false : true,
             },
@@ -241,9 +258,9 @@ function PurchaseRequisitionDetail() {
                 resWorkPlans.data.value.map(plan => {
                     workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
                     if (plan.no === data.workPlanNo) {
-                    if (plan.shortcutDimension1Code === data.project) {
-                        setSelectedWorkPlan([{ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` }])
-                        setBudgetCode(resWorkPlans.data.value.filter(workPlan => workPlan.no == plan.no)[0].budgetCode)
+                        if (plan.shortcutDimension1Code === data.project) {
+                            setSelectedWorkPlan([{ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` }])
+                            setBudgetCode(resWorkPlans.data.value.filter(workPlan => workPlan.no == plan.no)[0].budgetCode)
                         }
                     }
                 })
@@ -350,18 +367,19 @@ function PurchaseRequisitionDetail() {
             isDummyField: true,
             text: "Action",
 
-            formatter: (row: any) => (
-                console.log("Row", row),
-                <ActionFormatterLines
-                    row={row}
-                    companyId={companyId}
-                    apiHandler={apiPurchaseRequisitionLines}
-                    handleDeleteLine={handleDelteLine}
-                    handleEditLine={handleEditLine}
-                    populateData={populateData}
-
-                />
-            )
+            formatter: (cellContent: any, row: any) => {
+                console.log("Cell Content:", cellContent);
+                return (
+                    <ActionFormatterLines
+                        row={row}
+                        companyId={companyId}
+                        apiHandler={apiPurchaseRequisitionLines}
+                        handleDeleteLine={handleDelteLine}
+                        handleEditLine={handleEditLine}
+                        populateData={populateData}
+                    />
+                )
+            }
         }
     ] : [
         {
@@ -481,11 +499,26 @@ function PurchaseRequisitionDetail() {
             //     options: vendors,
             //     isSearchable: true
             // },
-            { label: "Quantity", type: "number", value: quantity.toString(), onChange: (e) => setQuantity(Number(e.target.value)) },
+            {
+                label: "Quantity", type: "number", value: quantity.toString(),
+                onChange: (e) => {
+                    if (Number(e.target.value) < 0) {
+                        toast.error("Quantity cannot be negative")
+                        return;
+                    }
+                    setQuantity(Number(e.target.value))
+                }
+            },
             {
                 label: "Direct Unit Cost", type: "number",
                 value: directUnitCost.toString(),
-                onChange: (e: React.ChangeEvent<HTMLInputElement>) => setDirectUnitCost(Number(e.target.value))
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                    if (Number(e.target.value) < 0) {
+                        toast.error("Direct Unit Cost cannot be negative")
+                        return;
+                    }
+                    setDirectUnitCost(Number(e.target.value))
+                }
             },
             {
                 label: "Description", type: "textarea",
@@ -513,6 +546,7 @@ function PurchaseRequisitionDetail() {
         setQuantity(0)
         setDirectUnitCost(0)
         setDescription("")
+
     }
 
 
@@ -561,7 +595,7 @@ function PurchaseRequisitionDetail() {
             if (res.status == 200) {
                 toast.success("Line added successfully")
                 populateData()
-                dispatch(closeModalPurchaseReq())
+                dispatch(closeModalRequisition())
             }
         } catch (error) {
             toast.error(`Error updating line:${getErrorMessage(error.response.data.error.message)}`)
@@ -590,29 +624,25 @@ function PurchaseRequisitionDetail() {
 
 
     const handleEditLine = async (row: any) => {
-        dispatch(openModalPurchaseReq())
-        dispatch(modelLoadingPurchaseReq(true))
-        dispatch(editPurchaseReqLine(true))
+        dispatch(openModalRequisition())
+        dispatch(modelLoadingRequisition(true))
+
+        dispatch(editRequisitionLine(true))
 
         console.log("Row data new", row)
         //clear all fields
-        setAccountType([])
-        setSelectedAccountNo([])
-        setSelectedWorkPlanLine([])
-        setSelectedVendor([])
-        setQuantity(0)
-        setDirectUnitCost(0)
-        setDescription("")
-
+        clearLineFields()
         // get data
         const vendorRes = await apiVendors(companyId);
         const vendors = vendorRes.data.value.map(vendor => ({ label: vendor.name, value: vendor.no }));
 
         const glAccounts = await apiGLAccountsApi(companyId);
-        const glAccountsOptions = glAccounts.data.value.map(account => ({ label: account.name, value: account.no }));
+        const glAccountsOptions = glAccounts.data.value.map(account => ({ label: `${account.no}::${account.name}`, value: account.no }));
+        setGlAccounts(glAccountsOptions)
 
         const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${row.no}'`
         const workPlanEntryNoRes = await apiWorkPlanLines(companyId, filterQuery);
+
         const workPlanLines = workPlanEntryNoRes.data.value.map(plan => ({ label: `${plan.entryNo}::${plan.activityDescription}`, value: `${plan.entryNo}` }));
 
         //set values
@@ -631,7 +661,7 @@ function PurchaseRequisitionDetail() {
         setDescription(row.description2);
 
 
-        dispatch(modelLoadingPurchaseReq(false))
+        dispatch(modelLoadingRequisition(false))
 
 
     }
@@ -653,8 +683,8 @@ function PurchaseRequisitionDetail() {
             const res = await apiPurchaseRequisitionLines(companyId, "PATCH", data, purchaseRequisitionLines[0].systemId, purchaseRequisitionLines[0]["@odata.etag"]);
             if (res.status == 200) {
                 toast.success("Line updated successfully")
-                dispatch(editPurchaseReqLine(false))
-                dispatch(closeModalPurchaseReq())
+                dispatch(editRequisitionLine(false))
+                dispatch(closeModalRequisition())
                 populateData()
             }
         } catch (error) {
@@ -777,6 +807,7 @@ function PurchaseRequisitionDetail() {
                     handleSubmitUpdatedLine={handleSubmitUpdatedLine}
                     isLoading={isModalLoading}
                     handleValidateHeaderFields={handleValidateHeaderFields}
+
 
 
 

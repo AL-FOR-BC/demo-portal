@@ -14,7 +14,7 @@ import {
 import { Link } from "react-router-dom";
 import { Row, Col } from "reactstrap";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
-import { closeModalPurchaseReq, editPurchaseReqLine, openModalPurchaseReq } from "../../../store/slices/Requisitions";
+import { closeModalPurchaseReq, closeModalRequisition, editRequisitionLine, openModalPurchaseReq, openModalRequisition } from "../../../store/slices/Requisitions";
 import { PlusIcon, SearchIcon } from "../../common/icons/icons";
 import ModelMui from '../ModelMui/ModelMui';
 
@@ -74,7 +74,7 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [searchTerm, setSearchTerm] = React.useState('');
 
-  const { isModalOpen, isModalLoading, isEdit } = useAppSelector((state) => state.purchaseRequisition.purchaseRequisition);
+  const { isModalOpen, isModalLoading, isEdit, isModalRequisition, isModalRequisitionLoading } = useAppSelector((state) => state.purchaseRequisition.purchaseRequisition);
   const dispatch = useAppDispatch();
 
   const handleChangePage = (
@@ -92,12 +92,14 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
 
   const toggleModel = () => {
     if (handleValidateHeaderFields()) {
-      if (isModalOpen) {
+      if (isModalRequisition) {
+        console.log("isModalOpen", isModalRequisition)
         clearLineFields();
-        dispatch(closeModalPurchaseReq());
-        dispatch(editPurchaseReqLine(false));
+        dispatch(editRequisitionLine(false));
+        dispatch(closeModalRequisition())
       } else {
-        dispatch(openModalPurchaseReq());
+        clearLineFields();
+        dispatch(openModalRequisition())
       }
     }
   };
@@ -148,11 +150,11 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
   return (
     <>
       <ModelMui
-        isOpen={isModalOpen}
+        isOpen={isModalRequisition}
         toggleModal={toggleModel}
         isEdit={isEdit}
         title="Requisition Line"
-        isModalLoading={isModalLoading}
+        isModalLoading={isModalRequisitionLoading}
         fields={modelFields}
         handleSubmit={handleSubmitLines}
         handleUpdateLine={handleSubmitUpdatedLine}

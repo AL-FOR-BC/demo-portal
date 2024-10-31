@@ -79,7 +79,7 @@ function HorizontalLayout() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Network Error',
-                    text: 'Please contact Admin.',
+                    text: 'Session Expired. Please login again.',
                     confirmButtonColor: '#3085d6'
                 }).then(async function () {
                     dispatch(signOutSuccess())

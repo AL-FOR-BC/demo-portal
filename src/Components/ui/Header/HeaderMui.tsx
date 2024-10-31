@@ -268,6 +268,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                                                             rows={rows}
                                                                             id={id}
                                                                             onBlur={onBlur}
+                                                                            
                                                                         />
                                                                     )}
                                                                 </Col>
