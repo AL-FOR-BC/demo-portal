@@ -9,6 +9,7 @@ import { apiCreatePaymentRequisition } from "../../services/RequisitionServices"
 import { useNavigate } from "react-router-dom";
 import HeaderMui from "../../Components/ui/Header/HeaderMui";
 import { getErrorMessage } from "../../utils/common";
+import { BiCategory } from "react-icons/bi";
 
 
 
@@ -54,7 +55,7 @@ function AddPaymentRequisition() {
             }
             const data = {
                 requisitionedBy: employeeNo,
-                payeeNo: selectedPaymentCategory[0]?.value === 'IMPREST' ? selectedCustomer[0]?.value : selectedPaymentCategory[0]?.value === 'SUPPLIER' ? selectedVendor[0]?.value : selectedPaymentCategory[0]?.value === 'BANK' ? selectedBankAccount[0]?.value : '',
+                payeeNo: selectedPaymentCategory[0]?.value === 'IMPREST' || selectedPaymentCategory[0]?.value === 'PETTY CASH' ? selectedCustomer[0]?.value : selectedPaymentCategory[0]?.value === 'SUPPLIER' ? selectedVendor[0]?.value : selectedPaymentCategory[0]?.value === 'BANK' || selectedPaymentCategory[0]?.value === 'BANK TRANSFER' ? selectedBankAccount[0]?.value : '',
                 paymentCategory: selectedPaymentCategory[0]?.value,
                 paySubcategory: selectedSubCategory[0]?.value,
                 project: selectedDimension[0]?.value,
@@ -66,6 +67,7 @@ function AddPaymentRequisition() {
                 currencyCode: selectedCurrency[0]?.value,
                 // documentDate: formatDate(expectedReceiptDate),
             }
+            console.log(data)
 
             const res = await apiCreatePaymentRequisition(companyId, data);
             if (res.status == 201) {
@@ -255,6 +257,7 @@ function AddPaymentRequisition() {
                 resPaymentCategory.data.value.map((e) => {
                     paymentCategoryOptions.push({ label: e.description, value: e.code })
                 });
+                paymentCategoryOptions = paymentCategoryOptions.filter(category => category.value !== 'TRAVEL');
                 setPaymentCategoryOptions(paymentCategoryOptions);
 
 

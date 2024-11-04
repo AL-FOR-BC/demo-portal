@@ -8,7 +8,7 @@ import { apiCreatePaymentRequisitionLines, apiPaymentRequisition, apiPaymentRequ
 import { apiBankAccountsApi, apiCurrencyCodes, apiCustomersApi, apiDimensionValue, apiGLAccountsApi, apiPaymentCategory, apiPaymentSubCategoryApi, apiWorkPlanLines, apiWorkPlans } from "../../services/CommonServices";
 import { toast } from "react-toastify";
 import Lines from "../../Components/ui/Lines/Lines";
-import { cancelApprovalButton } from "../../utils/common";
+import { cancelApprovalButton, getErrorMessage } from "../../utils/common";
 import { ActionFormatterLines } from "../../Components/ui/Table/TableUtils";
 import Swal from "sweetalert2";
 import { closeModalPurchaseReq, editRequisitionLine, modelLoadingPurchaseReq, openModalRequisition } from "../../store/slices/Requisitions";
@@ -35,7 +35,7 @@ function PaymentRequisitionDetail() {
   const [selectedSubCategory, setSelectedSubCategory] = useState < options[] > ([]);
   const [selectedBankAccount, setSelectedBankAccount] = useState < options[] > ([]);
   const [selectedCustomer, setSelectedCustomer] = useState < options[] > ([]);
-
+  const [selectedSupplier, setSelectedSupplier] = useState < options[] > ([]);
 
   const [customerOptions, setCustomerOptions] = useState < options[] > ([]);
   const [dimensionValues, setDimensionValues] = useState < options[] > ([]);
@@ -43,12 +43,13 @@ function PaymentRequisitionDetail() {
   const [bankAccountOptions, setBankAccountOptions] = useState < options[] > ([]);
   const [requestNo, setRequest] = useState < string > ('');
 
+  const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
   const [currencyOptions, setCurrencyOptions] = useState < { label: string; value: string }[] > ([]);
   const [workPlans, setWorkPlans] = useState < { label: string; value: string }[] > ([]);
   const [paymentCategoryOptions, setPaymentCategoryOptions] = useState < { label: string; value: string }[] > ([]);
   const [description, setDescription] = useState < string > ('');
   const [expectedReceiptDate, setExpectedReceiptDate] = useState < Date > (new Date());
-  // const [budgetCode, setBudgetCode] = useState < string > ('');
+  const [budgetCode, setBudgetCode] = useState < string > ('');
   const [status, setStatus] = useState < string > ('');
   const [paymentRequisitionLines, setPaymentRequisitionLines] = useState < PaymentRequisitionLineType[] > ([]);
 
@@ -71,23 +72,26 @@ function PaymentRequisitionDetail() {
       { label: 'Requisition No', type: 'text', value: requestNo, disabled: true, id: 'requestNo' },
       { label: 'Requestor No', type: 'text', value: employeeNo, disabled: true, id: 'empNo' },
       { label: 'Requestor Name', type: 'text', value: employeeName, disabled: true, id: 'empName' },
-      {
-        label: 'Document Date',
-        type: 'date',
-        value: expectedReceiptDate,
-        onChange: (e: Date) => setExpectedReceiptDate(e),
-        id: 'documentDate',
-      },
-    ],
-
-    [
 
       {
-        label: 'Department Code', type: 'select',
+        label: 'Project Code', type: 'select',
         options: dimensionValues,
         onChange: (e: options) => setSelectedDimension([{ label: e.label, value: e.value }]),
         id: 'departmentCode',
         value: selectedDimension,
+      },
+
+
+    ],
+
+    [
+      {
+        label: 'Work Plan',
+        type: 'select',
+        value: selectedWorkPlan,
+        onChange: (e: options) => setSelectedWorkPlan([{ label: e.label, value: e.value }]),
+        options: workPlans.filter(plan => split(plan.value, "::")[1] == selectedDimension[0]?.value),
+        id: 'workPlan',
       },
 
       {
@@ -112,7 +116,7 @@ function PaymentRequisitionDetail() {
       },
 
       ...(
-        selectedPaymentCategory[0]?.value === 'IMPREST'
+        selectedPaymentCategory[0]?.value === 'IMPREST' || selectedPaymentCategory[0]?.value === 'PETTY CASH'
           ? [
             {
               label: 'Payee',
@@ -134,7 +138,17 @@ function PaymentRequisitionDetail() {
                 id: 'bankAccount',
               }
             ]
-            : []
+            : selectedPaymentCategory[0]?.value === 'SUPPLIER'
+              ? [
+                // {
+                //   label: 'Supplier No',
+                //   type: 'text',
+                //   value: selectedSupplier,
+                //   disabled: true,
+                //   id: 'supplierNo'
+                // }
+              ]
+              : []
       )
 
     ],
@@ -155,7 +169,13 @@ function PaymentRequisitionDetail() {
           ] : []
       ),
 
-
+      {
+        label: 'Budget Code',
+        type: 'text',
+        value: budgetCode,
+        disabled: true,
+        id: 'budgetCode'
+      },
 
       {
         label: 'Currency',
@@ -171,6 +191,13 @@ function PaymentRequisitionDetail() {
         type: 'text', value: status,
         disabled: true,
         id: 'docStatus'
+      },
+      {
+        label: 'Document Date',
+        type: 'date',
+        value: expectedReceiptDate,
+        onChange: (e: Date) => setExpectedReceiptDate(e),
+        id: 'documentDate',
       },
       {
         label: 'Purpose',
@@ -202,17 +229,16 @@ function PaymentRequisitionDetail() {
           setSelectedCurrency([{ label: resData.currencyCode, value: resData.currencyCode }])
           setSelectedPaymentCategory([{ label: resData.paymentCategory, value: resData.paymentCategory }])
           setSelectedSubCategory([{ label: resData.paySubcategory, value: resData.paySubcategory }])
-          if (resData.paymentCategory == 'IMPREST') {
-            setSelectedCustomer([{ label: resData.payeeName, value: resData.payeeNo }])
-          } else if (resData.paymentCategory == 'BANK') {
-            setSelectedBankAccount([{ label: `${resData.payeeName}`, value: resData.payeeNo }])
+          if (resData.paymentCategory == 'IMPREST' || resData.paymentCategory == 'PETTY CASH') {
+            setSelectedCustomer([{ label: `${resData.payeeNo}::${resData.payeeName}`, value: resData.payeeNo }])
+          } else if (resData.paymentCategory == 'BANK' || resData.paymentCategory == 'BANK TRANSFER') {
+            setSelectedBankAccount([{ label: `${resData.payeeNo}::${resData.payeeName}`, value: resData.payeeNo }])
+          } else if (resData.paymentCategory == 'SUPPLIER') {
+            setSelectedSupplier([{ label: `${resData.payeeNo}::${resData.payeeName}`, value: resData.payeeNo }])
           }
 
-          setSelectedCurrency(resData.currencyCode ? [{ label: resData.currencyCode, value: resData.currencyCode }] : [{ label: 'UGX', value: '' }]);
 
-          setSelectedWorkPlan([{ label: `${resData.workPlanNo}::${resData.budgetCode}`, value: `${resData.workPlanNo}::${resData.budgetCode}` }])
-          setDimensionValues([{ label: resData.project, value: resData.project }])
-          // setBudgetCode(resData.budgetCode)
+          setSelectedCurrency(resData.currencyCode ? [{ label: resData.currencyCode, value: resData.currencyCode }] : [{ label: 'UGX', value: '' }]);
           setStatus(resData.status)
           setPaymentRequisitionLines(resData.paymentRequestLines)
         }
@@ -227,8 +253,18 @@ function PaymentRequisitionDetail() {
         setCurrencyOptions(currencyOptions);
 
         const resWorkPlans = await apiWorkPlans(companyId);
-        setWorkPlans(resWorkPlans.data.value.map(plan => ({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })));
-
+        setWorkPlansList(resWorkPlans.data.value)
+        let workPlansOptions: options[] = [];
+        resWorkPlans.data.value.map(plan => {
+          workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+          if (plan.no === resData.workPlanNo) {
+            if (plan.shortcutDimension1Code === resData.project) {
+              setSelectedWorkPlan([{ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` }])
+              setBudgetCode(resWorkPlans.data.value.filter(workPlan => workPlan.no == plan.no)[0].budgetCode)
+            }
+          }
+        })
+        setWorkPlans(workPlansOptions)
 
         const resPaymentSubCategory = await apiPaymentSubCategoryApi(companyId);
         let paymentSubCategoryOptions: options[] = [];
@@ -251,6 +287,9 @@ function PaymentRequisitionDetail() {
         let dimensionValues: options[] = [];
         resDimensionValues.data.value.map((e) => {
           dimensionValues.push({ label: `${e.code}::${e.name}`, value: e.code })
+          if (e.code === resData.project) {
+            setSelectedDimension([{ label: `${e.code}::${e.name}`, value: e.code }])
+          }
         });
         setDimensionValues(dimensionValues)
 
@@ -422,7 +461,7 @@ function PaymentRequisitionDetail() {
           const glAccounts = await apiGLAccountsApi(companyId);
           let glAccountsOptions: options[] = [];
           glAccounts.data.value.map((e) => {
-            glAccountsOptions.push({ label: e.name, value: e.no })
+            glAccountsOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
           });
           setGlAccounts(glAccountsOptions)
         }
@@ -450,7 +489,7 @@ function PaymentRequisitionDetail() {
       , options: glAccounts, isSearchable: true
     },
     ...(
-      selectedPaymentCategory[0]?.value === 'IMPREST'
+      selectedPaymentCategory[0]?.value === 'IMPREST' || selectedPaymentCategory[0]?.value === 'PETTY CASH' || selectedPaymentCategory[0]?.value === 'BANK TRANSFER' || selectedPaymentCategory[0]?.value === 'BANK' || selectedPaymentCategory[0]?.value === 'SUPPLIER'
         ? [
           {
             label: "Work Entry No",
@@ -470,13 +509,25 @@ function PaymentRequisitionDetail() {
       label: "Quantity",
       type: "number",
       value: quantity,
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => setQuantity(Number(e.target.value))
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (Number(e.target.value) < 0) {
+          toast.error('Quantity cannot be negative')
+          return
+        }
+        setQuantity(Number(e.target.value))
+      }
     },
     {
       label: "Rate",
       type: "text",
       value: rate.toLocaleString(),
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => setRate(Number(e.target.value.replace(/,/g, '')))
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (Number(e.target.value) < 0) {
+          toast.error('Rate cannot be negative')
+          return
+        }
+        setRate(Number(e.target.value.replace(/,/g, '')))
+      }
     },
     {
       label: "Description",
@@ -546,7 +597,7 @@ function PaymentRequisitionDetail() {
 
       }
     } catch (error) {
-      toast.error(`Error adding line:${error}`)
+      toast.error(`Error adding line:${getErrorMessage(error)}`)
     }
   }
   const handleDelteLine = async (row: any) => {
@@ -664,8 +715,8 @@ function PaymentRequisitionDetail() {
   }
   return (
     <>
-      <HeaderMui 
-      title="Payment Requisition Detail"
+      <HeaderMui
+        title="Payment Requisition Detail"
         subtitle='Purchase Requisition Detail'
         breadcrumbItem='Payment Requisition Detail'
         documentType='Payment Requisition'
