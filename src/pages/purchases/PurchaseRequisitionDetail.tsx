@@ -73,7 +73,7 @@ function PurchaseRequisitionDetail() {
             { label: 'Requestor No', type: 'text', value: employeeNo, disabled: true, id: 'empNo' },
             { label: 'Requestor Name', type: 'text', value: employeeName, disabled: true, id: 'empName' },
             {
-                label: 'Department Code', type: 'select',
+                label: 'Project Code', type: 'select',
                 value: selectedDimension,
                 disabled: status === 'Open' ? false : true,
                 id: 'departmentCode',
@@ -255,9 +255,13 @@ function PurchaseRequisitionDetail() {
 
                 const resWorkPlans = await apiWorkPlans(companyId);
                 setWorkPlansList(resWorkPlans.data.value)
-                let workPlansOptions: options[] = [];
+                let workPlansOptions: options[] = [];   
                 resWorkPlans.data.value.map(plan => {
-                    workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+                    if (plan.shortcutDimension1Code === data.project) {
+                        workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+                    }else{
+                        setWorkPlans(workPlansOptions)
+                    }
                     if (plan.no === data.workPlanNo) {
                         if (plan.shortcutDimension1Code === data.project) {
                             setSelectedWorkPlan([{ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` }])
@@ -265,7 +269,6 @@ function PurchaseRequisitionDetail() {
                         }
                     }
                 })
-                setWorkPlans(workPlansOptions)
 
                 const resLocationCodes = await apiLocation(companyId);
                 let locationOptions: options[] = [];

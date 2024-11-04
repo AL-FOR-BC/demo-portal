@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { split } from "lodash";
 import { options } from "../../@types/common.dto";
 import { apiCreatePaymentRequisitionLines, apiPaymentRequisition, apiPaymentRequisitionDetail, apiPaymentRequisitionLines, apiUpdatePaymentRequisition } from "../../services/RequisitionServices";
-import { apiBankAccountsApi, apiCurrencyCodes, apiCustomersApi, apiDimensionValue, apiGLAccountsApi, apiPaymentCategory, apiPaymentSubCategoryApi, apiWorkPlanLines, apiWorkPlans } from "../../services/CommonServices";
+import { apiBankAccountsApi, apiCurrencyCodes, apiCustomersApi, apiDimensionValue, apiGLAccountsApi, apiPaymentCategory, apiPaymentSubCategoryApi, apiVendors, apiWorkPlanLines, apiWorkPlans } from "../../services/CommonServices";
 import { toast } from "react-toastify";
 import Lines from "../../Components/ui/Lines/Lines";
 import { cancelApprovalButton, getErrorMessage } from "../../utils/common";
@@ -33,9 +33,7 @@ function PaymentRequisitionDetail() {
   const [selectedPaymentCategory, setSelectedPaymentCategory] = useState < options[] > ([]);
   const [selectedDimension, setSelectedDimension] = useState < options[] > ([]);
   const [selectedSubCategory, setSelectedSubCategory] = useState < options[] > ([]);
-  const [selectedBankAccount, setSelectedBankAccount] = useState < options[] > ([]);
-  const [selectedCustomer, setSelectedCustomer] = useState < options[] > ([]);
-  const [selectedSupplier, setSelectedSupplier] = useState < options[] > ([]);
+  const [payeeName, setPayeeName] = useState < string > ('');
 
   const [customerOptions, setCustomerOptions] = useState < options[] > ([]);
   const [dimensionValues, setDimensionValues] = useState < options[] > ([]);
@@ -54,6 +52,9 @@ function PaymentRequisitionDetail() {
   const [paymentRequisitionLines, setPaymentRequisitionLines] = useState < PaymentRequisitionLineType[] > ([]);
   const [lineSystemId, setLineSystemId] = useState < string > ('');
   const [lineEtag, setLineEtag] = useState < string > ('');
+  const [selectedPayee, setSelectedPayee] = useState < options[] > ([]);
+  const [vendorOptions, setVendorOptions] = useState < options[] > ([]);
+  const [lineDescription, setLineDescription] = useState < string > ('');
 
   // -------------------------------- line modal --------------------------------
   const [glAccounts, setGlAccounts] = useState < options[] > ([]);
@@ -62,12 +63,11 @@ function PaymentRequisitionDetail() {
 
   const [selectedAccountNo, setSelectedAccountNo] = useState < options[] > ([]);
   const [selectedWorkPlanLine, setSelectedWorkPlanLine] = useState < options[] > ([]);
-  const accountTypeOptions: options[] = [{ label: 'G/L Account', value: 'G/L Account' }, { label: 'Fixed Asset', value: 'Fixed Asset' }, { label: 'Bank Account', value: 'Bank Account' }];
+  const accountTypeOptions: options[] = [{ label: 'G/L Account', value: 'G/L Account' }, { label: 'Bank Account', value: 'Bank Account' }, { label: 'Vendor', value: 'Vendor' }, { label: 'Customer', value: 'Customer' }];
   const [accountType, setAccountType] = useState < options[] > ([]);
 
   const [quantity, setQuantity] = useState < number > (0);
   const [rate, setRate] = useState < number > (0);
-  console.log(workPlansList, selectedSupplier)
   const fields = [
     [
       { label: 'Requisition No', type: 'text', value: requestNo, disabled: true, id: 'requestNo' },
@@ -77,7 +77,7 @@ function PaymentRequisitionDetail() {
       {
         label: 'Project Code', type: 'select',
         options: dimensionValues,
-        onChange: (e: options) => {
+        onChange: async (e: options) => {
 
           if (paymentRequisitionLines.length > 0) {
             Swal.fire({
@@ -88,7 +88,7 @@ function PaymentRequisitionDetail() {
               confirmButtonColor: '#3085d6',
               cancelButtonColor: '#d33',
               confirmButtonText: 'Yes, delete all lines!'
-            }).then((result) => {
+            }).then(async (result) => {
               if (result.isConfirmed) {
                 setSelectedDimension([{ label: e.label, value: e.value }])
                 quickUpdate({
@@ -96,6 +96,15 @@ function PaymentRequisitionDetail() {
                 })
                 setSelectedWorkPlan([{ label: '', value: '' }])
                 setBudgetCode('')
+                const resWorkPlans = await apiWorkPlans(companyId)
+                let workPlansOptions: options[] = [];
+                resWorkPlans.data.value.map(plan => {
+                  if (split(plan.shortcutDimension1Code, "::")[1] == e.value) {
+                    workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+                  }
+                })
+                setWorkPlans(workPlansOptions)
+
               }
             })
           } else if (selectedWorkPlan[0]?.value !== '') {
@@ -107,7 +116,7 @@ function PaymentRequisitionDetail() {
               confirmButtonColor: '#3085d6',
               cancelButtonColor: '#d33',
               confirmButtonText: 'Yes, re-select work plan!'
-            }).then((result) => {
+            }).then(async (result) => {
               if (result.isConfirmed) {
                 setSelectedDimension([{ label: e.label, value: e.value }])
                 quickUpdate({
@@ -115,6 +124,14 @@ function PaymentRequisitionDetail() {
                 })
                 setSelectedWorkPlan([{ label: '', value: '' }])
                 setBudgetCode('')
+                const resWorkPlans = await apiWorkPlans(companyId)
+                let workPlansOptions: options[] = [];
+                resWorkPlans.data.value.map(plan => {
+                  if (plan.shortcutDimension1Code === e.value) {
+                    workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+                  }
+                })
+                setWorkPlans(workPlansOptions)
               }
             })
           } else {
@@ -122,6 +139,14 @@ function PaymentRequisitionDetail() {
               project: e.value
             })
             setSelectedDimension([{ label: e.label, value: e.value }])
+            const resWorkPlans = await apiWorkPlans(companyId)
+            let workPlansOptions: options[] = [];
+            resWorkPlans.data.value.map(plan => {
+              if (plan.shortcutDimension1Code === e.value) {
+                workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+              }
+            })
+            setWorkPlans(workPlansOptions)
           }
         },
         id: 'departmentCode',
@@ -157,10 +182,13 @@ function PaymentRequisitionDetail() {
             })
           } else {
             setSelectedWorkPlan([{ label: e.label, value: e.value }])
+            quickUpdate({
+              workPlanNo: split(e.value, '::')[0]
+            })
             setBudgetCode(workPlansList.filter(workPlan => workPlan.no == split(e.value, '::')[0])[0].budgetCode)
           }
         },
-        options: workPlans.filter(plan => split(plan.value, "::")[1] == selectedDimension[0]?.value),
+        options: workPlans,
         id: 'workPlan',
       },
 
@@ -172,7 +200,7 @@ function PaymentRequisitionDetail() {
         onChange: async (e: options) => {
           setSelectedPaymentCategory([{ label: e.label, value: e.value }])
           quickUpdate({
-            paymentCategory: e.value
+            paymentCategory: split(e.value, '::')[0]
           })
           setPaymentSubCategoryOptions([])
           const res = await apiPaymentSubCategoryApi(companyId)
@@ -180,10 +208,10 @@ function PaymentRequisitionDetail() {
           res.data.value.map((e) => {
             paymentSubCategoryOptions.push({ label: `${e.paymentType}::${e.name}`, value: e.code })
           });
-          setPaymentSubCategoryOptions(paymentSubCategoryOptions.filter(sub => split(sub.label, '::')[0] == e.value))
+          console.log(paymentSubCategoryOptions.filter(sub => split(sub.label, '::')[0] == split(e.value, '::')[0]))
+          setPaymentSubCategoryOptions(paymentSubCategoryOptions.filter(sub => split(sub.label, '::')[0] == split(e.value, '::')[0]))
           setSelectedSubCategory([])
-          setSelectedCustomer([])
-          setSelectedBankAccount([])
+          setSelectedPayee([])
         },
         id: 'paymentCategory',
       }, {
@@ -200,41 +228,92 @@ function PaymentRequisitionDetail() {
         id: 'subCategory',
       },
 
+
       ...(
-        selectedPaymentCategory[0]?.value === 'IMPREST' || selectedPaymentCategory[0]?.value === 'PETTY CASH'
+        split(selectedPaymentCategory[0]?.value, '::')[1] === 'Imprest' || split(selectedPaymentCategory[0]?.value, '::')[1] === 'Petty Cash'
           ? [
             {
               label: 'Payee',
               type: 'select',
-              value: selectedCustomer,
+              value: selectedPayee,
               options: customerOptions,
-              onChange: (e: options) => setSelectedCustomer([{ label: e.label, value: e.value }]),
+              onChange: (e: options) => {
+                setSelectedPayee([{ label: e.label, value: e.value }]),
+                  quickUpdate({
+                    payeeNo: e.value
+                  })
+              },
               id: 'payee',
             }
           ]
-          : selectedPaymentCategory[0]?.value === 'BANK'
+          : split(selectedPaymentCategory[0]?.value, '::')[1] === 'Bank' || split(selectedPaymentCategory[0]?.value, '::')[1] === 'Bank Transfer'
             ? [
               {
-                label: 'Bank Account',
+                label: 'Payee',
                 type: 'select',
-                value: selectedBankAccount,
+                value: selectedPayee,
                 options: bankAccountOptions,
-                onChange: (e: options) => setSelectedBankAccount([{ label: e.label, value: e.value }]),
+                onChange: (e: options) => {
+                  setSelectedPayee([{ label: e.label, value: e.value }])
+                  quickUpdate({
+                    payeeNo: e.value
+                  })
+                },
                 id: 'bankAccount',
+
               }
             ]
-            : selectedPaymentCategory[0]?.value === 'SUPPLIER'
+            : split(selectedPaymentCategory[0]?.value, '::')[1] === 'Supplier' || split(selectedPaymentCategory[0]?.value, '::')[1] === 'Supplier Payment' || split(selectedPaymentCategory[0]?.value, '::')[1] === 'Vendor'
+
               ? [
-                // {
-                //   label: 'Supplier No',
-                //   type: 'text',
-                //   value: selectedSupplier,
-                //   disabled: true,
-                //   id: 'supplierNo'
-                // }
+                {
+                  label: 'Payee',
+                  type: 'select',
+                  value: selectedPayee,
+                  options: vendorOptions,
+                  onChange: (e: options) => {
+                    setSelectedPayee([{ label: e.label, value: e.value }])
+                    quickUpdate({
+                      payeeNo: e.value
+                    })
+                  },
+                  id: 'vendor',
+                }
               ]
-              : []
+              :
+              split(selectedPaymentCategory[0]?.value, '::')[1] === 'Employee'
+                ? [{
+                  label: 'Payee',
+                  type: 'select',
+                  value: selectedPayee,
+                  options: customerOptions,
+                  onChange: (e: options) => {
+                    setSelectedPayee([{ label: e.label, value: e.value }])
+                    quickUpdate({
+                      payeeNo: e.value
+                    })
+                  },
+                  id: 'payee',
+                }
+                ]
+                :
+                split(selectedPaymentCategory[0]?.value, '::')[1] === 'Statutory'
+                  ? [{
+                    label: 'Payee Name',
+                    type: 'text',
+                    value: payeeName,
+                    onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPayeeName(e.target.value),
+                    disabled: false,
+                    onBlur: (e: React.ChangeEvent<HTMLInputElement>) => {
+                      quickUpdate({
+                        payeeName: e.target.value
+                      })
+                    },
+                    id: 'payeeName',
+                  }]
+                  : []
       )
+
 
     ],
     // Third row of inputs
@@ -331,15 +410,10 @@ function PaymentRequisitionDetail() {
           // setExpectedReceiptDate(resData.expectedReceiptDate)
           setSelectedDimension([{ label: resData.project, value: resData.project }])
           setSelectedCurrency([{ label: resData.currencyCode, value: resData.currencyCode }])
-          setSelectedPaymentCategory([{ label: resData.paymentCategory, value: resData.paymentCategory }])
-          if (resData.paymentCategory == 'IMPREST' || resData.paymentCategory == 'PETTY CASH') {
-            setSelectedCustomer([{ label: `${resData.payeeNo}::${resData.payeeName}`, value: resData.payeeNo }])
-          } else if (resData.paymentCategory == 'BANK' || resData.paymentCategory == 'BANK TRANSFER') {
-            setSelectedBankAccount([{ label: `${resData.payeeNo}::${resData.payeeName}`, value: resData.payeeNo }])
-          } else if (resData.paymentCategory == 'SUPPLIER') {
-            setSelectedSupplier([{ label: `${resData.payeeNo}::${resData.payeeName}`, value: resData.payeeNo }])
+          if (resData.payeeName) {
+            setPayeeName(resData.payeeName)
           }
-
+          setSelectedPayee([{ label: resData.payeeNo, value: resData.payeeNo }])
 
           setSelectedCurrency(resData.currencyCode ? [{ label: resData.currencyCode, value: resData.currencyCode }] : [{ label: 'UGX', value: '' }]);
           setStatus(resData.status)
@@ -359,7 +433,11 @@ function PaymentRequisitionDetail() {
         setWorkPlansList(resWorkPlans.data.value)
         let workPlansOptions: options[] = [];
         resWorkPlans.data.value.map(plan => {
-          workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+          if (plan.shortcutDimension1Code === resData.project) {
+            workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+          } else {
+            setWorkPlans(workPlansOptions)
+          }
           if (plan.no === resData.workPlanNo) {
             if (plan.shortcutDimension1Code === resData.project) {
               setSelectedWorkPlan([{ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` }])
@@ -367,7 +445,7 @@ function PaymentRequisitionDetail() {
             }
           }
         })
-        setWorkPlans(workPlansOptions)
+        // setWorkPlans(workPlansOptions)
 
         const resPaymentSubCategory = await apiPaymentSubCategoryApi(companyId);
         let paymentSubCategoryOptions: options[] = [];
@@ -384,9 +462,14 @@ function PaymentRequisitionDetail() {
         const resPaymentCategory = await apiPaymentCategory(companyId);
         let paymentCategoryOptions: options[] = [];
         resPaymentCategory.data.value.map((e) => {
-          paymentCategoryOptions.push({ label: e.description, value: e.code })
+          paymentCategoryOptions.push({ label: e.description, value: `${e.code}::${e.payeeType}` })
         });
         setPaymentCategoryOptions(paymentCategoryOptions);
+
+        const paymentCategory = paymentCategoryOptions.filter(category => split(category.value, '::')[0] == resData.paymentCategory)
+        setSelectedPaymentCategory(paymentCategory)
+
+
 
 
         const dimensionFilter = `&$filter=globalDimensionNo eq 1`
@@ -422,6 +505,13 @@ function PaymentRequisitionDetail() {
           glAccountsOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
         });
         setGlAccounts(glAccountsOptions)
+
+        const vendors = await apiVendors(companyId)
+        let vendorOptions: options[] = [];
+        vendors.data.value.map((e) => {
+          vendorOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
+        });
+        setVendorOptions(vendorOptions)
 
       }
 
@@ -559,6 +649,7 @@ function PaymentRequisitionDetail() {
       readOnly: true, disabled: false,
       onChange: async (e: options) => {
         setSelectedAccountNo([])
+        setGlAccounts([])
         setSelectedWorkPlanLine([])
         setAccountType([{ label: e.label, value: e.value }])
         if (e.value == 'Bank Account') {
@@ -568,13 +659,27 @@ function PaymentRequisitionDetail() {
             bankAccountOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
           });
           setGlAccounts(bankAccountOptions)
-        } else {
+        } else if (e.value == 'G/L Account') {
           const glAccounts = await apiGLAccountsApi(companyId);
           let glAccountsOptions: options[] = [];
           glAccounts.data.value.map((e) => {
             glAccountsOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
           });
           setGlAccounts(glAccountsOptions)
+        } else if (e.value == 'Vendor') {
+          const vendors = await apiVendors(companyId)
+          let vendorOptions: options[] = [];
+          vendors.data.value.map((e) => {
+            vendorOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
+          });
+          setGlAccounts(vendorOptions)
+        } else if (e.value == 'Customer') {
+          const customers = await apiCustomersApi(companyId)
+          let customerOptions: options[] = [];
+          customers.data.value.map((e) => {
+            customerOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
+          });
+          setGlAccounts(customerOptions)
         }
       }
       ,
@@ -599,21 +704,21 @@ function PaymentRequisitionDetail() {
       }
       , options: glAccounts, isSearchable: true
     },
-    ...(
-      selectedPaymentCategory[0]?.value === 'IMPREST' || selectedPaymentCategory[0]?.value === 'PETTY CASH' || selectedPaymentCategory[0]?.value === 'BANK TRANSFER' || selectedPaymentCategory[0]?.value === 'BANK' || selectedPaymentCategory[0]?.value === 'SUPPLIER'
-        ? [
-          {
-            label: "Work Entry No",
-            type: "select",
-            value: selectedWorkPlanLine,
-            options: workPlanLines,
-            disabled: false,
-            onChange: (e: options) => setSelectedWorkPlanLine([{ label: e.label, value: e.value }]),
+    // ...(
+    //   selectedPaymentCategory[0]?.value === 'IMPREST' || selectedPaymentCategory[0]?.value === 'PETTY CASH' || selectedPaymentCategory[0]?.value === 'BANK TRANSFER' || selectedPaymentCategory[0]?.value === 'BANK' || selectedPaymentCategory[0]?.value === 'SUPPLIER'
+    //     ? [
+    {
+      label: "Work Entry No",
+      type: "select",
+      value: selectedWorkPlanLine,
+      options: workPlanLines,
+      disabled: false,
+      onChange: (e: options) => setSelectedWorkPlanLine([{ label: e.label, value: e.value }]),
 
-          },
-        ]
-        : []
-    ),
+    },
+    // ]
+    // : []
+    // ),
 
 
     {
@@ -643,8 +748,8 @@ function PaymentRequisitionDetail() {
     {
       label: "Description",
       type: "textarea",
-      value: description,
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => setDescription(e.target.value),
+      value: lineDescription,
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => setLineDescription(e.target.value),
       rows: 2
     }
 
@@ -657,7 +762,7 @@ function PaymentRequisitionDetail() {
     setSelectedWorkPlanLine([])
     setQuantity(0)
     setRate(0)
-    setDescription("")
+    setLineDescription("")
     setWorkPlanLines([])
     setLineSystemId('')
     setLineEtag('')
@@ -746,8 +851,7 @@ function PaymentRequisitionDetail() {
     setQuantity(0)
     setRate(0)
     setSelectedWorkPlanLine([])
-    setDescription("")
-
+    setLineDescription("")
     setLineSystemId(row.systemId)
     setLineEtag(row['@odata.etag'])
 
@@ -761,7 +865,7 @@ function PaymentRequisitionDetail() {
     setSelectedAccountNo([{ label: row.accountNo, value: row.accountNo }])
     setQuantity(row.quantity)
     setRate(row.rate)
-    setDescription(row.description)
+    setLineDescription(row.description)
 
     if (row.accountType == 'Bank Account') {
       const bankAccount = await apiBankAccountsApi(companyId);
@@ -774,7 +878,7 @@ function PaymentRequisitionDetail() {
       const glAccounts = await apiGLAccountsApi(companyId);
       let glAccountsOptions: options[] = [];
       glAccounts.data.value.map((e) => {
-        glAccountsOptions.push({ label: e.name, value: e.no })
+        glAccountsOptions.push({ label: `${e.no} ::${e.name}`, value: e.no })
       });
       setGlAccounts(glAccountsOptions)
     }
@@ -796,7 +900,7 @@ function PaymentRequisitionDetail() {
         documentNo: requestNo,
         rate: parseInt(rate.toString()),
         quantity: parseInt(quantity.toString()),
-        description: description,
+        description: lineDescription,
         workPlanEntryNo: Number(selectedWorkPlanLine[0]?.value)
       }
       console.log("data", data)
@@ -806,6 +910,7 @@ function PaymentRequisitionDetail() {
         toast.success('Line updated successfully')
         populateData()
         dispatch(closeModalRequisition())
+        dispatch(editRequisitionLine(false))
         clearModalFields()
       }
     } catch (error) {
@@ -858,22 +963,45 @@ function PaymentRequisitionDetail() {
   }
 
   const handleValidateHeaderFields = () => {
-    // if (
-    //   (selectedWorkPlan[0]?.value == '' || selectedWorkPlan[0]?.value == null || selectedWorkPlan[0]?.value == undefined) ||
-    //   (selectedPaymentCategory[0]?.value == '' || selectedPaymentCategory[0]?.value == null || selectedPaymentCategory[0]?.value == undefined) ||
-    //   (selectedCurrency[0]?.value == '' || selectedCurrency[0]?.value == null || selectedCurrency[0]?.value == undefined) ||
-    //   (selectedDimension[0]?.value == '' || selectedDimension[0]?.value == null || selectedDimension[0]?.value == undefined)) {
-    //   const missingField = (selectedAccountNo[0]?.value == '' || selectedAccountNo[0]?.value == null || selectedAccountNo[0]?.value == undefined) ? 'Account No' :
-    //     (selectedWorkPlan[0]?.value == '' || selectedWorkPlan[0]?.value == null || selectedWorkPlan[0]?.value == undefined) ? 'Work Plan' :
-    //       (selectedPaymentCategory[0]?.value == '' || selectedPaymentCategory[0]?.value == null || selectedPaymentCategory[0]?.value == undefined) ? 'Payment Category' :
-    //         (selectedCurrency[0]?.value == '' || selectedCurrency[0]?.value == null || selectedCurrency[0]?.value == undefined) ? 'Currency' :
-    //           (selectedDimension[0]?.value == '' || selectedDimension[0]?.value == null || selectedDimension[0]?.value == undefined) ? 'Dimension' : '';
-    //   toast.error(`Please fill in the missing field: ${missingField}`)
+    if (
+      (selectedDimension[0]?.value == '' || selectedDimension[0]?.value == null || selectedDimension[0]?.value == undefined) ||
+      (selectedPaymentCategory[0]?.value == '' || selectedPaymentCategory[0]?.value == null || selectedPaymentCategory[0]?.value == undefined) ||
+      (selectedWorkPlan[0]?.value == '' || selectedWorkPlan[0]?.value == null || selectedWorkPlan[0]?.value == undefined) ||
+      (description == '' || description == null || description == undefined) ||
+      (selectedSubCategory[0]?.value == '' || selectedSubCategory[0]?.value == null || selectedSubCategory[0]?.value == undefined) ||
+      (expectedReceiptDate == null || expectedReceiptDate == undefined) || ''
 
-    //   return false
-    // }
+    ) {
+
+      const missingFields = (selectedDimension[0]?.value == '' || selectedDimension[0]?.value == null || selectedDimension[0]?.value == undefined) ? 'Dimension' :
+        (selectedPaymentCategory[0]?.value == '' || selectedPaymentCategory[0]?.value == null || selectedPaymentCategory[0]?.value == undefined) ? 'Payment Category' :
+          (selectedWorkPlan[0]?.value == '' || selectedWorkPlan[0]?.value == null || selectedWorkPlan[0]?.value == undefined) ? 'Work Plan' :
+            (description == '' || description == null || description == undefined) ? 'Description' :
+              (selectedCurrency[0]?.value == '' || selectedCurrency[0]?.value == null || selectedCurrency[0]?.value == undefined) ? 'Currency' :
+                (selectedSubCategory[0]?.value == '' || selectedSubCategory[0]?.value == null || selectedSubCategory[0]?.value == undefined) ? 'Sub Category' : '';
+      toast.error(`Please fill in the missing field: ${missingFields}`)
+      return false
+    }
+
+    if (split(selectedPaymentCategory[0]?.value, '::')[1] === "Statutory") {
+      if (payeeName == '' || payeeName == null || payeeName == undefined) {
+        toast.error(`Please fill in the missing field: Payee Name`)
+        return false
+      }
+    } else {
+      console.log(split(selectedPaymentCategory[0]?.value, '::')[1])
+      if (selectedPayee[0]?.value == '' || selectedPayee[0]?.value == null || selectedPayee[0]?.value == undefined) {
+        toast.error(`Please fill in the missing field: Payee`)
+        return false
+      }
+
+    }
+
+
     return true
+
   }
+
   return (
     <>
       <HeaderMui

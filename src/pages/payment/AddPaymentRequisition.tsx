@@ -66,7 +66,6 @@ function AddPaymentRequisition() {
                 payeeName: '',
                 // budgetCode: budgetCode,
                 // locationCode: employeeDepartment,
-
                 currencyCode: selectedCurrency[0]?.value,
                 // documentDate: formatDate(expectedReceiptDate),
             }
@@ -76,16 +75,11 @@ function AddPaymentRequisition() {
             }
 
 
-            console.log(data)
-
             const res = await apiCreatePaymentRequisition(companyId, data);
             if (res.status == 201) {
                 toast.success('Requisition created successfully')
                 navigate(`/payment-requisition-details/${res.data.systemId}`);
             }
-            // else {
-            //     toast.error('Error creating requisition')
-            // }
             setIsLoading(false)
         } catch (error) {
             toast.error(`Error creating requisition:${getErrorMessage(error)}`)

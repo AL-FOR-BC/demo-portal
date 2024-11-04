@@ -33,11 +33,11 @@ const PaymentRequisition = () => {
             text: 'Document Date',
             sort: true
         },
-        {
-            dataField: 'payeeNo',
-            text: 'Payee No',
-            sort: true
-        },
+        // {
+        //     dataField: 'payeeNo',
+        //     text: 'Payee No',
+        //     sort: true
+        // },
         {
             dataField: 'payeeName',
             text: 'Payee Name',
