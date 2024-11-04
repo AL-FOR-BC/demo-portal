@@ -26,8 +26,8 @@ function AddPaymentRequisition() {
     const [selectedPaymentCategory, setSelectedPaymentCategory] = useState < options[] > ([]);
     const [selectedDimension, setSelectedDimension] = useState < options[] > ([]);
     const [selectedSubCategory, setSelectedSubCategory] = useState < options[] > ([]);
-    const [selectedBankAccount, setSelectedBankAccount] = useState < options[] > ([]);
-    const [selectedCustomer, setSelectedCustomer] = useState < options[] > ([]);
+    // const [selectedBankAccount, setSelectedBankAccount] = useState < options[] > ([]);
+    // const [selectedCustomer, setSelectedCustomer] = useState < options[] > ([]);
 
 
     const [customerOptions, setCustomerOptions] = useState < options[] > ([]);
@@ -42,7 +42,7 @@ function AddPaymentRequisition() {
     const [expectedReceiptDate, setExpectedReceiptDate] = useState < Date > (new Date());
     const [budgetCode, setBudgetCode] = useState < string > ('');
     const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
-    const [selectedVendor, setSelectedVendor] = useState < options[] > ([]);
+    // const [selectedVendor, setSelectedVendor] = useState < options[] > ([]);
     const [vendorOptions, setVendorOptions] = useState < options[] > ([]);
     const [selectedPayee, setSelectedPayee] = useState < options[] > ([]);
     const [payeeName, setPayeeName] = useState < string > ('');
@@ -63,13 +63,14 @@ function AddPaymentRequisition() {
                 project: selectedDimension[0]?.value,
                 workPlanNo: split(selectedWorkPlan[0].value, '::')[0],
                 purpose: description,
+                payeeName: '',
                 // budgetCode: budgetCode,
                 // locationCode: employeeDepartment,
 
                 currencyCode: selectedCurrency[0]?.value,
                 // documentDate: formatDate(expectedReceiptDate),
             }
-                
+
             if (selectedPaymentCategory[0]?.value.split('::')[1] === 'Statutory') {
                 data.payeeName = payeeName;
             }
@@ -150,7 +151,7 @@ function AddPaymentRequisition() {
                     });
                     setPaymentSubCategory(paymentSubCategoryOptions.filter(sub => split(sub.label, '::')[0] == split(e.value, '::')[0]))
                     setSelectedPayee([])
-                    setSelectedBankAccount([])
+                    // setSelectedBankAccount([])
                 },
                 id: 'paymentCategory',
             }, {
