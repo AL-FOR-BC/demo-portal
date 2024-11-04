@@ -38,6 +38,7 @@ export type paymentCategoryTypes = {
   id: string;
   code: string;
   description: string;
+  payeeType: string;
 };
 
 export type paymentSubCategoryTypes = {

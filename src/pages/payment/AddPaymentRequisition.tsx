@@ -44,6 +44,8 @@ function AddPaymentRequisition() {
     const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
     const [selectedVendor, setSelectedVendor] = useState < options[] > ([]);
     const [vendorOptions, setVendorOptions] = useState < options[] > ([]);
+    const [selectedPayee, setSelectedPayee] = useState < options[] > ([]);
+    const [payeeName, setPayeeName] = useState < string > ('');
     const handleSubmit = async () => {
         try {
             setIsLoading(true)
@@ -54,8 +56,9 @@ function AddPaymentRequisition() {
             }
             const data = {
                 requisitionedBy: employeeNo,
-                payeeNo: selectedPaymentCategory[0]?.value === 'IMPREST' || selectedPaymentCategory[0]?.value === 'PETTY CASH' ? selectedCustomer[0]?.value : selectedPaymentCategory[0]?.value === 'SUPPLIER' ? selectedVendor[0]?.value : selectedPaymentCategory[0]?.value === 'BANK' || selectedPaymentCategory[0]?.value === 'BANK TRANSFER' ? selectedBankAccount[0]?.value : '',
-                paymentCategory: selectedPaymentCategory[0]?.value,
+                // payeeNo: selectedPaymentCategory[0]?.value === 'IMPREST' || selectedPaymentCategory[0]?.value === 'PETTY CASH' ? selectedCustomer[0]?.value : selectedPaymentCategory[0]?.value === 'SUPPLIER' ? selectedVendor[0]?.value : selectedPaymentCategory[0]?.value === 'BANK' || selectedPaymentCategory[0]?.value === 'BANK TRANSFER' ? selectedBankAccount[0]?.value : '',
+                payeeNo: selectedPayee[0]?.value,
+                paymentCategory: split(selectedPaymentCategory[0]?.value, '::')[0],
                 paySubcategory: selectedSubCategory[0]?.value,
                 project: selectedDimension[0]?.value,
                 workPlanNo: split(selectedWorkPlan[0].value, '::')[0],
@@ -66,13 +69,19 @@ function AddPaymentRequisition() {
                 currencyCode: selectedCurrency[0]?.value,
                 // documentDate: formatDate(expectedReceiptDate),
             }
+                
+            if (selectedPaymentCategory[0]?.value.split('::')[1] === 'Statutory') {
+                data.payeeName = payeeName;
+            }
+
+
             console.log(data)
 
             const res = await apiCreatePaymentRequisition(companyId, data);
             if (res.status == 201) {
                 toast.success('Requisition created successfully')
                 navigate(`/payment-requisition-details/${res.data.systemId}`);
-            } 
+            }
             // else {
             //     toast.error('Error creating requisition')
             // }
@@ -131,10 +140,16 @@ function AddPaymentRequisition() {
                 type: 'select',
                 value: selectedPaymentCategory,
                 options: paymentCategoryOptions,
-                onChange: (e: options) => {
-                    setSelectedPaymentCategory([{ label: e.label, value: e.value }])
+                onChange: async (e: options) => {
                     setSelectedSubCategory([])
-                    setSelectedCustomer([])
+                    setSelectedPaymentCategory([{ label: e.label, value: e.value }])
+                    const res = await apiPaymentSubCategoryApi(companyId)
+                    let paymentSubCategoryOptions: options[] = [];
+                    res.data.value.map((e) => {
+                        paymentSubCategoryOptions.push({ label: `${e.paymentType}::${e.name}`, value: e.code })
+                    });
+                    setPaymentSubCategory(paymentSubCategoryOptions.filter(sub => split(sub.label, '::')[0] == split(e.value, '::')[0]))
+                    setSelectedPayee([])
                     setSelectedBankAccount([])
                 },
                 id: 'paymentCategory',
@@ -142,47 +157,67 @@ function AddPaymentRequisition() {
                 label: 'Payment Subcategory',
                 type: 'select',
                 value: selectedSubCategory,
-                options: paymentSubCategory.filter(sub => sub.value == selectedPaymentCategory[0]?.value),
+                options: paymentSubCategory,
                 onChange: (e: options) => setSelectedSubCategory([{ label: e.label, value: e.value }]),
                 id: 'subCategory',
             },
 
             ...(
-                selectedPaymentCategory[0]?.value === 'IMPREST' || selectedPaymentCategory[0]?.value === 'PETTY CASH'
+                split(selectedPaymentCategory[0]?.value, '::')[1] === 'Imprest' || split(selectedPaymentCategory[0]?.value, '::')[1] === 'Petty Cash'
                     ? [
                         {
                             label: 'Payee',
                             type: 'select',
-                            value: selectedCustomer,
+                            value: selectedPayee,
                             options: customerOptions,
-                            onChange: (e: options) => setSelectedCustomer([{ label: e.label, value: e.value }]),
+                            onChange: (e: options) => setSelectedPayee([{ label: e.label, value: e.value }]),
                             id: 'payee',
                         }
                     ]
-                    : selectedPaymentCategory[0]?.value === 'BANK' || selectedPaymentCategory[0]?.value === 'BANK TRANSFER'
+                    : split(selectedPaymentCategory[0]?.value, '::')[1] === 'Bank' || split(selectedPaymentCategory[0]?.value, '::')[1] === 'Bank Transfer'
                         ? [
                             {
                                 label: 'Payee',
                                 type: 'select',
-                                value: selectedBankAccount,
+                                value: selectedPayee,
                                 options: bankAccountOptions,
-                                onChange: (e: options) => setSelectedBankAccount([{ label: e.label, value: e.value }]),
+                                onChange: (e: options) => setSelectedPayee([{ label: e.label, value: e.value }]),
                                 id: 'bankAccount',
                             }
                         ]
-                        : selectedPaymentCategory[0]?.value === 'SUPPLIER' || selectedPaymentCategory[0]?.value === 'SUPPLIER PAYMENT'
+                        : split(selectedPaymentCategory[0]?.value, '::')[1] === 'Supplier' || split(selectedPaymentCategory[0]?.value, '::')[1] === 'Supplier Payment' || split(selectedPaymentCategory[0]?.value, '::')[1] === 'Vendor'
 
                             ? [
                                 {
                                     label: 'Payee',
                                     type: 'select',
-                                    value: selectedVendor,
+                                    value: selectedPayee,
                                     options: vendorOptions,
-                                    onChange: (e: options) => setSelectedVendor([{ label: e.label, value: e.value }]),
+                                    onChange: (e: options) => setSelectedPayee([{ label: e.label, value: e.value }]),
                                     id: 'vendor',
                                 }
                             ]
-                            : []
+                            :
+                            split(selectedPaymentCategory[0]?.value, '::')[1] === 'Employee'
+                                ? [{
+                                    label: 'Payee',
+                                    type: 'select',
+                                    value: selectedPayee,
+                                    options: customerOptions,
+                                    onChange: (e: options) => setSelectedPayee([{ label: e.label, value: e.value }]),
+                                    id: 'payee',
+                                }]
+                                :
+                                split(selectedPaymentCategory[0]?.value, '::')[1] === 'Statutory'
+                                    ? [{
+                                        label: 'Payee Name',
+                                        type: 'text',
+                                        value: payeeName,
+                                        onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPayeeName(e.target.value),
+                                        disabled: false,
+                                        id: 'payeeName',
+                                    }]
+                                    : []
             )
 
         ],
@@ -246,7 +281,7 @@ function AddPaymentRequisition() {
                 const resPaymentSubCategory = await apiPaymentSubCategoryApi(companyId);
                 let paymentSubCategoryOptions: options[] = [];
                 resPaymentSubCategory.data.value.map((e) => {
-                    paymentSubCategoryOptions.push({ label: e.name, value: e.code })
+                    paymentSubCategoryOptions.push({ label: `${e.paymentType}::${e.name}`, value: e.code })
                 });
                 setPaymentSubCategory(paymentSubCategoryOptions);
 
@@ -254,7 +289,7 @@ function AddPaymentRequisition() {
                 const resPaymentCategory = await apiPaymentCategory(companyId);
                 let paymentCategoryOptions: options[] = [];
                 resPaymentCategory.data.value.map((e) => {
-                    paymentCategoryOptions.push({ label: e.description, value: e.code })
+                    paymentCategoryOptions.push({ label: e.description, value: `${e.code}::${e.payeeType}` })
                 });
                 paymentCategoryOptions = paymentCategoryOptions.filter(category => category.value !== 'TRAVEL');
                 setPaymentCategoryOptions(paymentCategoryOptions);

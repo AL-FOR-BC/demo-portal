@@ -6,13 +6,14 @@ import {
   PurchaseRequisitionLinesSubmitData,
   PurchaseRequisitionResponse,
   PurchaseRequisitionType,
-  PurchaseRequisitionUpdateData
+  PurchaseRequisitionUpdateData,
 } from "../@types/purchaseReq.dto.ts";
 import {
   PaymentRequisition,
   PaymentRequisitionHeader,
   PaymentRequisitionLinesResponse,
   PaymentRequisitionResponse,
+  PaymentRequisitionUpdateData,
   PaymentRequistionLinesSubmitData,
 } from "../@types/paymentReq.dto.ts";
 
@@ -184,6 +185,22 @@ export async function apiPaymentRequisitionLines(
   });
 }
 
+export async function apiUpdatePaymentRequisition(
+  companyId: string,
+  id: string,
+  data: Partial<PaymentRequisitionUpdateData>,
+  etag: string
+) {
+  return BcApiService.fetchData<PaymentRequisitionResponse>({
+    url: `/api/hrpsolutions/procuretopay/v2.0/paymentRequestHeaders(${id})?Company=${companyId}`,
+    method: "PATCH",
+    data,
+    headers: {
+      "If-Match": etag,
+    },
+  });
+}
+
 export async function apiUpdatePurchaseRequisition(
   companyId: string,
   id: string,
@@ -199,4 +216,3 @@ export async function apiUpdatePurchaseRequisition(
     },
   });
 }
-

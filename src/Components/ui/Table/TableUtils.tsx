@@ -126,7 +126,6 @@ export const formatNumber = (num: number) => {
 }
 
 export const ActionFormatterLines: React.FC<ActionsFormatterLinesProps> = ({ row, handleEditLine, apiHandler, companyId, populateData }) => {
-    console.log("Row dataiuiuuu", row);
     const handleDeleteLine = async () => {
         if (!row) {
             console.error("Row data is missing");

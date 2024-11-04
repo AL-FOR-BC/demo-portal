@@ -42,6 +42,8 @@ function PurchaseRequisitionDetail() {
     const [requestNo, setRequestNo] = useState < string > ('');
     const [purchaseRequisitionLines, setpurchaseRequisitionLines] = useState < PurchaseRequisitionLineType[] > ([]);
     const [status, setStatus] = useState < string > ('');
+    const [lineSystemId, setLineSystemId] = useState < string > ('');
+    const [lineEtag, setLineEtag] = useState < string > ('');
 
 
 
@@ -555,9 +557,11 @@ function PurchaseRequisitionDetail() {
         setDirectUnitCost(0)
         setDescription("")
         setSelectedUnitOfMeasure([])
+        setLineSystemId('')
+        setLineEtag('')
 
     }
-
+    
 
     const handleSubmitLines = async () => {
         if (selectedAccountNo[0]?.value == '' || selectedWorkPlanLine[0]?.value == '' || quantity == 0 || directUnitCost == 0 || description == '') {
@@ -642,6 +646,8 @@ function PurchaseRequisitionDetail() {
         //clear all fields
         clearLineFields()
         // get data
+        setLineSystemId(row.systemId)
+        setLineEtag(row['@odata.etag'])
         const vendorRes = await apiVendors(companyId);
         const vendors = vendorRes.data.value.map(vendor => ({ label: vendor.name, value: vendor.no }));
 
@@ -695,9 +701,10 @@ function PurchaseRequisitionDetail() {
                 directUnitCost: directUnitCost,
                 unitOfMeasure: selectedUnitOfMeasure[0]?.value
             }
-            const res = await apiPurchaseRequisitionLines(companyId, "PATCH", data, purchaseRequisitionLines[0].systemId, purchaseRequisitionLines[0]["@odata.etag"]);
+            const res = await apiPurchaseRequisitionLines(companyId, "PATCH", data, lineSystemId, lineEtag);
             if (res.status == 200) {
                 toast.success("Line updated successfully")
+                clearLineFields()
                 dispatch(editRequisitionLine(false))
                 dispatch(closeModalRequisition())
                 populateData()

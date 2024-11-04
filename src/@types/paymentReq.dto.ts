@@ -99,3 +99,15 @@ export interface PaymentRequisitionLineSingleResponse
   extends PaymentRequisitionHeader {
   paymentRequestLines: PaymentRequisitionLineType[];
 }
+
+
+export interface PaymentRequisitionUpdateData {
+  paymentCategory?: string;
+  paySubcategory?: string;
+  project?: string;
+  workPlanNo?: string;
+  donor?: string;
+  purpose?: string;
+  payeeNo?: string;
+  currencyCode?: string;
+}
