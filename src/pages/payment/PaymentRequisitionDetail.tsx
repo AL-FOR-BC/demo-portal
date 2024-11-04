@@ -65,7 +65,7 @@ function PaymentRequisitionDetail() {
 
   const [quantity, setQuantity] = useState < number > (0);
   const [rate, setRate] = useState < number > (0);
-
+  console.log(workPlansList, selectedSupplier)
   const fields = [
     // First row of inputs
     [

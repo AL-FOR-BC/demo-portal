@@ -9,7 +9,6 @@ import { apiCreatePaymentRequisition } from "../../services/RequisitionServices"
 import { useNavigate } from "react-router-dom";
 import HeaderMui from "../../Components/ui/Header/HeaderMui";
 import { getErrorMessage } from "../../utils/common";
-import { BiCategory } from "react-icons/bi";
 
 
 
