@@ -36,3 +36,29 @@ export interface FixedAssetsResponse {
 }
 
 
+
+export interface Attachment {
+  id: number;
+  fileName: string;
+  fileExtension: string;
+  fileContentsBase64: string;
+  fileContentType: string;
+  no: string;
+  systemId: string;
+  tableId: number;
+  documentType: string;
+  "@odata.etag": string;
+}
+
+export interface AttachmentResponse {
+  "@odata.context": string;
+  value: Attachment[];
+}
+
+
+export interface Base64File {
+  base64String: string;
+  fileName: string;
+  fileExtension: string;
+  contentType: string;
+}

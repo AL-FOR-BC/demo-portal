@@ -13,8 +13,13 @@ import {
   workPlanTypes,
 } from "../@types/requisition.dto.ts";
 import { ItemsResponse } from "../@types/items.dto.ts";
-import { FixedAssetsResponse } from "../@types/common.dto.ts";
-import { EmployeeResponse } from "../@types/employee.dto.ts";
+import {
+  FixedAssetsResponse,
+} from "../@types/common.dto.ts";
+import {
+  EmployeeResponse,
+  UnitOfMeasureResponse,
+} from "../@types/employee.dto.ts";
 
 interface currencyResponse {
   "@odata.context": string;
@@ -36,38 +41,37 @@ interface dimensionValuesResponse {
 
 interface paymentCategoryResponse {
   "@odata.context": string;
-  value: paymentCategoryTypes[]
+  value: paymentCategoryTypes[];
 }
 
 interface paymentSubCategoryResponse {
   "@odata.context": string;
-  value: paymentSubCategoryTypes[]
+  value: paymentSubCategoryTypes[];
 }
 
 interface customerResponse {
   "@odata.etag": string;
-  value:customerTypes[]
-
+  value: customerTypes[];
 }
 
 interface bankAccountResponse {
   "@odata.etag": string;
-  value:bankAccountTypes[]
+  value: bankAccountTypes[];
 }
 
 interface gLAccountsResponse {
- "@odata.etag": string;
- value:glAccountTypes[]
+  "@odata.etag": string;
+  value: glAccountTypes[];
 }
 
 interface workPlanLinesResponse {
   "@odata.etag": string;
-  value:workPlanLinesTypes[]
+  value: workPlanLinesTypes[];
 }
 
-interface vendorResponse{
+interface vendorResponse {
   "@odata.etag": string;
-  value:vendorTypes[]
+  value: vendorTypes[];
 }
 
 export async function apiCurrencyCodes(
@@ -100,55 +104,67 @@ export async function apiDimensionValue(
   });
 }
 
-export async function apiPaymentCategory(companyId: string, filterQuery?: string) {
+export async function apiPaymentCategory(
+  companyId: string,
+  filterQuery?: string
+) {
   return BcApiService.fetchData<paymentCategoryResponse>({
     url: `/api/hrpsolutions/procuretopay/v2.0/PaymentCategoryApi?Company=${companyId}&${filterQuery}`,
-
-  })
+  });
 }
 
-export async function apiPaymentSubCategoryApi(companyId: string, filterQuery?: string) {
+export async function apiPaymentSubCategoryApi(
+  companyId: string,
+  filterQuery?: string
+) {
   return BcApiService.fetchData<paymentSubCategoryResponse>({
     url: `/api/hrpsolutions/procuretopay/v2.0/PaymentSubCategoryApi?Company=${companyId}&${filterQuery}`,
-
-  })
-  
+  });
 }
 
-export async function apiCustomersApi(companyId:string, filterQuery?:string){
+export async function apiCustomersApi(companyId: string, filterQuery?: string) {
   return BcApiService.fetchData<customerResponse>({
-    url: `/api/hrpsolutions/procuretopay/v2.0/customers?Company=${companyId}&${filterQuery}`
-  })
+    url: `/api/hrpsolutions/procuretopay/v2.0/customers?Company=${companyId}&${filterQuery}`,
+  });
 }
 
-
-export async function apiBankAccountsApi(companyId:string, filterQuery?:string){
+export async function apiBankAccountsApi(
+  companyId: string,
+  filterQuery?: string
+) {
   return BcApiService.fetchData<bankAccountResponse>({
-    url: `/api/hrpsolutions/procuretopay/v2.0/bankaccounts?Company=${companyId}&${filterQuery}`
-  })
+    url: `/api/hrpsolutions/procuretopay/v2.0/bankaccounts?Company=${companyId}&${filterQuery}`,
+  });
 }
 
-
-export async function apiGLAccountsApi(companyId:string, filterQuery?:string){
+export async function apiGLAccountsApi(
+  companyId: string,
+  filterQuery?: string
+) {
   return BcApiService.fetchData<gLAccountsResponse>({
-    url: `/api/hrpsolutions/procuretopay/v2.0/gLAccounts?Company=${companyId}&${filterQuery}`
-  })
+    url: `/api/hrpsolutions/procuretopay/v2.0/gLAccounts?Company=${companyId}&${filterQuery}`,
+  });
 }
 
-export async function apiWorkPlanLines(companyId:string, filterQuery?:string){
+export async function apiWorkPlanLines(
+  companyId: string,
+  filterQuery?: string
+) {
   return BcApiService.fetchData<workPlanLinesResponse>({
-    url: `/api/hrpsolutions/procuretopay/v2.0/approvedWorkplanlines?Company=${companyId}&${filterQuery}`
-  })
+    url: `/api/hrpsolutions/procuretopay/v2.0/approvedWorkplanlines?Company=${companyId}&${filterQuery}`,
+  });
 }
 
-export async function apiVendors(companyId:string, filterQuery?:string){
+export async function apiVendors(companyId: string, filterQuery?: string) {
   return BcApiService.fetchData<vendorResponse>({
-    url: `/api/hrpsolutions/procuretopay/v2.0/vendors?Company=${companyId}&${filterQuery}`
-  })
+    url: `/api/hrpsolutions/procuretopay/v2.0/vendors?Company=${companyId}&${filterQuery}`,
+  });
 }
 
-
-export async function apiApprovalEntries(companyId: string, filterQuery?: string) {
+export async function apiApprovalEntries(
+  companyId: string,
+  filterQuery?: string
+) {
   return BcApiService.fetchData<any>({
     url: `/api/hrpsolutions/procuretopay/v2.0/approvalEntries?Company=${companyId}&${filterQuery}`,
   });
@@ -162,22 +178,55 @@ export async function apiEmployees(companyId: string, filterQuery?: string) {
   });
 }
 
-export async function apiItem(companyId:string, filterQuery?:string){
+export async function apiItem(companyId: string, filterQuery?: string) {
   return BcApiService.fetchData<ItemsResponse>({
-    url:`/api/hrpsolutions/procuretopay/v2.0/items?Company=${companyId}&${filterQuery}`
-  })
+    url: `/api/hrpsolutions/procuretopay/v2.0/items?Company=${companyId}&${filterQuery}`,
+  });
 }
 
 export async function apiFixedAssets(companyId: string, filterQuery?: string) {
   return BcApiService.fetchData<FixedAssetsResponse>({
     url: `/api/hrpsolutions/procuretopay/v2.0/fixedAssets?Company=${companyId}&${filterQuery}`,
   });
-} 
-
-export async function apiAttachments(companyId:string, filterQuery?:string){
-  return BcApiService.fetchData({
-    url:`"api/hrpsolutions/hrmis/v2.0/documentAttachments?Company=${companyId}&${filterQuery}`
-
-  })
 }
 
+//  --------------------------------------- Attachments ---------------------------------------
+
+export async function apiAttachments(
+  companyId: string,
+  filterQuery?: string,
+  method: "GET" | "POST" = "GET",
+  data?: any
+) {
+  if (method == "GET") {
+    return BcApiService.fetchData<any>({
+      url: `/api/hrpsolutions/hrmis/v2.0/documentAttachments?Company=${companyId}&${filterQuery}`,
+      method: method,
+    });
+  } else {
+    return BcApiService.fetchData({
+      url: `/api/hrpsolutions/hrmis/v2.0/documentAttachments?Company=${companyId}&${filterQuery}`,
+      method: method,
+      data: data,
+    });
+  }
+}
+
+//delete attachment
+export async function apiDeleteAttachment(companyId: string, systemId: string) {
+  return BcApiService.fetchData({
+    url: `api/hrpsolutions/hrmis/v2.0/documentAttachments(${systemId})?company=${companyId}`,
+    method: "delete",
+  });
+}
+
+// -------------------------------------- End of Attachments --------------------------------------
+
+export async function apiUnitOfMeasure(
+  companyId: string,
+  filterQuery?: string
+) {
+  return BcApiService.fetchData<UnitOfMeasureResponse>({
+    url: `/api/hrpsolutions/procuretopay/v2.0/unitOfMeasure?Company=${companyId}&${filterQuery}`,
+  });
+}

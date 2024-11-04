@@ -22,11 +22,12 @@ const PaymentRequisition = () => {
             sort: true,
             formatter: noFormatter
         },
-        {
-            dataField: 'documentType',
-            text: 'Document Type',
-            sort: true
-        },
+        // {
+        //     dataField: 'documentType',
+        //     text: 'Document Type',
+        //     sort: true,
+        //     formatter: documentTypeFormatter
+        // },
         {
             dataField: 'documentDate',
             text: 'Document Date',

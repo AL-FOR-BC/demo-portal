@@ -11,6 +11,7 @@ import { ArrowBackIcon, CancelIcon, DeleteIcon, SaveIcon, SendIcon } from "../..
 import ApprovalEntries from "../../common/ApprovalEntry.tsx";
 // import EditAbleLines from "../Lines/LinesEditable.tsx";
 import { GridColDef } from "@mui/x-data-grid";
+import Attachments from "../../common/Attachment.tsx";
 
 
 
@@ -131,6 +132,11 @@ const Header: React.FC<HeaderProps> = (props) => {
                                                             <SendIcon className="label-icon" />
                                                             Send Approval Request
                                                         </Button>
+                                                        <Attachments
+                                                            defaultCompany={companyId}
+                                                            docType={documentType}
+                                                            docNo={requestNo}
+                                                        />
 
                                                         <ApprovalEntries
                                                             defaultCompany={companyId}
@@ -162,7 +168,6 @@ const Header: React.FC<HeaderProps> = (props) => {
                                                         <Button color="danger" type="button" className="btn btn-danger btn-label" onClick={handleCancelApprovalRequest}>
                                                             Cancel Approval Request
                                                             <CancelIcon className="label-icon"
-
                                                             />
                                                         </Button>
 

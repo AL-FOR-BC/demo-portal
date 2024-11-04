@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useAppSelector } from "../../store/hook";
-import { apiBankAccountsApi, apiCurrencyCodes, apiCustomersApi, apiDimensionValue, apiPaymentCategory, apiPaymentSubCategoryApi, apiWorkPlans } from "../../services/CommonServices";
+import { apiBankAccountsApi, apiCurrencyCodes, apiCustomersApi, apiDimensionValue, apiPaymentCategory, apiPaymentSubCategoryApi, apiVendors, apiWorkPlans } from "../../services/CommonServices";
 import { options } from "../../@types/common.dto";
 import { toast } from "react-toastify";
-import Header from "../../Components/ui/Header/Header";
-import {split } from "lodash";
+import { split } from "lodash";
 
 import { apiCreatePaymentRequisition } from "../../services/RequisitionServices";
 import { useNavigate } from "react-router-dom";
+import HeaderMui from "../../Components/ui/Header/HeaderMui";
+import { getErrorMessage } from "../../utils/common";
 
 
 
@@ -39,7 +40,10 @@ function AddPaymentRequisition() {
     const [paymentCategoryOptions, setPaymentCategoryOptions] = useState < { label: string; value: string }[] > ([]);
     const [description, setDescription] = useState < string > ('');
     const [expectedReceiptDate, setExpectedReceiptDate] = useState < Date > (new Date());
-
+    const [budgetCode, setBudgetCode] = useState < string > ('');
+    const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
+    const [selectedVendor, setSelectedVendor] = useState < options[] > ([]);
+    const [vendorOptions, setVendorOptions] = useState < options[] > ([]);
     const handleSubmit = async () => {
         try {
             setIsLoading(true)
@@ -50,12 +54,13 @@ function AddPaymentRequisition() {
             }
             const data = {
                 requisitionedBy: employeeNo,
-                payeeNo: selectedPaymentCategory[0]?.value === 'IMPREST' ? selectedCustomer[0]?.value : '',
+                payeeNo: selectedPaymentCategory[0]?.value === 'IMPREST' ? selectedCustomer[0]?.value : selectedPaymentCategory[0]?.value === 'SUPPLIER' ? selectedVendor[0]?.value : selectedPaymentCategory[0]?.value === 'BANK' ? selectedBankAccount[0]?.value : '',
                 paymentCategory: selectedPaymentCategory[0]?.value,
                 paySubcategory: selectedSubCategory[0]?.value,
                 project: selectedDimension[0]?.value,
                 workPlanNo: split(selectedWorkPlan[0].value, '::')[0],
                 purpose: description,
+                // budgetCode: budgetCode,
                 // locationCode: employeeDepartment,
 
                 currencyCode: selectedCurrency[0]?.value,
@@ -66,19 +71,22 @@ function AddPaymentRequisition() {
             if (res.status == 201) {
                 toast.success('Requisition created successfully')
                 navigate(`/payment-requisition-details/${res.data.systemId}`);
-            } else {
-                toast.error('Error creating requisition')
-            }
+            } 
+            // else {
+            //     toast.error('Error creating requisition')
+            // }
             setIsLoading(false)
         } catch (error) {
-            toast.error(`Error creating requisition:${error}`)
+            toast.error(`Error creating requisition:${getErrorMessage(error)}`)
 
         } finally {
             setIsLoading(false)
         }
     }
 
-    const handleBack = () => { }
+    const handleBack = () => {
+        navigate(-1)
+    }
 
     const fields = [
         // First row of inputs
@@ -86,23 +94,36 @@ function AddPaymentRequisition() {
             { label: 'Requisition No', type: 'text', value: '', disabled: true, id: 'requestNo' },
             { label: 'Requestor No', type: 'text', value: employeeNo, disabled: true, id: 'empNo' },
             { label: 'Requestor Name', type: 'text', value: employeeName, disabled: true, id: 'empName' },
-
             {
-                label: 'Document Date',
-                type: 'date',
-                value: expectedReceiptDate,
-                onChange: (e: Date) => setExpectedReceiptDate(e),
-                id: 'documentDate',
+                label: 'Project Code', type: 'select',
+                value: selectedDimension,
+                disabled: false,
+                id: 'projectCode',
+                options: dimensionValues,
+                onChange: (e: options) => {
+                    setSelectedWorkPlan([])
+                    setBudgetCode('')
+                    setSelectedDimension([{ label: e.label, value: e.value }])
+                }
+
             },
+
+
         ],
 
         [
             {
-                label: 'Department Code', type: 'select',
-                options: dimensionValues,
-                onChange: (e: options) => setSelectedDimension([{ label: e.label, value: e.value }]),
-                id: 'projectCode'
+                label: 'Work Plan',
+                type: 'select',
+                value: selectedWorkPlan,
+                onChange: (e: options) => {
+                    setBudgetCode(workPlansList.filter(plan => plan.no == split(e.value, '::')[0])[0].budgetCode)
+                    setSelectedWorkPlan([{ label: e.label, value: e.value }])
+                },
+                options: workPlans.filter(plan => split(plan.value, "::")[1] == selectedDimension[0]?.value),
+                id: 'workPlan',
             },
+
 
             {
                 label: 'Payment Category',
@@ -126,7 +147,7 @@ function AddPaymentRequisition() {
             },
 
             ...(
-                selectedPaymentCategory[0]?.value === 'IMPREST'
+                selectedPaymentCategory[0]?.value === 'IMPREST' || selectedPaymentCategory[0]?.value === 'PETTY CASH'
                     ? [
                         {
                             label: 'Payee',
@@ -137,7 +158,7 @@ function AddPaymentRequisition() {
                             id: 'payee',
                         }
                     ]
-                    : selectedPaymentCategory[0]?.value === 'BANK'
+                    : selectedPaymentCategory[0]?.value === 'BANK' || selectedPaymentCategory[0]?.value === 'BANK TRANSFER'
                         ? [
                             {
                                 label: 'Payee',
@@ -148,21 +169,33 @@ function AddPaymentRequisition() {
                                 id: 'bankAccount',
                             }
                         ]
-                        : []
+                        : selectedPaymentCategory[0]?.value === 'SUPPLIER' || selectedPaymentCategory[0]?.value === 'SUPPLIER PAYMENT'
+
+                            ? [
+                                {
+                                    label: 'Payee',
+                                    type: 'select',
+                                    value: selectedVendor,
+                                    options: vendorOptions,
+                                    onChange: (e: options) => setSelectedVendor([{ label: e.label, value: e.value }]),
+                                    id: 'vendor',
+                                }
+                            ]
+                            : []
             )
 
         ],
         // Third row of inputs
         [
-
             {
-                label: 'Work Plan',
-                type: 'select',
-                value: selectedWorkPlan,
-                onChange: (e: options) => setSelectedWorkPlan([{ label: e.label, value: e.value }]),
-                options: workPlans.filter(plan => split(plan.value, "::")[1] == selectedDimension[0]?.value),
-                id: 'workPlan',
+                label: 'Budget Code',
+                type: 'text',
+                value: budgetCode,
+                disabled: true,
+                id: 'budgetCode'
             },
+
+
             {
                 label: 'Currency',
                 type: 'select',
@@ -172,6 +205,13 @@ function AddPaymentRequisition() {
                 id: 'currency',
             },
             {
+                label: 'Document Date',
+                type: 'date',
+                value: expectedReceiptDate,
+                onChange: (e: Date) => setExpectedReceiptDate(e),
+                id: 'documentDate',
+            },
+            {
                 label: 'Purpose',
                 type: 'textarea',
                 value: description,
@@ -179,6 +219,8 @@ function AddPaymentRequisition() {
                 id: 'purpose',
                 rows: 2,
             },
+
+
 
 
         ],
@@ -197,6 +239,7 @@ function AddPaymentRequisition() {
 
                 const resWorkPlans = await apiWorkPlans(companyId);
                 setWorkPlans(resWorkPlans.data.value.map(plan => ({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })));
+                setWorkPlansList(resWorkPlans.data.value)
 
 
                 const resPaymentSubCategory = await apiPaymentSubCategoryApi(companyId);
@@ -239,6 +282,13 @@ function AddPaymentRequisition() {
                 });
                 setBankAccountOptions(bankAccountOptions)
 
+                const resVendors = await apiVendors(companyId);
+                let vendorOptions: options[] = [];
+                resVendors.data.value.map((e) => {
+                    vendorOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
+                });
+                setVendorOptions(vendorOptions)
+
 
 
 
@@ -255,7 +305,7 @@ function AddPaymentRequisition() {
     }, [])
 
     return (
-        <Header
+        <HeaderMui
             title="Requisitions"
             subtitle="Payment Requisitions"
             breadcrumbItem="Add Payment Requisitions"

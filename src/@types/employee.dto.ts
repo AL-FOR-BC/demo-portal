@@ -151,4 +151,14 @@ export interface Employee {
     "@odata.context": string;
     value: Employee[];
   }
+  export interface UnitOfMeasure {
+    "@odata.etag": string;
+    id: string;
+    code: string;
+    description: string;
+}
 
+export interface UnitOfMeasureResponse {
+  "@odata.context": string;
+  value: UnitOfMeasure[];
+}

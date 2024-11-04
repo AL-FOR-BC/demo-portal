@@ -1,253 +1,229 @@
-import React, { useState, useEffect } from 'react';
+import { useState} from 'react';
 import {
-    Col,
-    Button,
-    Row,
-    Modal,
-} from "reactstrap";
-
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  styled,
+  TextField,
+  InputAdornment
+} from '@mui/material';
+import { Button, Col, Row } from 'reactstrap';
+import SearchIcon from '@mui/icons-material/Search';
 import { approvalEntryProps } from '../../@types/approval.dto';
 import { apiApprovalEntries } from '../../services/CommonServices';
-import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
 import LoadingOverlayWrapper from "react-loading-overlay-ts";
 import RiseLoader from 'react-spinners/RiseLoader';
-
-// import BootstrapTable from 'react-bootstrap-table-next';
-// import paginationFactory from 'react-bootstrap-table2-paginator';
-// import filterFactory from 'react-bootstrap-table2-filter';
-
-import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-import 'react-bootstrap-table2-toolkit/dist/react-bootstrap-table2-toolkit.min.css';
-import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css';
 import { formatDateTime } from '../../utils/common';
 import { HistoryIcon } from './icons/icons';
 
-// import "flatpickr/dist/themes/material_blue.css";
+// Styled components
+const StyledDialogTitle = styled(DialogTitle)(() => ({
+  padding: 0,
+  '& .modal-header': {
+    padding: '1rem',
+    borderBottom: '1px solid #eff2f7',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    position: 'relative',
+    '& .modal-title': {
+      margin: 0,
+      lineHeight: 1.5,
+      fontSize: '14px',
+      fontWeight: 500,
+      fontFamily: 'inherit',
+      color: '#495057',
+    },
+    '& .close': {
+      position: 'absolute',
+      right: '1rem',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      padding: '0.5rem',
+      background: 'transparent',
+      border: 'none',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1,
+      '& span': {
+        display: 'block',
+        color: '#000',
+        fontSize: '24px',
+        fontWeight: 'bold',
+        lineHeight: 1,
+        opacity: 1,
+        textShadow: 'none',
+        '&:hover': {
+          opacity: 0.7
+        }
+      }
+    }
+  }
+}));
 
-// import paginationFactory from 'react-bootstrap-table2-paginator';
+const StyledTableCell = styled(TableCell)({
+  fontSize: 'inherit',
+  fontFamily: 'inherit',
+  padding: '0.5rem',
+});
 
-// import LoadingOverlayWrapper from "react-loading-overlay-ts";
-
-
-
-
-
+interface ApprovalEntry {
+  entryNo: number;
+  documentNo: string;
+  status: string;
+  approverID: string;
+  lastDateTimeModified: string;
+}
 
 const ApprovalEntries = ({
-    defaultCompany,
-    docType,
-    docNo
+  defaultCompany,
+  docType,
+  docNo
 }: approvalEntryProps) => {
+  const [isModalLoading, setIsModalLoading] = useState(false);
+  const [approvalEntries, setApprovalEntries] = useState<ApprovalEntry[]>([]);
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
-    const [isModalLoading, setIsModalLoading] = useState(false);
-    const [approvalEntries, setApprovalEntries] = useState([]);
-    const [largeModal, setLargeModal] = useState(false);
-    const { SearchBar } = Search;
-
-    const removeBodyCss = () => {
-        document.body.classList.add("no_padding");
+  const getApprovalEntries = async () => {
+    try {
+      setIsModalLoading(true);
+      const filter = `&$filter=DocumentType eq '${docType}' and DocumentNo eq '${docNo}'`;
+      const response = await apiApprovalEntries(defaultCompany ?? '', filter);
+      if (response.status === 200) {
+        setApprovalEntries(response.data.value);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsModalLoading(false);
     }
+  };
 
-    const handleClickApprovalEntries = async () => {
-        toggleLargeModal();
-        await getApprovalEntries();
-    }
+  const handleClickApprovalEntries = async () => {
+    setOpen(true);
+    await getApprovalEntries();
+  };
 
-    const toggleLargeModal = () => {
-        setLargeModal(!largeModal);
-        removeBodyCss();
-    }
-
-    const approvalColumns = [
-        {
-            dataField: 'documentNo',
-            text: 'Document No',
-            sort: true
-        },
-        {
-            dataField: 'status',
-            text: 'Status',
-            sort: true
-        },
-        {
-            dataField: 'approverID',
-            text: 'Approver ID',
-            sort: true
-        },
-        {
-            dataField: 'lastDateTimeModified',
-            text: 'Last Modified',
-            sort: true,
-            formatter: dateformat
-        }];
-
-    // const approvalsDefaultSorted = [{
-    //     dataField: 'LastDateTimeModified',
-    //     order: 'asc'
-    // }];
-
-    function dateformat(cellContent) {
-        return (
-            formatDateTime(cellContent)
-        )
-    }
-
-    const getApprovalEntries = async () => {
-        try {
-            setIsModalLoading(true);
-            const filter = `&$filter=DocumentType eq '${docType}' and DocumentNo eq '${docNo}'`;
-            const response = await apiApprovalEntries(defaultCompany ?? '', filter);
-            if (response.status === 200) {
-                setApprovalEntries(response.data.value);
-                console.log(response.data.value);
-                setIsModalLoading(false);
-                return response.data;
-
-            }
-        } catch (err) {
-            // toast.error(helper.getErrorMessage(err.response.data.error.message));
-            setIsModalLoading(false);
-        } finally {
-            console.log(approvalEntries);
-
-            setIsModalLoading(false);
-        }
-        // toast.error(helper.getErrorMessage(err.response.data.error.message));
-
-    }
-
-
-
-    useEffect(() => {
-        const getApprovalEntries = async () => {
-
-            try {
-                setIsModalLoading(true);
-                const filter = `&$filter=DocumentType eq '${docType}' and DocumentNo eq '${docNo}'`;
-                const response = await apiApprovalEntries(defaultCompany ?? '', filter);
-                if (response.status === 200) {
-                    setApprovalEntries(response.data.value);
-
-                    setIsModalLoading(false);
-
-
-                }
-            } catch (err) {
-                // toast.error(helper.getErrorMessage(err.response.data.error.message));
-                setIsModalLoading(false);
-            } finally {
-                console.log(approvalEntries);
-
-                setIsModalLoading(false);
-            }
-            // toast.error(helper.getErrorMessage(err.response.data.error.message));
-
-        }
-        getApprovalEntries();
-    }, []);
-
-    return (
-        <React.Fragment>
-            <Modal isOpen={largeModal} toggle={() => { toggleLargeModal(); }} size="xl" centered backdrop={'static'}  >
-                <div className="modal-header">
-                    <h6 className="modal-title mt-0" id="myModalLabel">{`Approval Entries`}</h6>
-                    <button type="button" onClick={() => { setLargeModal(false); }} className="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div className="modal-body">
-                    <LoadingOverlayWrapper
-                        active={isModalLoading}
-                        spinner={<RiseLoader />}
-                        text='Please wait...'
-                    >
-                        <ToolkitProvider
-                            keyField="entryNo"
-                            // data={[
-                            //     {
-                            //         entryNo: 1,
-                            //         DocumentNo: "0000001",
-                            //         Status: "Approved",
-                            //         ApproverID: "EMP001",
-                            //         LastDateTimeModified: "2021-09-01T08:00:00"
-                            //     },
-                            //     {
-                            //         entryNo: 2,
-                            //         DocumentNo: "0000002",
-                            //         Status: "Rejected",
-                            //         ApproverID: "EMP002",
-                            //         LastDateTimeModified: "2021-09-01T09:00:00"
-                            //     }
-                            // ]}
-                            data={
-                                approvalEntries
-                            }
-                            columns={approvalColumns}
-                            search
-                        >
-                            {toolkitProps => (
-                                <>
-                                    <Row className="mb-2">
-                                        <Col sm="4">
-                                            <div className="search-box me-2 mb-2 d-inline-block">
-                                                <div className="position-relative">
-                                                    <SearchBar {...toolkitProps.searchProps} />
-                                                    <i className="bx bx-search-alt search-icon" />
-                                                </div>
-                                            </div>
-                                        </Col>
-                                        <Col sm="8">
-                                        </Col>
-                                    </Row>
-                                    <Row>
-                                        <Col sm="12">
-                                            {/* <BootstrapTable
-                                                keyField='entryNo'
-                                                data={
-                                                    [
-                                                        {
-                                                            entryNo: 1,
-                                                            DocumentNo: "0000001",
-                                                            Status: "Approved",
-                                                            ApproverID: "EMP001",
-                                                            LastDateTimeModified: "2021-09-01T08:00:00"
-                                                        },
-                                                        {
-                                                            entryNo: 2,
-                                                            DocumentNo: "0000002",
-                                                            Status: "Rejected",
-                                                            ApproverID: "EMP002",
-                                                            LastDateTimeModified: "2021-09-01T09:00:00"
-                                                        }
-                                                    ]
-                                                }
-                                                columns={approvalColumns} 
-                                                striped
-                                                hover
-                                                bordered={false}
-                                                noDataIndication="No Approval Entries"
-                                                filter={filterFactory()}
-                                                pagination={paginationFactory({ sizePerPage: 10 })}
-                                                // defaultSorted={approvalsDefaultSorted}
-                                                classes={"table-sm align-middle table-striped"}
-                                                {...toolkitProps.baseProps}
-                                            /> */}
-                                        </Col>
-                                    </Row>
-                                </>
-                            )}
-                        </ToolkitProvider>
-                    </LoadingOverlayWrapper>
-                </div>
-                <div className="modal-footer">
-                </div>
-            </Modal>
-            <Button color="warning" type="button" className="btn btn-warning btn-label waves-effect waves-light" onClick={handleClickApprovalEntries}>
-
-                <HistoryIcon className="label-icon" />
-                Approval History
-            </Button>
-        </React.Fragment>
+  const filteredEntries = approvalEntries.filter(entry => 
+    Object.values(entry).some(value => 
+      value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
-}
-export default ApprovalEntries
+  );
+
+  return (
+    <>
+      <Button 
+        color="warning" 
+        type="button" 
+        className="btn btn-warning btn-label waves-effect waves-light" 
+        onClick={handleClickApprovalEntries}
+      >
+        <HistoryIcon className="label-icon" />
+        Approval History
+      </Button>
+
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          style: {
+            fontFamily: 'inherit'
+          }
+        }}
+      >
+        <StyledDialogTitle>
+          <div className="modal-header">
+            <h6 className="modal-title mt-0" id="myModalLabel">Approval Entries</h6>
+            <button 
+              type="button" 
+              onClick={() => setOpen(false)} 
+              className="close" 
+              data-dismiss="modal" 
+              aria-label="Close"
+            >
+              <span aria-hidden="true" style={{
+                display: 'inline-block',
+                width: '20px',
+                height: '20px',
+                color: '#000',
+                fontSize: '24px',
+                fontWeight: 'bold',
+                lineHeight: '20px',
+                textAlign: 'center'
+              }}>×</span>
+            </button>
+          </div>
+        </StyledDialogTitle>
+        <DialogContent>
+          <LoadingOverlayWrapper
+            active={isModalLoading}
+            spinner={<RiseLoader />}
+            text='Please wait...'
+          >
+            <Row className="mb-2">
+              <Col sm="4">
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Col>
+            </Row>
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell>Document No</StyledTableCell>
+                    <StyledTableCell>Status</StyledTableCell>
+                    <StyledTableCell>Approver ID</StyledTableCell>
+                    <StyledTableCell>Last Modified</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredEntries.map((entry, index) => (
+                    <TableRow key={entry.entryNo || index}>
+                      <StyledTableCell>{entry.documentNo}</StyledTableCell>
+                      <StyledTableCell>{entry.status}</StyledTableCell>
+                      <StyledTableCell>{entry.approverID}</StyledTableCell>
+                      <StyledTableCell>{formatDateTime(entry.lastDateTimeModified)}</StyledTableCell>
+                    </TableRow>
+                  ))}
+                  {filteredEntries.length === 0 && (
+                    <TableRow>
+                      <StyledTableCell colSpan={4} align="center">
+                        No Approval Entries
+                      </StyledTableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </LoadingOverlayWrapper>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+export default ApprovalEntries;

@@ -2,11 +2,11 @@ import React from "react";
 import { RiseLoader } from "react-spinners";
 import LoadingOverlayWrapper from "react-loading-overlay-ts";
 import {
-//   Box,
-  Container,
-  Alert as MuiAlert,
-  Card,
-  CardContent,
+    //   Box,
+    Container,
+    Alert as MuiAlert,
+    Card,
+    CardContent,
 } from "@mui/material";
 import Select from 'react-select';
 import { GridColDef } from "@mui/x-data-grid";
@@ -14,9 +14,11 @@ import BreadCrumbs from "../../BreadCrumbs";
 // import ApprovalEntries from "../../common/ApprovalEntry";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
-import { ArrowBackIcon, DeleteIcon, SaveIcon, SendIcon } from "../../common/icons/icons";
+import { ArrowBackIcon, CancelIcon, DeleteIcon, SaveIcon, SendIcon } from "../../common/icons/icons";
 import classNames from "classnames";
 import { Button, Row, Col, Collapse, Input, Label } from "reactstrap";
+import Attachments from "../../common/Attachment";
+import ApprovalEntries from "../../common/ApprovalEntry";
 
 interface HeaderMuiProps {
     title: string;
@@ -69,19 +71,19 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
         pageType,
         handleSendApprovalRequest,
         handleDeletePurchaseRequisition,
-        // handleCancelApprovalRequest,
+        handleCancelApprovalRequest,
         lines,
         status,
-        // companyId,
-        // documentType,
-        // requestNo,
+        companyId,
+        documentType,
+        requestNo,
         editableLines,
     } = props;
 
     return (
         <LoadingOverlayWrapper active={isLoading} spinner={<RiseLoader />} text='Please wait...'>
             <div className="page-content">
-                <Container maxWidth={false}>
+                <Container maxWidth={false} >
                     <BreadCrumbs title={title} subTitle={subtitle} breadcrumbItem={breadcrumbItem} />
 
                     {pageType === 'add' && (
@@ -118,11 +120,18 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                             <SendIcon className="label-icon" />
                                             Send Approval Request
                                         </Button>
-                                        {/* <ApprovalEntries
+                                        <Attachments
                                             defaultCompany={companyId}
                                             docType={documentType}
                                             docNo={requestNo}
-                                        /> */}
+                                            status={status}
+                                            tableId={50104}
+                                        />
+                                        <ApprovalEntries
+                                            defaultCompany={companyId}
+                                            docType={documentType}
+                                            docNo={requestNo}
+                                        />
                                         <Button color="danger" className="btn btn-label" onClick={handleDeletePurchaseRequisition}>
                                             <DeleteIcon className="label-icon" style={{ padding: "8px" }} />
                                             Delete Request
@@ -130,7 +139,66 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                     </div>
                                 </Row>
                             )}
-                            {/* ... Other status conditions remain the same ... */}
+                            {status === "Pending Approval" && (
+                                <Row className='justify-content-center mb-4'>
+                                    <div className="d-flex flex-wrap gap-2">
+                                        <Button color="secondary" className="btn  btn-label" onClick={handleBack}>
+                                            <i className="label-icon">
+                                                <ArrowBackIcon className="label-icon" />
+                                            </i>
+
+                                            Back
+                                        </Button>
+                                        <Button color="danger" type="button" className="btn btn-danger btn-label" onClick={handleCancelApprovalRequest}>
+                                            Cancel Approval Request
+                                            <CancelIcon className="label-icon"
+
+                                            />
+                                        </Button>
+                                        <Attachments
+                                            defaultCompany={companyId}
+                                            docType={documentType}
+                                            docNo={requestNo}
+                                            status={status}
+                                            tableId={50104}
+                                        />
+
+                                        <ApprovalEntries
+                                            defaultCompany={companyId}
+                                            docType={documentType}
+                                            docNo={requestNo}
+                                        />
+                                    </div>
+                                </Row>
+                            )}
+                            {status === "Approved" && (
+                                <Row className='justify-content-center mb-4'>
+                                    <div className="d-flex flex-wrap gap-2">
+                                        <Button color="secondary" className="btn  btn-label" onClick={handleBack}>
+                                            <i className="label-icon">
+                                                <ArrowBackIcon className="label-icon" />
+                                            </i>
+
+                                            Back
+                                        </Button>
+
+
+                                        <Attachments
+                                            defaultCompany={companyId}
+                                            docType={documentType}
+                                            docNo={requestNo}
+                                            status={status}
+                                            tableId={50104}
+                                        />
+
+                                        <ApprovalEntries
+                                            defaultCompany={companyId}
+                                            docType={documentType}
+                                            docNo={requestNo}
+                                        />
+                                    </div>
+                                </Row>
+                            )}
                         </>
                     )}
 
@@ -162,7 +230,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                                 General
                                             </button>
                                         </h2>
-                                        <Collapse isOpen={generalTab} className="accordion-collapse">
+                                        <Collapse isOpen={generalTab} className="accordion-collapse" style={{ paddingBottom: 40 }}>
                                             <div className="accordion-body">
                                                 <Row>
                                                     {fields.map((field, index) => (
@@ -216,10 +284,10 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                                                                 }),
                                                                                 option: (baseStyles, state) => ({
                                                                                     ...baseStyles,
-                                                                                    backgroundColor: state.isSelected 
-                                                                                        ? '#556ee6' 
-                                                                                        : state.isFocused 
-                                                                                            ? '#f8f9fa' 
+                                                                                    backgroundColor: state.isSelected
+                                                                                        ? '#556ee6'
+                                                                                        : state.isFocused
+                                                                                            ? '#f8f9fa'
                                                                                             : 'white',
                                                                                     color: state.isSelected ? 'white' : '#495057',
                                                                                     cursor: 'pointer',
@@ -268,7 +336,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                                                             rows={rows}
                                                                             id={id}
                                                                             onBlur={onBlur}
-                                                                            
+
                                                                         />
                                                                     )}
                                                                 </Col>

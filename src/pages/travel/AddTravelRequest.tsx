@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { options } from '../../@types/common.dto';
-import Header from '../../Components/ui/Header/Header';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../store/hook';
 import { apiBankAccountsApi, apiCurrencyCodes, apiCustomersApi, apiDimensionValue, apiEmployees, apiPaymentCategory, apiPaymentSubCategoryApi, apiWorkPlans } from '../../services/CommonServices';
@@ -8,6 +7,7 @@ import { split } from 'lodash';
 import { toast } from 'react-toastify';
 import { apiCreateTravelRequests } from '../../services/TravelRequestsService';
 import { formatDate } from '../../utils/common';
+import HeaderMui from '../../Components/ui/Header/HeaderMui';
 
 function AddTravelRequest() {
     const { companyId } = useAppSelector(state => state.auth.session)
@@ -297,7 +297,7 @@ function AddTravelRequest() {
 
 
     return (
-        <Header
+        <HeaderMui
             title="Add Travel Request"
             subtitle="Travel Request"
             breadcrumbItem="Travel Request"

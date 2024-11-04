@@ -1,10 +1,10 @@
 import React from "react";
 import { BiSave } from "react-icons/bi";
-import { MdArrowBack, MdArrowForward, MdDelete, MdEdit, MdHistory, MdSearch, MdSend } from "react-icons/md";
+import { MdArrowBack, MdArrowForward, MdDelete, MdEdit, MdHistory, MdOutlineLabel, MdSearch, MdSend } from "react-icons/md";
 import { TbPlus, TbX } from "react-icons/tb";
 import { FaBusAlt } from "react-icons/fa";
 import Icon from '@mdi/react';
-import { mdiBadgeAccountHorizontal, mdiBagSuitcase, mdiCartPlus, mdiFormatListCheckbox, mdiLoginVariant, mdiMicrosoftAzure, mdiReceipt, mdiTeaOutline } from '@mdi/js';
+import { mdiBadgeAccountHorizontal, mdiBagSuitcase, mdiCartPlus, mdiFileQuestion, mdiFormatListCheckbox, mdiLoginVariant, mdiMicrosoftAzure, mdiReceipt, mdiTeaOutline } from '@mdi/js';
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 
@@ -100,3 +100,22 @@ export const LoginVariantIcon = () =>
 
 export const EyeIcon = (props: React.SVGProps<SVGAElement>) => <AiOutlineEye {...props} />;
 export const EyeInvisibleIcon = (props: React.SVGProps<SVGAElement>) => <AiOutlineEyeInvisible {...props} />;
+
+export const FileQuestionIcon = () =>
+    <Icon
+        path={mdiFileQuestion}
+        size={1}
+        style={{
+            width: '120px',
+            height: '120px',
+            color: 'var(--bs-warning)'
+        }}
+        className="display-4"
+
+    />
+export const LabelIcon = (props: React.SVGProps<SVGAElement>) => <MdOutlineLabel
+    style={{
+        padding: "6px"
+    }}
+    {...props}
+/>;

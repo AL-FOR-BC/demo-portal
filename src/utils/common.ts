@@ -1,25 +1,24 @@
-import { split, upperCase } from "lodash";
+import {  upperCase } from "lodash";
 import {
   apiCancelApproval,
   apiSendForApproval,
 } from "../services/ActionServices";
 import { toast } from "react-toastify";
 
-
 export function lowercaseOrganizationEmail(email: string): string {
-    const organizationDomains = ['@hrpsolutions.com', '@reachoutmbuya.org'];
-    
-    const matchedDomain = organizationDomains.find(domain => 
-        email.toLowerCase().endsWith(domain.toLowerCase())
-    );
+  const organizationDomains = ["@hrpsolutions.com", "@reachoutmbuya.org"];
 
-    if (matchedDomain) {
-        const [localPart, domain] = email.split('@');
-        
-        return `${localPart.toLowerCase()}@${domain}`;
-    }
-    
-    return email;
+  const matchedDomain = organizationDomains.find((domain) =>
+    email.toLowerCase().endsWith(domain.toLowerCase())
+  );
+
+  if (matchedDomain) {
+    const [localPart, domain] = email.split("@");
+
+    return `${localPart.toLowerCase()}@${domain}`;
+  }
+
+  return email;
 }
 
 export const emailUpperCase = (mail: string) => {
@@ -129,7 +128,7 @@ export const cancelApprovalButton = async ({
   try {
     const response = await apiCancelApproval(companyId, documentData, action);
     if (response.status === 204) {
-      toast.success(`Document ${documentData} approval cancelled`);
+      toast.success(`Document ${data.documentNo} approval cancelled`);
       populateDoc();
       return response.data;
     }
@@ -168,23 +167,95 @@ export const formatDateTime = (date) => {
   return [day, time].join(" ");
 };
 
+// export const getErrorMessage = (error:string) => {
+//   return(split(error, 'CorrelationId:')[0]);
+// }
 
-
-
-export const getErrorMessage = (error:string) => {
-  return(split(error, 'CorrelationId:')[0]);
+// interface ErrorResponse {
+//   code?: string;
+//   message?: string;
+// }
+interface AxiosErrorResponse {
+  message?: string;
+  name?: string;
+  code?: string;
+  status?: number;
+  response?: {
+    data?: {
+      error?: {
+        code?: string;
+        message?: string;
+      };
+    };
+  };
 }
+
+export const getErrorMessage = (error: any): string => {
+  try {
+    // If it's an Axios error
+    if (error?.name === "AxiosError") {
+      const axiosError = error as AxiosErrorResponse;
+
+      // Check for Business Central specific error message
+      if (axiosError.response?.data?.error?.message) {
+        return axiosError.response.data.error.message
+          .split("CorrelationId:")[0]
+          .trim()
+          .replace(/\.*$/, "");
+      }
+
+      // Handle different HTTP status codes
+      switch (axiosError.status) {
+        case 400:
+          return "Invalid request. Please check your input and try again.";
+        case 401:
+          return "Unauthorized. Please log in again.";
+        case 403:
+          return "You do not have permission to perform this action.";
+        case 404:
+          return "The requested resource was not found.";
+        case 500:
+          return "An internal server error occurred. Please try again later.";
+        default:
+          return axiosError.message || "An unexpected error occurred";
+      }
+    }
+
+    // If error is a string
+    if (typeof error === "string") {
+      return error.split("CorrelationId:")[0].trim().replace(/\.*$/, "");
+    }
+
+    // If error is an object with message property
+    if (typeof error === "object" && error !== null && "message" in error) {
+      return error.message;
+    }
+
+    return "An unexpected error occurred";
+  } catch (e) {
+    console.error("Error parsing error message:", e);
+    return "An unexpected error occurred";
+  }
+};
+
+// Helper function to check if a field is required in the error message
+// const isRequiredFieldError = (message: string): boolean => {
+//   return (
+//     message.toLowerCase().includes("must have a value") ||
+//     message.toLowerCase().includes("cannot be zero or empty")
+//   );
+// };
 
 function isErrorResponse(error: unknown): error is ErrorResponse {
   return (
-    typeof error === 'object' &&
+    typeof error === "object" &&
     error !== null &&
-    'response' in error &&
-    typeof error.response === 'object' &&
+    "response" in error &&
+    typeof error.response === "object" &&
     error.response !== null &&
-    'data' in error.response &&
-    typeof error.response.data === 'object' &&
+    "data" in error.response &&
+    typeof error.response.data === "object" &&
     error.response.data !== null &&
-    'error' in error.response.data
+    "error" in error.response.data
   );
 }

@@ -1,6 +1,15 @@
 @import "../assets/scss/theme.scss";
 @import "./animation.scss";
 
+.swal-on-top {
+  z-index: 10000 !important;
+}
+
+/* Optional: style the backdrop to be above the modal but below the alert */
+.swal2-backdrop-show {
+  z-index: 9999 !important;
+}
+
 // .radio-toolbar {
 //   label {
 //     display: inline-block;

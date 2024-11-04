@@ -1,6 +1,5 @@
 import React from 'react'
 import { useNavigate, useParams } from "react-router-dom";
-import Header from "../../Components/ui/Header/Header";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { useEffect, useState } from "react";
 import { split } from "lodash";
@@ -12,9 +11,10 @@ import Lines from "../../Components/ui/Lines/Lines";
 import { cancelApprovalButton } from "../../utils/common";
 import { ActionFormatterLines } from "../../Components/ui/Table/TableUtils";
 import Swal from "sweetalert2";
-import { closeModalPurchaseReq, editRequisitionLine, modelLoadingPurchaseReq, openModalPurchaseReq } from "../../store/slices/Requisitions";
+import { closeModalPurchaseReq, editRequisitionLine, modelLoadingPurchaseReq, openModalRequisition } from "../../store/slices/Requisitions";
 import { PaymentRequisition, PaymentRequisitionLineType, PaymentRequistionLinesSubmitData } from '../../@types/paymentReq.dto';
 import { handleSendForApproval } from '../../actions/actions';
+import HeaderMui from '../../Components/ui/Header/HeaderMui';
 
 
 function PaymentRequisitionDetail() {
@@ -570,7 +570,7 @@ function PaymentRequisitionDetail() {
   }
 
   const handleEditLine = async (row: any) => {
-    dispatch(openModalPurchaseReq())
+    dispatch(openModalRequisition())
     dispatch(modelLoadingPurchaseReq(true))
     dispatch(editRequisitionLine(true))
     console.log("Row data new", row)
@@ -664,7 +664,8 @@ function PaymentRequisitionDetail() {
   }
   return (
     <>
-      <Header title="Payment Requisition Detail"
+      <HeaderMui 
+      title="Payment Requisition Detail"
         subtitle='Purchase Requisition Detail'
         breadcrumbItem='Payment Requisition Detail'
         documentType='Payment Requisition'

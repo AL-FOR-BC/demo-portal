@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { split } from "lodash";
 import { options } from "../../@types/common.dto";
 import { apiCreatePurchaseRequisitionLines, apiPurchaseRequisition, apiPurchaseRequisitionDetail, apiPurchaseRequisitionLines, apiUpdatePurchaseRequisition } from "../../services/RequisitionServices";
-import { apiCurrencyCodes, apiDimensionValue, apiGLAccountsApi, apiItem, apiLocation, apiVendors, apiWorkPlanLines, apiWorkPlans } from "../../services/CommonServices";
+import { apiCurrencyCodes, apiDimensionValue, apiGLAccountsApi, apiItem, apiLocation, apiUnitOfMeasure, apiVendors, apiWorkPlanLines, apiWorkPlans } from "../../services/CommonServices";
 import { toast } from "react-toastify";
 import Lines from "../../Components/ui/Lines/Lines";
 import { PurchaseRequisitionLinesSubmitData, PurchaseRequisitionLineType } from "../../@types/purchaseReq.dto";
@@ -25,12 +25,13 @@ function PurchaseRequisitionDetail() {
     const { companyId } = useAppSelector(state => state.auth.session)
     const { employeeNo, employeeName } = useAppSelector(state => state.auth.user)
     const [isLoading, setIsLoading] = useState(false);
+    const documentType = 'Purchase Requisition';
     const [selectedCurrency, setSelectedCurrency] = useState < options[] > ([]);
     const [selectedWorkPlan, setSelectedWorkPlan] = useState < options[] > ([]);
     const [selectedLocation, setSelectedLocation] = useState < options[] > ([]);
     const [selectedDimension, setSelectedDimension] = useState < options[] > ([]);
-
-
+    const [unitOfMeasure, setUnitOfMeasure] = useState < options[] > ([]);
+    const [selectedUnitOfMeasure, setSelectedUnitOfMeasure] = useState < options[] > ([]);
     const [currencyOptions, setCurrencyOptions] = useState < { label: string; value: string }[] > ([]);
     const [workPlans, setWorkPlans] = useState < { label: string; value: string }[] > ([]);
     const [locationOptions, setLocationOptions] = useState < { label: string; value: string }[] > ([]);
@@ -223,8 +224,6 @@ function PurchaseRequisitionDetail() {
 
 
                 if (data.no) {
-                    console.log("Data", data)
-                    console.log("workplano", data.workPlanNo)
                     setpurchaseRequisitionLines(data.purchaseRequisitionLines)
                     setSelectedCurrency(data.currencyCode ? [{ label: data.currencyCode, value: data.currencyCode }] : [{ label: 'UGX', value: '' }]);
                     if (data.workPlanNo !== '') {
@@ -293,6 +292,10 @@ function PurchaseRequisitionDetail() {
                     glAccountsOptions.push({ label: e.name, value: e.no })
                 });
                 setGlAccounts(glAccountsOptions)
+
+                const unitOfMeasureRes = await apiUnitOfMeasure(companyId)
+                const unitOfMeasureOptions = unitOfMeasureRes.data.value.map(e => ({ label: `${e.code}::${e.description}`, value: e.code }))
+                setUnitOfMeasure(unitOfMeasureOptions)
 
 
                 // const vendors = await apiVendors(companyId);
@@ -400,7 +403,7 @@ function PurchaseRequisitionDetail() {
 
         },
         {
-            dataField: 'description3',
+            dataField: 'description2',
             text: 'Activity Description',
             sort: true,
 
@@ -510,6 +513,11 @@ function PurchaseRequisitionDetail() {
                 }
             },
             {
+                label: "Unit of Measure", type: "select", value: selectedUnitOfMeasure,
+                options: unitOfMeasure,
+                onChange: (e: options) => setSelectedUnitOfMeasure([{ label: e.label, value: e.value }])
+            },
+            {
                 label: "Direct Unit Cost", type: "number",
                 value: directUnitCost.toString(),
                 onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -546,6 +554,7 @@ function PurchaseRequisitionDetail() {
         setQuantity(0)
         setDirectUnitCost(0)
         setDescription("")
+        setSelectedUnitOfMeasure([])
 
     }
 
@@ -655,6 +664,12 @@ function PurchaseRequisitionDetail() {
         const workPlanEntryNo = workPlanLines.filter(e => e.value === row.workPlanEntryNo.toString());
         workPlanEntryNo.length > 0 ? setSelectedWorkPlanLine([{ label: workPlanEntryNo[0].label, value: workPlanEntryNo[0].value }]) : setSelectedWorkPlanLine([{ label: '', value: '' }]);
 
+        const unitOfMeasureRes = await apiUnitOfMeasure(companyId)
+        const unitOfMeasureOptions = unitOfMeasureRes.data.value.map(e => ({ label: `${e.code}::${e.description}`, value: e.code }))
+        setUnitOfMeasure(unitOfMeasureOptions)
+        const unitOfMeasureData = unitOfMeasureOptions.filter(e => e.value === row.unitOfMeasure);
+        unitOfMeasureData.length > 0 ? setSelectedUnitOfMeasure([{ label: unitOfMeasureData[0].label, value: unitOfMeasureData[0].value }]) : setSelectedUnitOfMeasure([{ label: '', value: '' }]);
+
         setAccountType([{ label: decodeValue(row.accountType), value: decodeValue(row.accountType) }])
         setQuantity(row.quantity);
         setDirectUnitCost(row.directUnitCost);
@@ -667,8 +682,8 @@ function PurchaseRequisitionDetail() {
     }
 
     const handleSubmitUpdatedLine = async () => {
-        if (selectedAccountNo[0]?.value == '' || selectedWorkPlanLine[0]?.value == '' || quantity == 0 || directUnitCost == 0 || description == '') {
-            const missingField = selectedAccountNo[0]?.value == '' ? 'Account No' : selectedWorkPlanLine[0]?.value == '' ? 'Work Entry No' : quantity == 0 ? 'Quantity' : directUnitCost == 0 ? 'Direct Unit Cost' : 'Description';
+        if (selectedAccountNo[0]?.value == '' || selectedWorkPlanLine[0]?.value == '' || quantity == 0 || directUnitCost == 0 || description == '' || selectedUnitOfMeasure[0]?.value == '') {
+            const missingField = selectedAccountNo[0]?.value == '' ? 'Account No' : selectedWorkPlanLine[0]?.value == '' ? 'Work Entry No' : quantity == 0 ? 'Quantity' : directUnitCost == 0 ? 'Direct Unit Cost' : 'Description' || selectedUnitOfMeasure[0]?.value == '' ? 'Unit of Measure' : '';
             toast.error(`Please fill in ${missingField}`)
             return;
         }
@@ -678,7 +693,7 @@ function PurchaseRequisitionDetail() {
                 description2: description,
                 quantity: quantity,
                 directUnitCost: directUnitCost,
-
+                unitOfMeasure: selectedUnitOfMeasure[0]?.value
             }
             const res = await apiPurchaseRequisitionLines(companyId, "PATCH", data, purchaseRequisitionLines[0].systemId, purchaseRequisitionLines[0]["@odata.etag"]);
             if (res.status == 200) {
@@ -699,7 +714,7 @@ function PurchaseRequisitionDetail() {
             documentNo: requestNo
         }
         try {
-            const response = await cancelApprovalButton({ companyId, data, action: "Purchase Requisition", populateDoc: populateData, documentLines: purchaseRequisitionLines })
+            const response = await cancelApprovalButton({ companyId, data, action: "cancelPurchaseHeaderApprovalReq", populateDoc: populateData, documentLines: purchaseRequisitionLines })
             if (response) {
                 console.log("cancel response", response)
             }
@@ -788,6 +803,10 @@ function PurchaseRequisitionDetail() {
                 }}
                 handleCancelApprovalRequest={handleCancelApproval}
                 handleDeletePurchaseRequisition={handleDeletePurchaseRequisition}
+
+                companyId={companyId}
+                documentType={documentType}
+                requestNo={requestNo}
                 lines={<Lines
                     clearLineFields={clearLineFields}
                     title="Purchase Requisition Lines"

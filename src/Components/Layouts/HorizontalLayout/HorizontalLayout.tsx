@@ -84,6 +84,8 @@ function HorizontalLayout() {
                 }).then(async function () {
                     dispatch(signOutSuccess())
                     await persistor.purge();
+                    window.location.reload();
+                    // window.location.href = "/login"
                 })
                 setTimeout(() => {
                     if (error.response.status === 404) {
