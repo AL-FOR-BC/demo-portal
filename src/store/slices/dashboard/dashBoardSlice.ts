@@ -4,7 +4,10 @@ import {
   apiPaymentRequisition,
   apiPurchaseRequisition,
 } from "../../../services/RequisitionServices";
-import { apiEmployees } from "../../../services/CommonServices";
+import {
+  apiApprovalToRequest,
+  apiEmployees,
+} from "../../../services/CommonServices";
 import { formatDate } from "../../../utils/common";
 import { Employee } from "../../../@types/employee.dto";
 const SLICE_NAME = "userDashBoardData";
@@ -174,6 +177,15 @@ export const fetchPaymentRequests = createAsyncThunk(
     return paymentRequisitionCount;
   }
 );
+
+export const fetchRequestToApprove = createAsyncThunk(
+  `${SLICE_NAME}/fetchRequestToApprove`,
+  async ({ companyId, email }: { companyId: string; email: string }) => {
+    const filterQuery = `$filter=Status eq 'Open' and UserEmail eq '${email}'`;
+    const response = await apiApprovalToRequest(companyId, filterQuery);
+    return response.data.value.length;
+  }
+);
 const dashBoardSlice = createSlice({
   name: `${SLICE_NAME}/dashboard`,
   initialState,
@@ -218,10 +230,20 @@ const dashBoardSlice = createSlice({
           state.notificationDate.birthdayIndividuals = action.payload.map(
             (employee) => employee.FirstName + " " + employee.LastName
           );
-          state.notificationDate.birthDate = formatDate(new Date().toISOString());
+          state.notificationDate.birthDate = formatDate(
+            new Date().toISOString()
+          );
         }
       )
       .addCase(fetchEmployeeData.pending, (state) => {
+        state.loading = true;
+      });
+
+    builder
+      .addCase(fetchRequestToApprove.fulfilled, (state, action) => {
+        state.userDashBoardData.pendingApprovals = action.payload;
+      })
+      .addCase(fetchRequestToApprove.pending, (state) => {
         state.loading = true;
       });
   },

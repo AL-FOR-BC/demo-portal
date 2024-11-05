@@ -13,9 +13,7 @@ import {
   workPlanTypes,
 } from "../@types/requisition.dto.ts";
 import { ItemsResponse } from "../@types/items.dto.ts";
-import {
-  FixedAssetsResponse,
-} from "../@types/common.dto.ts";
+import { FixedAssetsResponse } from "../@types/common.dto.ts";
 import {
   EmployeeResponse,
   UnitOfMeasureResponse,
@@ -167,6 +165,15 @@ export async function apiApprovalEntries(
 ) {
   return BcApiService.fetchData<any>({
     url: `/api/hrpsolutions/procuretopay/v2.0/approvalEntries?Company=${companyId}&${filterQuery}`,
+  });
+}
+
+export async function apiApprovalToRequest(
+  companyId: string,
+  filterQuery?: string
+) {
+  return BcApiService.fetchData<any>({
+    url: `/api/hrpsolutions/hrmis/v2.0/requestsToApprove?Company=${companyId}&${filterQuery}`,
   });
 }
 

@@ -1,6 +1,10 @@
 import BcApiService from "./BcApiServices";
 
-export async function apiSendForApproval(companyId: string, data: any, link: string) {
+export async function apiSendForApproval(
+  companyId: string,
+  data: any,
+  link: string
+) {
   return BcApiService.fetchData<any>({
     url: `/ODataV4/ProcuretoPayActions_${link}?Company=${companyId}`,
     method: "post",
@@ -11,8 +15,11 @@ export async function apiSendForApproval(companyId: string, data: any, link: str
   });
 }
 
-
-export async function apiCancelApproval(companyId: string, data: any, action: string) {
+export async function apiCancelApproval(
+  companyId: string,
+  data: any,
+  action: string
+) {
   return BcApiService.fetchData<any>({
     url: `/ODataV4/ProcuretoPayActions_${action}?Company=${companyId}`,
     method: "post",
@@ -22,3 +29,25 @@ export async function apiCancelApproval(companyId: string, data: any, action: st
     },
   });
 }
+
+// -------------------------------------- Approval Actions --------------------------------------
+
+export async function apiApprovalRequest(
+  companyId: string,
+  filterQuery?: string
+) {
+  return BcApiService.fetchData<any>({
+    url: `/ODataV4/ODataV4/HRMISActions_ApproveRequest?Company=${companyId}&${filterQuery}`,
+  });
+}
+
+
+export async function apiRejectApprovalRequest(
+  companyId: string,
+  filterQuery?: string
+) {
+  return BcApiService.fetchData<any>({
+    url: `/ODataV4/HRMISActions_RejectNFLApprovalRequest?Company=${companyId}&${filterQuery}`,
+  });
+}
+

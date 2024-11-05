@@ -6,7 +6,7 @@ import CardWelcome from './components/CardWelcome.tsx';
 // import { DocumentCountSummaryTypes } from '../../@types/dashboard.dto.ts';
 import MiniWidget from './components/MiniWidget.tsx';
 import { BageAccountHorizontalIcon, BagSuitCaseIcon, BusIcon, CartIcon, ReceiptIcon, TeachIcon } from '../../Components/common/icons/icons.tsx';
-import { fetchEmployeeData, fetchPaymentRequests, fetchPurchaseRequests, fetchTravelRequests } from '../../store/slices/dashboard/dashBoardSlice.ts';
+import { fetchEmployeeData, fetchPaymentRequests, fetchPurchaseRequests, fetchRequestToApprove, fetchTravelRequests } from '../../store/slices/dashboard/dashBoardSlice.ts';
 import LeaveDetails from './components/LeaveDetails.tsx';
 import Reports from './components/Reports.tsx';
 import Notifications from './components/Notification.tsx';
@@ -18,16 +18,18 @@ function Dashboard() {
     const dispatch = useAppDispatch()
     const userProfile = useAppSelector(state => state.auth.user);
     const { companyId } = useAppSelector(state => state.auth.session)
-    const { employeeNo } = useAppSelector(state => state.auth.user)
+    const { employeeNo, email } = useAppSelector(state => state.auth.user)
     const dashBoardData = useAppSelector(state => state.dashboard.userDashBoard.userDashBoardData)
     const leavalDashoardData = useAppSelector(state => state.dashboard.userDashBoard.leavalDashoardData)
     const birthdayIndividuals = useAppSelector(state => state.dashboard.userDashBoard.notificationDate.birthdayIndividuals)
+    const pendingApprovals = useAppSelector(state => state.dashboard.userDashBoard.userDashBoardData.pendingApprovals)
     useEffect(() => {
         if (employeeNo) {
             dispatch(fetchTravelRequests({ employeeNo, companyId }));
             dispatch(fetchPurchaseRequests({ employeeNo, companyId }))
             dispatch(fetchPaymentRequests({ employeeNo, companyId }))
-            dispatch(fetchEmployeeData({companyId}))
+            dispatch(fetchRequestToApprove({ companyId, email }))
+            dispatch(fetchEmployeeData({ companyId }))
         }
     }, [dispatch, employeeNo, companyId]);
 
@@ -39,7 +41,6 @@ function Dashboard() {
             url: "/leave-requests",
         },
         {
-            // icon: "mdi mdi-badge-account-horizontal mdi-24px",
             icon: <BageAccountHorizontalIcon />,
             title: "Appraisals",
             value: dashBoardData.appraisals,
@@ -69,7 +70,7 @@ function Dashboard() {
             value: dashBoardData.travelRequests,
             url: "/travel-requests",
         },
-    ] 
+    ]
 
 
     return (
@@ -81,7 +82,7 @@ function Dashboard() {
                         username={userProfile.employeeName ?? ''}
                         role={userProfile.jobTitle ?? ''}
                         abbrev={userProfile.nameAbbrev ?? ''}
-                        pendingApprovals={0}
+                        pendingApprovals={pendingApprovals}
                         leavePlans={0}
                         leaveRequests={0}
 
@@ -101,7 +102,7 @@ function Dashboard() {
                     <Row>
                         {/* Leave */}
                         <LeaveDetails leavalDashoardData={leavalDashoardData} />
-                        <Notifications  birthdayIndividuals={birthdayIndividuals} />
+                        <Notifications birthdayIndividuals={birthdayIndividuals} />
                         <Col xl={4}>
                             <Reports />
                         </Col>

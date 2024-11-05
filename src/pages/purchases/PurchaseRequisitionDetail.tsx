@@ -255,11 +255,11 @@ function PurchaseRequisitionDetail() {
 
                 const resWorkPlans = await apiWorkPlans(companyId);
                 setWorkPlansList(resWorkPlans.data.value)
-                let workPlansOptions: options[] = [];   
+                let workPlansOptions: options[] = [];
                 resWorkPlans.data.value.map(plan => {
                     if (plan.shortcutDimension1Code === data.project) {
                         workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
-                    }else{
+                    } else {
                         setWorkPlans(workPlansOptions)
                     }
                     if (plan.no === data.workPlanNo) {
@@ -463,7 +463,6 @@ function PurchaseRequisitionDetail() {
                         setGlAccounts(glAccountsOptions)
                         setIsModalLoading(false)
                     }
-                    // if 
                     setAccountType([{ label: e.label, value: e.value }])
                 }
 
@@ -523,14 +522,14 @@ function PurchaseRequisitionDetail() {
                 onChange: (e: options) => setSelectedUnitOfMeasure([{ label: e.label, value: e.value }])
             },
             {
-                label: "Direct Unit Cost", type: "number",
-                value: directUnitCost.toString(),
+                label: "Direct Unit Cost", type: "text",
+                value: directUnitCost.toLocaleString(),
                 onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
                     if (Number(e.target.value) < 0) {
                         toast.error("Direct Unit Cost cannot be negative")
                         return;
                     }
-                    setDirectUnitCost(Number(e.target.value))
+                    setDirectUnitCost((Number(e.target.value.replace(/,/g, ''))))
                 }
             },
             {
@@ -564,7 +563,7 @@ function PurchaseRequisitionDetail() {
         setLineEtag('')
 
     }
-    
+
 
     const handleSubmitLines = async () => {
         if (selectedAccountNo[0]?.value == '' || selectedWorkPlanLine[0]?.value == '' || quantity == 0 || directUnitCost == 0 || description == '') {
@@ -580,8 +579,8 @@ function PurchaseRequisitionDetail() {
                 workPlanNo: split(selectedWorkPlan[0].value, '::')[0],
                 documentNo: requestNo,
                 no: selectedAccountNo[0]?.value,
+                unitOfMeasure: selectedUnitOfMeasure[0]?.value
             }
-            console.log("Data", data)
 
             const res = await apiCreatePurchaseRequisitionLines(companyId, data);
 

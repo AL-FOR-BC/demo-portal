@@ -3,7 +3,7 @@ import { options } from '../../@types/common.dto';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../store/hook';
 import { apiBankAccountsApi, apiCurrencyCodes, apiCustomersApi, apiDimensionValue, apiEmployees, apiPaymentCategory, apiPaymentSubCategoryApi, apiWorkPlans } from '../../services/CommonServices';
-import { split } from 'lodash';
+import { includes, split } from 'lodash';
 import { toast } from 'react-toastify';
 import { apiCreateTravelRequests } from '../../services/TravelRequestsService';
 import { formatDate } from '../../utils/common';
@@ -40,7 +40,7 @@ function AddTravelRequest() {
 
     const [startDate, setStartDate] = useState < string > ('');
     const [endDate, setEndDate] = useState < string > ('');
-    const [budgetCode, setBudgetCode] = useState < string > ('');   
+    const [budgetCode, setBudgetCode] = useState < string > ('');
 
 
 
@@ -49,23 +49,32 @@ function AddTravelRequest() {
             { label: 'Requisition No', type: 'text', value: '', disabled: true, id: 'requestNo' },
             { label: 'Requestor No', type: 'text', value: employeeNo, disabled: true, id: 'empNo' },
             { label: 'Requestor Name', type: 'text', value: employeeName, disabled: true, id: 'empName' },
-
             {
-                label: 'Document Date',
-                type: 'date',
-                value: expectedReceiptDate,
-                onChange: (e: Date) => setExpectedReceiptDate(e),
-                id: 'documentDate',
+                label: 'Project Code', type: 'select',
+                options: dimensionValues,
+                onChange: (e: options) => {
+                    setSelectedWorkPlan([])
+                    setBudgetCode('')
+                    setSelectedDimension([{ label: e.label, value: e.value }])
+                },
+                id: 'departmentCode',
             },
+
         ],
 
         [
             {
-                label: 'Department Code', type: 'select',
-                options: dimensionValues,
-                onChange: (e: options) => setSelectedDimension([{ label: e.label, value: e.value }]),
-                id: 'departmentCode',
+                label: "WorkPlan",
+                type: 'select',
+                options: workPlans.filter(plan => split(plan.value, "::")[1] == selectedDimension[0]?.value),
+                value: selectedWorkPlan,
+                onChange: (e: options) => {
+                    setSelectedWorkPlan([{ label: e.label, value: e.value }]);
+                    setBudgetCode((split(e.label, '::')[1]));
+                },
+                id: 'workPlan'
             },
+
 
             {
                 label: 'Payment Category',
@@ -105,17 +114,7 @@ function AddTravelRequest() {
         // Third row of inputs
         [
 
-            {
-                label: "WorkPlan",
-                type: 'select',
-                options: workPlans.filter(plan => split(plan.value, "::")[1] == selectedDimension[0]?.value),
-                value: selectedWorkPlan,
-                onChange: (e: options) => {
-                    setSelectedWorkPlan([{ label: e.label, value: e.value }]);
-                    setBudgetCode((split(e.label, '::')[1]));
-                },
-                id: 'workPlan'
-            },
+
             {
                 label: "Budget Code",
                 type: 'text',
@@ -156,6 +155,14 @@ function AddTravelRequest() {
 
             },
             {
+                label: 'Document Date',
+                type: 'date',
+                value: expectedReceiptDate,
+                onChange: (e: Date) => setExpectedReceiptDate(e),
+                id: 'documentDate',
+            },
+
+            {
                 label: 'Purpose',
                 type: 'textarea',
                 value: description,
@@ -194,7 +201,7 @@ function AddTravelRequest() {
                 let paymentCategoryOptions: options[] = [];
                 resPaymentCategory.data.value.map((e) => {
                     console.log(e.code)
-                    if (e.code === 'TRAVEL') {
+                    if (includes(e.code, 'TRAVEL')) {
                         paymentCategoryOptions.push({ label: e.description, value: e.code })
                     }
                 });
