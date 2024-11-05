@@ -44,8 +44,8 @@ function AddPurchaseRequisition() {
         try {
 
             setIsLoading(true);
-            if (selectedCurrency.length == 0 || selectedWorkPlan.length == 0 || selectedLocation.length == 0 || subjectOfProcurement == '' || expectedReceiptDate == null) {
-                const missingFields = selectedCurrency.length == 0 ? 'Currency' : selectedWorkPlan.length == 0 ? 'WorkPlan' : selectedLocation.length == 0 ? 'Location' : subjectOfProcurement == '' ? 'Subject of Procurement' : expectedReceiptDate == null ? 'Expected Receipt Date' : '';
+            if (selectedCurrency.length == 0 || selectedWorkPlan.length == 0 || subjectOfProcurement == '' || expectedReceiptDate == null) {
+                const missingFields = selectedCurrency.length == 0 ? 'Currency' : selectedWorkPlan.length == 0 ? 'WorkPlan' : subjectOfProcurement == '' ? 'Subject of Procurement' : expectedReceiptDate == null ? 'Expected Receipt Date' : '';
                 toast.error(`${missingFields} is required`);
                 return;
             }

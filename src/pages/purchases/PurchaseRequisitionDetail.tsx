@@ -63,7 +63,7 @@ function PurchaseRequisitionDetail() {
     const [workPlanLines, setWorkPlanLines] = useState < options[] > ([]);
     const [isModalLoading, setIsModalLoading] = useState < boolean > (false);
 
-    const accountTypeOptions = [{ label: 'G/L Account', value: 'G/L Account' }, { label: 'Fixed Asset', value: 'Fixed Asset' }, { label: 'Item', value: 'Item' }]
+    const accountTypeOptions = [{ label: 'G/L Account', value: 'G/L Account' }, { label: 'Item', value: 'Item' }]
 
     const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
 
@@ -776,13 +776,11 @@ function PurchaseRequisitionDetail() {
         if ((subjectOfProcurement == null || subjectOfProcurement == '' || subjectOfProcurement == undefined)
             || (selectedCurrency[0]?.value == null || selectedCurrency[0]?.value == undefined)
             || (selectedWorkPlan[0]?.value == null || selectedWorkPlan[0]?.value == '' || selectedWorkPlan[0]?.value == undefined)
-            || (selectedLocation[0]?.value == null || selectedLocation[0]?.value == '' || selectedLocation[0]?.value == undefined)
             || (selectedDimension[0]?.value == null || selectedDimension[0]?.value == '' || selectedDimension[0]?.value == undefined)) {
             const missingField = (subjectOfProcurement == null || subjectOfProcurement == '' || subjectOfProcurement == undefined) ? "Subject of Procurement" :
                 (selectedCurrency[0]?.value == null || selectedCurrency[0]?.value == undefined) ? "Currency" :
                     (selectedWorkPlan[0]?.value == null || selectedWorkPlan[0]?.value == '' || selectedWorkPlan[0]?.value == undefined) ? "Work Plan" :
-                        (selectedLocation[0]?.value == null || selectedLocation[0]?.value == '' || selectedLocation[0]?.value == undefined) ? "Location" :
-                            (selectedDimension[0]?.value == null || selectedDimension[0]?.value == '' || selectedDimension[0]?.value == undefined) ? "Dimension" : '';
+                        (selectedDimension[0]?.value == null || selectedDimension[0]?.value == '' || selectedDimension[0]?.value == undefined) ? "Dimension" : '';
             if (missingField) {
                 toast.error(`Please fill in ${missingField}`);
                 return false
