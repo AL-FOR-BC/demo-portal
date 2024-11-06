@@ -43,13 +43,14 @@ function ProfileMenu() {
 
 
         },
-        ...(isAdmin && isBcAdmin ? [{
+        // ...(isAdmin && isBcAdmin ? [{
+        ...(isAdmin || isBcAdmin ? [{
             name: "App Setup",
             render: () => <FiSettings className="font-size-16 align-middle me-1 text-primary" />,
             link: "/app-setup",
         }] : []),
     ]
-  
+
     const HeaderIcons = [
         {
             name: "dropdown",

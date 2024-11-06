@@ -36,7 +36,7 @@ function AddPurchaseRequisition() {
     const [dimensionValues, setDimensionValues] = useState < options[] > ([]);
 
     const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
-
+    const [status, setStatus] = useState < string > ('Open');
 
 
 
@@ -87,7 +87,7 @@ function AddPurchaseRequisition() {
             {
                 label: 'Project Code', type: 'select',
                 value: selectedDimension,
-                disabled: false,
+                disabled: status === 'Open' ? false : true,
                 id: 'projectCode',
                 options: dimensionValues,
                 onChange: (e: options) => {
@@ -107,7 +107,7 @@ function AddPurchaseRequisition() {
                 id: 'requisitionDate'
             },
             {
-                label: 'Location',
+                label: 'Store Location',
                 type: 'select',
                 options: locationOptions,
                 value: selectedLocation,

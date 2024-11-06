@@ -4,7 +4,7 @@ import { MdArrowBack, MdArrowForward, MdDelete, MdEdit, MdHistory, MdOutlineLabe
 import { TbPlus, TbX } from "react-icons/tb";
 import { FaBusAlt } from "react-icons/fa";
 import Icon from '@mdi/react';
-import { mdiBadgeAccountHorizontal, mdiBagSuitcase, mdiCartPlus, mdiFileQuestion, mdiFormatListCheckbox, mdiLoginVariant, mdiMicrosoftAzure, mdiReceipt, mdiTeaOutline } from '@mdi/js';
+import { mdiBadgeAccountHorizontal, mdiBagSuitcase, mdiCartPlus, mdiFileQuestion, mdiFormatListCheckbox, mdiLoginVariant, mdiMicrosoftAzure, mdiOfficeBuilding, mdiReceipt, mdiTeaOutline } from '@mdi/js';
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 
@@ -119,3 +119,5 @@ export const LabelIcon = (props: React.SVGProps<SVGAElement>) => <MdOutlineLabel
     }}
     {...props}
 />;
+
+export const BuildingIcon = () => <Icon path={mdiOfficeBuilding} size={1} />;

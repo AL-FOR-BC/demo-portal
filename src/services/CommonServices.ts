@@ -18,6 +18,7 @@ import {
   EmployeeResponse,
   UnitOfMeasureResponse,
 } from "../@types/employee.dto.ts";
+import { CompanyResponse } from "../@types/company.dto.ts";
 
 interface currencyResponse {
   "@odata.context": string;
@@ -235,5 +236,13 @@ export async function apiUnitOfMeasure(
 ) {
   return BcApiService.fetchData<UnitOfMeasureResponse>({
     url: `/api/hrpsolutions/procuretopay/v2.0/unitOfMeasure?Company=${companyId}&${filterQuery}`,
+  });
+}
+
+// -------------------------------------- Companies --------------------------------------
+
+export async function apiCompanies() {
+  return BcApiService.fetchData<CompanyResponse>({
+    url: `/api/hrpsolutions/procuretopay/v2.0/companies`,
   });
 }

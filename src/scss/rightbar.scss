@@ -10,6 +10,62 @@
   z-index: 9999 !important;
 }
 
+/* Company Menu Styles */
+.company-menu .header-item {
+  color: #555b6d;
+  padding: 0 1.5rem;
+  height: 70px;
+  background-color: transparent;
+  border: 0;
+  display: flex;
+  align-items: center;
+}
+
+.company-menu .header-item:hover,
+.company-menu .header-item:focus {
+  color: #556ee6;
+}
+
+.company-menu .header-profile-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.company-menu .dropdown-menu {
+  min-width: 180px;
+  padding: 0.25rem 0;
+  background-color: #fff;
+  border: 1px solid #eff2f7;
+  margin-top: 0;
+  box-shadow: 0 0.75rem 1.5rem rgba(18,38,63,.03);
+}
+
+.company-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 0.65rem 1.5rem;
+  clear: both;
+  font-weight: 400;
+  color: #495057;
+  text-align: inherit;
+  white-space: nowrap;
+  background-color: transparent;
+  border: 0;
+  width: 100%;
+}
+
+.company-menu .dropdown-item:hover,
+.company-menu .dropdown-item:focus {
+  color: #556ee6;
+  background-color: #f8f9fa;
+  text-decoration: none;
+}
+
+.company-menu .dropdown-item.active {
+  color: #556ee6;
+  background-color: #f8f9fa;
+}
+
 // .radio-toolbar {
 //   label {
 //     display: inline-block;

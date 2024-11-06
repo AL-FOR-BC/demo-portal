@@ -1,16 +1,37 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { COMPANY_LOGO, COMPANY_LOGO2 } from "../../../../constants/app.constants.ts";
 import { Link } from "react-router-dom";
-import {mdiFullscreen} from '@mdi/js';
+import { mdiFullscreen } from '@mdi/js';
 import Icon from "@mdi/react";
 import ProfileMenu from "./ProfileMenu.tsx";
-// interface HeaderProps {
-//     leftMenu?: boolean;
-//     isMenuOpened?: boolean;
-//     openLeftMenuCallBack: () => void;
-// }
+import { useAppSelector } from '../../../../store/hook.ts';
+import { useAppDispatch } from '../../../../store/hook.ts';
+import { setAllowCompanyChange, setCompany } from '../../../../store/slices/auth/sessionSlice.ts';
+import CompanyMenu from './CompanyMenu';
+import { getAllowCompanyChangeSetting } from '../../../../services/SetupServices.ts';
+import { toast } from 'react-toastify';
+
 
 function Header() {
+    const dispatch = useAppDispatch()
+    const { companyId, companies, allowCompanyChange } = useAppSelector(state => state.auth.session)
+    const handleCompanyChange = (companyId: string) => {
+        dispatch(setCompany(companyId))
+    }
+    useEffect(() => {
+        const fetchAllowCompanyChange = async () => {
+            try {
+                const response = await getAllowCompanyChangeSetting();
+                dispatch(setAllowCompanyChange(response.data.allowCompanyChange))
+            } catch (error) {
+                toast.error("Failed to fetch allow company change setting");
+            }
+        }
+
+        fetchAllowCompanyChange();
+        const pollInterval = setInterval(fetchAllowCompanyChange, 30000);
+        return () => clearInterval(pollInterval);
+    }, [companyId]);
     return (
         <React.Fragment>
             <header id="page-topbar">
@@ -62,10 +83,17 @@ function Header() {
                                 <Icon path={mdiFullscreen} style={{
                                     width: "18px",
                                     height: "18px",
-                                }}/>
+                                }} />
                             </button>
                         </div>
-
+                        {allowCompanyChange && (
+                            <CompanyMenu
+                                companies={companies}
+                                companyId={companyId}
+                                handleCompanyChange={handleCompanyChange}
+                                allowCompanyChange={allowCompanyChange}
+                            />
+                        )}
                         {/*<NotificationDropdown />*/}
 
                         <ProfileMenu />

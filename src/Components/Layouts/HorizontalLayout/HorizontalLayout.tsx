@@ -6,7 +6,7 @@ import NavBar from "./components/NavBar.tsx";
 import { employees } from "../../../services/DashBoardService.ts";
 import { useAppDispatch, useAppSelector } from "../../../store/hook.ts";
 import Swal from "sweetalert2";
-import { setBcAdmin, setEmployeeData, setEmployeeNo, signOutSuccess } from "../../../store/slices/auth";
+import { fetchCompanies, setBcAdmin, setEmployeeData, setEmployeeNo, signOutSuccess } from "../../../store/slices/auth";
 import { toast } from "react-toastify";
 import { jwtDecode } from 'jwt-decode';
 import UseAuth from '../../../utils/hooks/useAuth.ts';
@@ -32,46 +32,48 @@ function HorizontalLayout() {
         const fetchData = async () => {
             try {
                 if (!companyId) {
-                    console.error("Company ID is not available");
-                    return;
+                    await dispatch(fetchCompanies()).unwrap();
+                    // No need to manually set company here as it's handled in the slice
                 }
-                const filterQuery = `&$filter=(CompanyEMail eq '${email}') or (CompanyEMail eq '${email}') or (CompanyEMail eq '${email}')`;
-                const res = await employees(companyId, filterQuery);
-                setEmployeeList(res.data.value);
-                if (res.data.value.length == 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Access Denied',
-                        text: 'Unable to verify your employee details. Please contact your system administrator.',
-                        confirmButtonColor: '#3085d6'
-                    }).then(function () {
-                        if (token) {
-                            const azureToken = jwtDecode < { aud: string } > (token);
-                            if (azureToken?.aud === "https://api.businesscentral.dynamics.com") {
-                                handleSignOutAzure();
-                                dispatch(signOutSuccess())
+                if (companyId) {
+                    const filterQuery = `&$filter=(CompanyEMail eq '${email}') or (CompanyEMail eq '${email}') or (CompanyEMail eq '${email}')`;
+                    const res = await employees(companyId, filterQuery);
+                    setEmployeeList(res.data.value);
+                    if (res.data.value.length == 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Access Denied',
+                            text: 'Unable to verify your employee details. Please contact your system administrator.',
+                            confirmButtonColor: '#3085d6'
+                        }).then(function () {
+                            if (token) {
+                                const azureToken = jwtDecode < { aud: string } > (token);
+                                if (azureToken?.aud === "https://api.businesscentral.dynamics.com") {
+                                    handleSignOutAzure();
+                                    dispatch(signOutSuccess())
+                                }
                             }
-                        }
-                        toast.info("Failed to get your staff details. Please contact Admin.",
-                            {
-                                autoClose: 10000
-                            }
-                        )
-                        dispatch(signOutSuccess())
-                    })
-                    return
-                } else if (res.data.value.length > 0) {
-                    const employeeNo = res.data.value[0].No
-                    dispatch(setEmployeeNo(employeeNo))
-                    dispatch(setEmployeeData({
-                        employeeName: res.data.value[0].LastName + " " + res.data.value[0].FirstName,
-                        employeeGender: res.data.value[0].Gender,
-                        employeeDepartment: res.data.value[0].GlobalDimension1Code,
-                        jobTitle: res.data.value[0].JobTitle,
-                        nameAbbrev: res.data.value[0].LastName.charAt(0) + res.data.value[0].FirstName.charAt(0)
+                            toast.info("Failed to get your staff details. Please contact Admin.",
+                                {
+                                    autoClose: 10000
+                                }
+                            )
+                            dispatch(signOutSuccess())
+                        })
+                        return
+                    } else if (res.data.value.length > 0) {
+                        const employeeNo = res.data.value[0].No
+                        dispatch(setEmployeeNo(employeeNo))
+                        dispatch(setEmployeeData({
+                            employeeName: res.data.value[0].LastName + " " + res.data.value[0].FirstName,
+                            employeeGender: res.data.value[0].Gender,
+                            employeeDepartment: res.data.value[0].GlobalDimension1Code,
+                            jobTitle: res.data.value[0].JobTitle,
+                            nameAbbrev: res.data.value[0].LastName.charAt(0) + res.data.value[0].FirstName.charAt(0)
 
-                    }))
-                    dispatch(setBcAdmin(res.data.value[0].EHubAdministrator))
+                        }))
+                        dispatch(setBcAdmin(res.data.value[0].EHubAdministrator))
+                    }
                 }
 
             } catch (error) {

@@ -76,6 +76,7 @@ function PaymentRequisitionDetail() {
 
       {
         label: 'Project Code', type: 'select',
+        disabled: status === 'Open' ? false : true,
         options: dimensionValues,
         onChange: async (e: options) => {
 
@@ -161,6 +162,7 @@ function PaymentRequisitionDetail() {
         label: 'Work Plan',
         type: 'select',
         value: selectedWorkPlan,
+        disabled: status === 'Open' ? false : true,
         onChange: (e: options) => {
           if (paymentRequisitionLines.length > 0) {
             Swal.fire({
@@ -196,6 +198,7 @@ function PaymentRequisitionDetail() {
         label: 'Payment Category',
         type: 'select',
         value: selectedPaymentCategory,
+        disabled: status === 'Open' ? false : true,
         options: paymentCategoryOptions,
         onChange: async (e: options) => {
           setSelectedPaymentCategory([{ label: e.label, value: e.value }])
@@ -218,6 +221,7 @@ function PaymentRequisitionDetail() {
         label: 'Payment Subcategory',
         type: 'select',
         value: selectedSubCategory,
+        disabled: status === 'Open' ? false : true,
         options: paymentSubCategoryOptions,
         onChange: (e: options) => {
           setSelectedSubCategory([{ label: e.label, value: e.value }])
@@ -236,6 +240,7 @@ function PaymentRequisitionDetail() {
               label: 'Payee',
               type: 'select',
               value: selectedPayee,
+              disabled: status === 'Open' ? false : true,
               options: customerOptions,
               onChange: (e: options) => {
                 setSelectedPayee([{ label: e.label, value: e.value }]),
@@ -252,6 +257,7 @@ function PaymentRequisitionDetail() {
                 label: 'Payee',
                 type: 'select',
                 value: selectedPayee,
+                disabled: status === 'Open' ? false : true,
                 options: bankAccountOptions,
                 onChange: (e: options) => {
                   setSelectedPayee([{ label: e.label, value: e.value }])
@@ -270,6 +276,7 @@ function PaymentRequisitionDetail() {
                   label: 'Payee',
                   type: 'select',
                   value: selectedPayee,
+                  disabled: status === 'Open' ? false : true,
                   options: vendorOptions,
                   onChange: (e: options) => {
                     setSelectedPayee([{ label: e.label, value: e.value }])
@@ -286,6 +293,7 @@ function PaymentRequisitionDetail() {
                   label: 'Payee',
                   type: 'select',
                   value: selectedPayee,
+                  disabled: status === 'Open' ? false : true,
                   options: customerOptions,
                   onChange: (e: options) => {
                     setSelectedPayee([{ label: e.label, value: e.value }])
@@ -303,7 +311,7 @@ function PaymentRequisitionDetail() {
                     type: 'text',
                     value: payeeName,
                     onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPayeeName(e.target.value),
-                    disabled: false,
+                    disabled: status === 'Open' ? false : true,
                     onBlur: (e: React.ChangeEvent<HTMLInputElement>) => {
                       quickUpdate({
                         payeeName: e.target.value
@@ -328,6 +336,7 @@ function PaymentRequisitionDetail() {
               onChange: (e: options) => setSelectedWorkPlan([{ label: e.label, value: e.value }]),
               options: workPlans.filter(plan => split(plan.value, "::")[1] == selectedDimension[0]?.value),
               id: 'workPlan',
+              disabled: status === 'Open' ? false : true,
             },
 
           ] : []

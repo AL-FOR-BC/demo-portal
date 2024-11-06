@@ -16,6 +16,15 @@ import {
   PaymentRequisitionUpdateData,
   PaymentRequistionLinesSubmitData,
 } from "../@types/paymentReq.dto.ts";
+import {
+  StoreRequisitionHeader,
+  StoreRequisitionLinesResponse,
+  StoreRequisitionLinesSingleResponse,
+  StoreRequisitionLinesSubmitData,
+  StoreRequisitionResponse,
+  StoreRequisitionType,
+  StoreRequisitionUpdateData,
+} from "../@types/storeReq.dto.ts";
 
 // ----------------------- purchase requisitions ---------------------------------------------
 export async function apiPurchaseRequisition(
@@ -209,6 +218,106 @@ export async function apiUpdatePurchaseRequisition(
 ) {
   return BcApiService.fetchData<PurchaseRequisitionResponse>({
     url: `/api/hrpsolutions/procuretopay/v2.0/purchaseRequisitionHeaders(${id})?Company=${companyId}`,
+    method: "PATCH",
+    data,
+    headers: {
+      "If-Match": etag,
+    },
+  });
+}
+
+// ----------------------------------- stores requisitions -------------------------------------
+export async function apiStoreRequisition(
+  companyId: string,
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
+  filterQuery?: string,
+  data?: any,
+  systemId?: string,
+  etag?: string
+) {
+  if (method === "PATCH" || method === "DELETE") {
+    return BcApiService.fetchData<StoreRequisitionResponse>({
+      url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests(${systemId})?Company=${companyId}&${filterQuery}`,
+      method,
+      data,
+      headers: {
+        "If-Match": etag,
+      },
+    });
+  } else {
+    return BcApiService.fetchData<StoreRequisitionResponse>({
+      url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests?Company=${companyId}&${filterQuery}`,
+      method,
+      data,
+    });
+  }
+}
+
+export async function apiStoreRequisitionDetail(
+  companyId: string,
+  id: string,
+  filterQuery?: string
+) {
+  return BcApiService.fetchData<StoreRequisitionLinesSingleResponse>({
+    url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests(${id})?Company=${companyId}&${filterQuery}`,
+  });
+}
+
+export async function apiCreateStoreRequisition(
+  companyId: string,
+  data: StoreRequisitionType
+) {
+  return BcApiService.fetchData<StoreRequisitionHeader>({
+    url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests?Company=${companyId}`,
+    method: "post",
+    data,
+  });
+}
+
+export async function apiStoreRequisitionLines(
+  companyId: string,
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
+  data?: StoreRequisitionLinesSubmitData,
+  systemId?: string,
+  etag?: string,
+  filterQuery?: string
+) {
+  if (method === "PATCH" || method === "DELETE") {
+    return BcApiService.fetchData<StoreRequisitionLinesResponse>({
+      url: `/api/hrpsolutions/procuretopay/v2.0/storeRequisitionLines(${systemId})?Company=${companyId}&${filterQuery}`,
+      method,
+      data,
+      headers: {
+        "If-Match": etag,
+      },
+    });
+  }
+  return BcApiService.fetchData<StoreRequisitionLinesResponse>({
+    url: `/api/hrpsolutions/procuretopay/v2.0/storeRequisitionLines?Company=${companyId}&${filterQuery}`,
+    method,
+    data,
+  });
+}
+
+export async function apiCreateStoreRequisitionLines(
+  companyId: string,
+  data: StoreRequisitionLinesSubmitData
+) {
+  return BcApiService.fetchData<StoreRequisitionLinesResponse>({
+    url: `/api/hrpsolutions/procuretopay/v2.0/storeRequisitionLines?Company=${companyId}`,
+    method: "post",
+    data,
+  });
+}
+
+export async function apiUpdateStoreRequisition(
+  companyId: string,
+  id: string,
+  data: Partial<StoreRequisitionUpdateData>,
+  etag: string
+) {
+  return BcApiService.fetchData<StoreRequisitionResponse>({
+    url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests(${id})?Company=${companyId}`,
     method: "PATCH",
     data,
     headers: {

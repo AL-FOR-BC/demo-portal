@@ -5,7 +5,8 @@ const appRoutes: Routes = [
     {
         key: "app-setup",
         path: "/app-setup",
-        component: lazy(() => import('../../pages/settings/AppSetup.tsx')),
+        // component: lazy(() => import('../../pages/settings/AppSetup.tsx')),
+        component: lazy(() => import('../../pages/setup/Setup.js')),
     },
     {
         key: "dashboard",
@@ -69,15 +70,32 @@ const appRoutes: Routes = [
         key: "leave-plans",
         path: "/leave-plans",
         component: lazy(() => import('../../pages/leave/LeavePlan.tsx'))
-    },{
-        key:"add-leave-plan",
-        path:"/add-leave-plan",
-        component:lazy(()=>import("../../pages/leave/AddLeavePlan.tsx"))
+    }, {
+        key: "add-leave-plan",
+        path: "/add-leave-plan",
+        component: lazy(() => import("../../pages/leave/AddLeavePlan.tsx"))
     },
     {
-        key:"leave-plan-details",
-        path:"/leave-plan-details/:id",
-        component:lazy(()=>import("../../pages/leave/LeavePlanDetails.tsx"))
+        key: "leave-plan-details",
+        path: "/leave-plan-details/:id",
+        component: lazy(() => import("../../pages/leave/LeavePlanDetails.tsx"))
+    },
+
+    // ---------------------------  stores --------------------------------
+    {
+        key: "stores-requisitions",
+        path: "/stores-requisitions",
+        component: lazy(() => import("../../pages/stores/StoresRequisitions.tsx"))
+    },
+    {
+        key: "add-store-requisition",
+        path: "/add-store-requisition",
+        component: lazy(() => import("../../pages/stores/AddStoreRequisition.tsx"))
+    },
+    {
+        key: "store-requisition-details",
+        path: "/store-requisition-details/:id",
+        component: lazy(() => import("../../pages/stores/StoreRequisitionDetails.tsx"))
     }
 
 

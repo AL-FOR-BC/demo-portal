@@ -338,8 +338,8 @@ export const navbarOptions: NavigationTree[] = [
       },
       {
         id: 28,
-        name: "Exit Management",
-        path: "/exit-management",
+        name: "Staff Exit",
+        path: "/staff-exit",
         subOptions: [
           {
             id: 29,
@@ -377,14 +377,14 @@ export const navbarOptions: NavigationTree[] = [
   },
   {
     id: 34,
-    name: "Allowances",
-    path: "/allowances",
-    icon: "cash",
+    name: "Time Sheets",
+    path: "/time-sheets",
+    icon: "clock",
     subOptions: [
       {
         id: 35,
-        name: "Allowance Requests",
-        path: "/allowance-requests",
+        name: "Time Sheets",
+        path: "/time-sheets",
         subOptions: [],
       },
     ],
@@ -420,6 +420,12 @@ export const navbarOptions: NavigationTree[] = [
         path: "/payment-requisitions",
         // subOptions: [],
       },
+      {
+        id: 41,
+        name: "Stores Requisition",
+        path: "/stores-requisitions",
+        // subOptions: [],
+      }
     ],
   },
   {

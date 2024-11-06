@@ -133,7 +133,7 @@ function PurchaseRequisitionDetail() {
                 disabled: status === 'Open' ? false : true,
             },
             {
-                label: 'Location',
+                label: 'Store Location',
                 type: 'select',
                 options: locationOptions,
                 value: selectedLocation,
@@ -732,11 +732,23 @@ function PurchaseRequisitionDetail() {
     }
 
     const handleDeletePurchaseRequisition = async () => {
-        const response = await apiPurchaseRequisition(companyId, "DELETE", undefined, undefined, id, undefined);
-        if (response.status == 204) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const response = await apiPurchaseRequisition(companyId, "DELETE", undefined, undefined, id, undefined);
+                if (response.status == 204) {
             toast.success("Purchase Requisition deleted successfully")
-            navigate('/purchase-requisitions')
-        }
+                    navigate('/purchase-requisitions')
+                }
+            }
+        })
 
     }
 
