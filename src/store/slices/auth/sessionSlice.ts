@@ -84,8 +84,8 @@ const sessionSlice = createSlice({
         }
         // Otherwise, set to first company if available
         else if (action.payload.value.length > 0) {
-          state.companyId = action.payload.value[0].id;
-          state.preferredCompanyId = action.payload.value[0].id;
+          state.companyId = action.payload.value[1].id;
+          state.preferredCompanyId = action.payload.value[1].id;
         }
       })
       .addCase(fetchCompanies.rejected, (state, action) => {

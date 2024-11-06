@@ -1051,7 +1051,6 @@ function PaymentRequisitionDetail() {
             addLabel=""
             iconClassName=""
             noDataMessage="No lines found"
-            isLoading={isLoading}
             clearLineFields={clearModalFields}
             handleValidateHeaderFields={handleValidateHeaderFields}
             data={paymentRequisitionLines}

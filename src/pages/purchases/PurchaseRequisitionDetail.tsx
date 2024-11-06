@@ -61,7 +61,6 @@ function PurchaseRequisitionDetail() {
 
     const [glAccounts, setGlAccounts] = useState < options[] > ([]);
     const [workPlanLines, setWorkPlanLines] = useState < options[] > ([]);
-    const [isModalLoading, setIsModalLoading] = useState < boolean > (false);
 
     const accountTypeOptions = [{ label: 'G/L Account', value: 'G/L Account' }, { label: 'Item', value: 'Item' }]
 
@@ -442,6 +441,9 @@ function PurchaseRequisitionDetail() {
                     if (e.value === "Item") {
                         setSelectedAccountNo([])
                         setSelectedWorkPlanLine([])
+                        setWorkPlanLines([])
+
+                        dispatch(modelLoadingRequisition(true))
                         const items = await apiItem(companyId)
                         let itemOptions: options[] = []
                         items.data.value.map((e) => {
@@ -450,18 +452,19 @@ function PurchaseRequisitionDetail() {
                             })
                         })
                         setGlAccounts(itemOptions)
+                        dispatch(modelLoadingRequisition(false))
                     }
                     if (e.value === "G/L Account") {
                         setSelectedAccountNo([])
                         setSelectedWorkPlanLine([])
-                        setIsModalLoading(true)
+                        dispatch(modelLoadingRequisition(true))
                         const glAccounts = await apiGLAccountsApi(companyId);
                         let glAccountsOptions: options[] = [];
                         glAccounts.data.value.map((e) => {
                             glAccountsOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
                         });
                         setGlAccounts(glAccountsOptions)
-                        setIsModalLoading(false)
+                        dispatch(modelLoadingRequisition(false))
                     }
                     setAccountType([{ label: e.label, value: e.value }])
                 }
@@ -471,17 +474,31 @@ function PurchaseRequisitionDetail() {
                 label: "Account No", type: "select", value: selectedAccountNo,
                 onChange: async (e: options) => {
                     setSelectedWorkPlanLine([])
-                    setSelectedAccountNo([{ label: e.label, value: e.value }])
-                    const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${e?.value}'`
-                    const workPlanLines = await apiWorkPlanLines(companyId, filterQuery);
-                    let workPlanLinesOptions: options[] = [];
-                    workPlanLines.data.value.map((e) => {
-                        workPlanLinesOptions.push({
-                            label: e.entryNo + ':: ' + e.activityDescription,
-                            value: `${e.entryNo}`
-                        })
-                    });
-                    setWorkPlanLines(workPlanLinesOptions)
+
+                    if (accountType[0]?.value === "Item") {
+
+                        dispatch(modelLoadingRequisition(true))
+                        quickAddLines({ accountType: accountType[0]?.value, accountNo: e.value })
+
+                        setSelectedAccountNo([{ label: e.label, value: e.value }])
+                        dispatch(modelLoadingRequisition(false))
+
+                    } else {
+
+                        setSelectedAccountNo([{ label: e.label, value: e.value }])
+                        dispatch(modelLoadingRequisition(true))
+                        const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${e?.value}'`
+                        const workPlanLines = await apiWorkPlanLines(companyId, filterQuery);
+                        let workPlanLinesOptions: options[] = [];
+                        workPlanLines.data.value.map((e) => {
+                            workPlanLinesOptions.push({
+                                label: e.entryNo + ':: ' + e.activityDescription,
+                                value: `${e.entryNo}`
+                            })
+                        });
+                        setWorkPlanLines(workPlanLinesOptions)
+                        dispatch(modelLoadingRequisition(false))
+                    }
                 }
                 , options: glAccounts, isSearchable: true
             },
@@ -652,22 +669,45 @@ function PurchaseRequisitionDetail() {
         setLineEtag(row['@odata.etag'])
         const vendorRes = await apiVendors(companyId);
         const vendors = vendorRes.data.value.map(vendor => ({ label: vendor.name, value: vendor.no }));
+        if (decodeValue(row.accountType) === "G/L Account") {
+            const glAccounts = await apiGLAccountsApi(companyId);
 
-        const glAccounts = await apiGLAccountsApi(companyId);
-        const glAccountsOptions = glAccounts.data.value.map(account => ({ label: `${account.no}::${account.name}`, value: account.no }));
-        setGlAccounts(glAccountsOptions)
+            const glAccountsOptions = glAccounts.data.value.map(account => ({ label: `${account.no}::${account.name}`, value: account.no }));
+            setGlAccounts(glAccountsOptions)
+            const glAccountData = glAccountsOptions.filter(e => e.value === row.no);
+            glAccountData.length > 0 ? setSelectedAccountNo([{ label: glAccountData[0].label, value: glAccountData[0].value }]) : setSelectedAccountNo([{ label: '', value: '' }]);
 
-        const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${row.no}'`
-        const workPlanEntryNoRes = await apiWorkPlanLines(companyId, filterQuery);
 
-        const workPlanLines = workPlanEntryNoRes.data.value.map(plan => ({ label: `${plan.entryNo}::${plan.activityDescription}`, value: `${plan.entryNo}` }));
+
+            const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${row.no}'`
+            const workPlanEntryNoRes = await apiWorkPlanLines(companyId, filterQuery);
+
+            const workPlanLines = workPlanEntryNoRes.data.value.map(plan => ({ label: `${plan.entryNo}::${plan.activityDescription}`, value: `${plan.entryNo}` }));
+            setWorkPlanLines(workPlanLines)
+
+        } else if (row.accountType === "Item") {
+            const items = await apiItem(companyId)
+            let itemOptions: options[] = []
+            items.data.value.map((e) => {
+                itemOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
+            })
+            setGlAccounts(itemOptions)
+            const itemData = itemOptions.filter(e => e.value === row.no);
+            itemData.length > 0 ? setSelectedAccountNo([{ label: itemData[0].label, value: itemData[0].value }]) : setSelectedAccountNo([{ label: '', value: '' }]);
+
+            const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${row.chargeAccount}'`
+            const workPlanEntryNoRes = await apiWorkPlanLines(companyId, filterQuery);
+
+            const workPlanLines = workPlanEntryNoRes.data.value.map(plan => ({ label: `${plan.entryNo}::${plan.activityDescription}`, value: `${plan.entryNo}` }));
+            setWorkPlanLines(workPlanLines)
+        }
+        console.log("row.accountType", decodeValue(row.accountType))
 
         //set values
         const vendorData = vendors.filter(e => e.value === row.buyFromVendorNo);
         vendorData.length > 0 ? setSelectedVendor([{ label: vendorData[0].label, value: vendorData[0].value }]) : setSelectedVendor([{ label: '', value: '' }]);
 
-        const glAccountData = glAccountsOptions.filter(e => e.value === row.no);
-        glAccountData.length > 0 ? setSelectedAccountNo([{ label: glAccountData[0].label, value: glAccountData[0].value }]) : setSelectedAccountNo([{ label: '', value: '' }]);
+
 
         const workPlanEntryNo = workPlanLines.filter(e => e.value === row.workPlanEntryNo.toString());
         workPlanEntryNo.length > 0 ? setSelectedWorkPlanLine([{ label: workPlanEntryNo[0].label, value: workPlanEntryNo[0].value }]) : setSelectedWorkPlanLine([{ label: '', value: '' }]);
@@ -716,6 +756,35 @@ function PurchaseRequisitionDetail() {
         }
     }
 
+    const quickAddLines = async ({ accountType, accountNo }) => {
+        try {
+            if (accountType === "Item") {
+                const response = await apiCreatePurchaseRequisitionLines(companyId, {
+                    accountType: accountType,
+                    documentType: "Purchase Requisition",
+                    // workPlanNo: split(selectedWorkPlan[0].value, '::')[0],
+                    documentNo: requestNo,
+                    no: accountNo,
+                })
+
+                if (response.status == 201) {
+                    const workPlanEntryNo = await apiWorkPlanLines(companyId, `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${response.data.chargeAccount}'`)
+                    setWorkPlanLines(workPlanEntryNo.data.value.map(plan => ({ label: `${plan.entryNo}::${plan.activityDescription}`, value: `${plan.entryNo}` })))
+                    //delete created line
+                    const deleteCreatedLine = await apiPurchaseRequisitionLines(companyId, "DELETE", undefined, response.data.systemId, response["@odata.etag"])
+                    if (deleteCreatedLine.status == 204) {
+                        // toast.success("Line added successfully")
+                        // populateData()
+                    }
+                }
+            }
+
+        } catch (error) {
+
+        }
+
+    }
+
 
 
     const handleCancelApproval = async () => {
@@ -744,7 +813,7 @@ function PurchaseRequisitionDetail() {
             if (result.isConfirmed) {
                 const response = await apiPurchaseRequisition(companyId, "DELETE", undefined, undefined, id, undefined);
                 if (response.status == 204) {
-            toast.success("Purchase Requisition deleted successfully")
+                    toast.success("Purchase Requisition deleted successfully")
                     navigate('/purchase-requisitions')
                 }
             }
@@ -843,7 +912,6 @@ function PurchaseRequisitionDetail() {
                     handleSubmitLines={handleSubmitLines}
                     handleDeleteLines={handleDelteLine}
                     handleSubmitUpdatedLine={handleSubmitUpdatedLine}
-                    isLoading={isModalLoading}
                     handleValidateHeaderFields={handleValidateHeaderFields}
 
 

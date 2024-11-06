@@ -716,7 +716,6 @@ function TravelRequestDetails() {
 
                 lines={
                     <Lines
-                        isLoading={isLoading}
                         title="Travel Request Lines"
                         subTitle="Travel Request Lines"
                         breadcrumbItem="Travel Request Lines"

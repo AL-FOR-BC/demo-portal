@@ -18,7 +18,6 @@ interface LinesProps {
     addLabel: string
     noDataMessage: string
     iconClassName: string
-    isLoading: boolean
     handleSubmitLines: () => void
     handleSubmitUpdatedLine: () => void
     clearLineFields: () => void
@@ -72,7 +71,6 @@ function Lines({
                         <TableLinesMui
                             handleValidateHeaderFields={handleValidateHeaderFields}
                             handleSubmitUpdatedLine={handleSubmitUpdatedLine}
-                            // isLoading={isLoading}
                             
                             data={data}
                             columns={columns}

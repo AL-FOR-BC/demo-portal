@@ -174,7 +174,7 @@ export async function apiApprovalToRequest(
   filterQuery?: string
 ) {
   return BcApiService.fetchData<any>({
-    url: `/api/hrpsolutions/hrmis/v2.0/requestsToApprove?Company=${companyId}&${filterQuery}`,
+    url: `/api/hrpsolutions/hrmis/v1.0/requestsToApprove?Company=${companyId}&${filterQuery}`,
   });
 }
 

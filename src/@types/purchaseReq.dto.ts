@@ -22,6 +22,7 @@ export type PurchaseRequisitionLineType = {
   buyFromVendorNo: string;
   amount: number;
   lineAmountLCY: number;
+  chargeAccount: string;
 };
 
 // Type for a Purchase Requisition
