@@ -36,7 +36,6 @@ function AddPurchaseRequisition() {
     const [dimensionValues, setDimensionValues] = useState < options[] > ([]);
 
     const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
-    const [status, setStatus] = useState < string > ('Open');
 
 
 
@@ -87,7 +86,7 @@ function AddPurchaseRequisition() {
             {
                 label: 'Project Code', type: 'select',
                 value: selectedDimension,
-                disabled: status === 'Open' ? false : true,
+                disabled: false,
                 id: 'projectCode',
                 options: dimensionValues,
                 onChange: (e: options) => {

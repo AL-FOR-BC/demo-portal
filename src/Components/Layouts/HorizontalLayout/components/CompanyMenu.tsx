@@ -1,7 +1,6 @@
 import React from 'react';
 import { Dropdown, DropdownMenu, DropdownToggle } from "reactstrap";
 import { BiChevronDown, BiBuildings } from "react-icons/bi";
-import { useAppSelector } from "../../../../store/hook";
 
 interface CompanyMenuProps {
     companies: any[];

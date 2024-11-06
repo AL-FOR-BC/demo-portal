@@ -4,7 +4,6 @@ import {
     CardContent,
     Container,
     Grid,
-    Typography,
     Switch,
     FormControlLabel,
     FormHelperText
@@ -125,7 +124,7 @@ function Setup() {
 
     return (
         <div className="page-content">
-            <Container fluid>
+            <Container maxWidth="lg">
                 {/* Page Title */}
                 <div className="page-title-box">
                     <div className="row align-items-center">

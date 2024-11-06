@@ -16,15 +16,15 @@ import {
   PaymentRequisitionUpdateData,
   PaymentRequistionLinesSubmitData,
 } from "../@types/paymentReq.dto.ts";
-import {
-  StoreRequisitionHeader,
-  StoreRequisitionLinesResponse,
-  StoreRequisitionLinesSingleResponse,
-  StoreRequisitionLinesSubmitData,
-  StoreRequisitionResponse,
-  StoreRequisitionType,
-  StoreRequisitionUpdateData,
-} from "../@types/storeReq.dto.ts";
+// import {
+//   StoreRequisitionHeader,
+//   StoreRequisitionLinesResponse,
+//   StoreRequisitionLinesSingleResponse,
+//   StoreRequisitionLinesSubmitData,
+//   StoreRequisitionResponse,
+//   StoreRequisitionType,
+//   StoreRequisitionUpdateData,
+// } from "../@types/storeReq.dto.ts";
 
 // ----------------------- purchase requisitions ---------------------------------------------
 export async function apiPurchaseRequisition(
@@ -236,7 +236,7 @@ export async function apiStoreRequisition(
   etag?: string
 ) {
   if (method === "PATCH" || method === "DELETE") {
-    return BcApiService.fetchData<StoreRequisitionResponse>({
+    return BcApiService.fetchData<any>({
       url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests(${systemId})?Company=${companyId}&${filterQuery}`,
       method,
       data,
@@ -245,7 +245,7 @@ export async function apiStoreRequisition(
       },
     });
   } else {
-    return BcApiService.fetchData<StoreRequisitionResponse>({
+    return BcApiService.fetchData<any>({
       url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests?Company=${companyId}&${filterQuery}`,
       method,
       data,
@@ -258,16 +258,16 @@ export async function apiStoreRequisitionDetail(
   id: string,
   filterQuery?: string
 ) {
-  return BcApiService.fetchData<StoreRequisitionLinesSingleResponse>({
+  return BcApiService.fetchData<any>({
     url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests(${id})?Company=${companyId}&${filterQuery}`,
   });
 }
 
 export async function apiCreateStoreRequisition(
   companyId: string,
-  data: StoreRequisitionType
+  data: any
 ) {
-  return BcApiService.fetchData<StoreRequisitionHeader>({
+  return BcApiService.fetchData<any>({
     url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests?Company=${companyId}`,
     method: "post",
     data,
@@ -277,13 +277,13 @@ export async function apiCreateStoreRequisition(
 export async function apiStoreRequisitionLines(
   companyId: string,
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
-  data?: StoreRequisitionLinesSubmitData,
+  data?: any,
   systemId?: string,
   etag?: string,
   filterQuery?: string
 ) {
   if (method === "PATCH" || method === "DELETE") {
-    return BcApiService.fetchData<StoreRequisitionLinesResponse>({
+    return BcApiService.fetchData<any>({
       url: `/api/hrpsolutions/procuretopay/v2.0/storeRequisitionLines(${systemId})?Company=${companyId}&${filterQuery}`,
       method,
       data,
@@ -292,7 +292,7 @@ export async function apiStoreRequisitionLines(
       },
     });
   }
-  return BcApiService.fetchData<StoreRequisitionLinesResponse>({
+  return BcApiService.fetchData<any>({
     url: `/api/hrpsolutions/procuretopay/v2.0/storeRequisitionLines?Company=${companyId}&${filterQuery}`,
     method,
     data,
@@ -301,9 +301,9 @@ export async function apiStoreRequisitionLines(
 
 export async function apiCreateStoreRequisitionLines(
   companyId: string,
-  data: StoreRequisitionLinesSubmitData
+  data: any
 ) {
-  return BcApiService.fetchData<StoreRequisitionLinesResponse>({
+  return BcApiService.fetchData<any>({
     url: `/api/hrpsolutions/procuretopay/v2.0/storeRequisitionLines?Company=${companyId}`,
     method: "post",
     data,
@@ -313,10 +313,10 @@ export async function apiCreateStoreRequisitionLines(
 export async function apiUpdateStoreRequisition(
   companyId: string,
   id: string,
-  data: Partial<StoreRequisitionUpdateData>,
+  data: any,
   etag: string
 ) {
-  return BcApiService.fetchData<StoreRequisitionResponse>({
+  return BcApiService.fetchData<any>({
     url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests(${id})?Company=${companyId}`,
     method: "PATCH",
     data,
