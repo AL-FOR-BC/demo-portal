@@ -1,16 +1,28 @@
 import axios from "axios";
-import appConfig from "../configs/navigation.config/app.config.ts";
-import {PERSIST_STORE_NAME} from "../constants/app.constants.ts";
-import store from "../store/storeSetup.ts";
-import deepParseJson from "../utils/deepParseJson.ts";
-import {REQUEST_HEADER_AUTH_KEY, TOKEN_TYPE} from "../constants/api.constants.ts";
-// import { signOutSuccess } from "@/store";
+import appConfig from "../configs/navigation.config/app.config";
+import { PERSIST_STORE_NAME } from "../constants/app.constants";
+import store from "../store/storeSetup";
+import deepParseJson from "../utils/deepParseJson";
+import { REQUEST_HEADER_AUTH_KEY, TOKEN_TYPE } from "../constants/api.constants";
 
 const unauthorizedCode = [401];
 
+// Helper function to determine API URL based on environment
+const getApiUrl = () => {
+    if (appConfig.environment === 'production') {
+        // Use relative URL in production
+        return `${window.location.origin}`;
+    }
+    return appConfig.apiPrefix;
+};
+
 const BaseService = axios.create({
     timeout: 60000,
-    baseURL: appConfig.apiPrefix,
+    baseURL: getApiUrl(),
+    headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+    },
 });
 
 BaseService.interceptors.request.use(
