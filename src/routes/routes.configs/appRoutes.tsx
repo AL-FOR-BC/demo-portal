@@ -83,19 +83,26 @@ const appRoutes: Routes = [
 
     // ---------------------------  stores --------------------------------
     {
-        key: "stores-requisitions",
-        path: "/stores-requisitions",
+        key: "stores-requests",
+        path: "/stores-requests",
         component: lazy(() => import("../../pages/stores/StoresRequisitions.tsx"))
     },
     {
-        key: "add-store-requisition",
-        path: "/add-store-requisition",
-        component: lazy(() => import("../../pages/stores/AddStoreRequisition.tsx"))
+        key: "add-store-request",
+        path: "/add-store-request",
+        component: lazy(() => import("../../pages/stores/AddStoreRequests.tsx"))
     },
     {
-        key: "store-requisition-details",
-        path: "/store-requisition-details/:id",
-        component: lazy(() => import("../../pages/stores/StoreRequisitionDetails.tsx"))
+        key: "store-request-details",
+        path: "/store-request-details/:id",
+        component: lazy(() => import("../../pages/stores/StoreRequestsDetails.tsx"))
+    },
+
+    // ------------------------- approval ----------------------------------------
+    {
+        key: 'approvals',
+        path: '/approvals',
+        component: lazy(() => import("../../pages/approvals/Approval.tsx"))
     }
 
 

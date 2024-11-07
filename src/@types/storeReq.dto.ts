@@ -11,6 +11,18 @@ export interface StoreRequisitionType {
     purpose: string;
     status?: string;
   }
+  export interface StoreRequisitionSubmitData {
+    [key: string]: any;
+    storeReqType?: any;
+    requestorNo: string;
+    projectCode?: string;
+    purpose?: string;
+    locationCode: string;
+    transferTo?: string;
+    transitCode?: string;
+    project?: string;
+    
+  }
   
   export interface StoreRequisitionHeader extends StoreRequisitionType {
     systemId: string;
@@ -54,6 +66,7 @@ export interface StoreRequisitionType {
     transferTo?: string;
     transitCode?: string;
     project: string;
-    purpose: string;
-    status: string;
+    purpose?: string;
+    status?: string;
   }
+

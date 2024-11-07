@@ -20,6 +20,7 @@ export interface TableComponentProps {
     addLabel: string; // Label for the "Add" button
     noDataMessage: string; // Message when no data is available
     iconClassName: string; // Icon class for no data indication
+    filterComponent?: React.ReactNode;
 }
 
 export interface TableLinesComponentProps extends TableComponentProps {

@@ -69,7 +69,7 @@ function StoresRequisitions() {
                 <ActionFormatter
                     row={row}
                     cellContent={cell}
-                    navigateTo="/store-requisition-details"
+                    navigateTo="/store-request-details"
                 />
             )
         }
@@ -104,8 +104,8 @@ function StoresRequisitions() {
             title="Store Requisitions"
             subTitle="Manage all your store requests"
             breadcrumbItem="Store Requests"
-            addLink="/add-store-requisition"
-            addLabel="Add Store Requisition"
+            addLink="/add-store-request"
+            addLabel="Add Store Request"
         />
     );
 }

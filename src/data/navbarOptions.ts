@@ -422,8 +422,8 @@ export const navbarOptions: NavigationTree[] = [
       },
       {
         id: 41,
-        name: "Stores Requisition",
-        path: "/stores-requisitions",
+        name: "Stores Requests",
+        path: "/stores-requests",
         // subOptions: [],
       }
     ],

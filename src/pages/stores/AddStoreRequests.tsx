@@ -5,8 +5,11 @@ import { useAppSelector } from "../../store/hook.ts";
 import { useNavigate } from 'react-router-dom';
 import HeaderMui from '../../Components/ui/Header/HeaderMui.tsx';
 import { options } from '../../@types/common.dto.ts';
+import { apiCreateStoreRequest } from '../../services/StoreRequestServices.ts';
+import { getErrorMessage } from '../../utils/common.ts';
+// import { StoreRequisitionSubmitData } from '../../@types/storeReq.dto.ts';
 
-function AddStoreRequisition() {
+function AddStoreRequest() {
     const { companyId } = useAppSelector(state => state.auth.session);
     const navigate = useNavigate();
     const { employeeNo, employeeName } = useAppSelector(state => state.auth.user);
@@ -15,17 +18,17 @@ function AddStoreRequisition() {
     const [showError, setShowError] = useState(false);
 
     // Form states
-    const [selectedLocationType, setSelectedLocationType] = useState<options[]>([]);
-    const [selectedTransferTo, setSelectedTransferTo] = useState<options[]>([]);
-    const [selectedDimension, setSelectedDimension] = useState<options[]>([]);
-    const [requisitionType, setRequisitionType] = useState<options[]>([]);
-    const [purpose, setPurpose] = useState<string>('');
-    const [transitCode, setTransitCode] = useState<string>('');
-    const [status] = useState<string>('Open');
+    const [selectedLocationType, setSelectedLocationType] = useState < options[] > ([]);
+    const [selectedTransferTo, setSelectedTransferTo] = useState < options[] > ([]);
+    const [selectedDimension, setSelectedDimension] = useState < options[] > ([]);
+    const [requisitionType, setRequisitionType] = useState < options[] > ([]);
+    const [purpose, setPurpose] = useState < string > ('');
+    const [transitCode, setTransitCode] = useState < string > ('');
+    const [status] = useState < string > ('Open');
 
     // Options states
-    const [locationOptions, setLocationOptions] = useState<options[]>([]);
-    const [dimensionValues, setDimensionValues] = useState<options[]>([]);
+    const [locationOptions, setLocationOptions] = useState < options[] > ([]);
+    const [dimensionValues, setDimensionValues] = useState < options[] > ([]);
 
     const requisitionTypeOptions = [
         { label: 'Issue', value: 'Issue' },
@@ -76,7 +79,13 @@ function AddStoreRequisition() {
                     type: 'select',
                     options: locationOptions,
                     value: selectedTransferTo,
-                    onChange: (e: options) => setSelectedTransferTo([{ label: e.label, value: e.value }]),
+                    onChange: (e: options) => {
+                        if (selectedLocationType[0]?.value === e.value) {
+                            toast.error('Transfer to cannot be the same as location code')
+                        } else {
+                            setSelectedTransferTo([{ label: e.label, value: e.value }])
+                        }
+                    },
                     id: 'transferTo'
                 },
                 {
@@ -102,11 +111,26 @@ function AddStoreRequisition() {
     const handleSubmit = async () => {
         try {
             setIsLoading(true);
-            // Add your submission logic here
-            // Similar to the purchase requisition but with store-specific fields
-            toast.success('Store requisition created successfully');
+            const data = {
+                requestorNo: employeeNo,
+                // projectCode: selectedDimension[0]?.value,
+                purpose: purpose,
+                storeReqType: requisitionType[0]?.value,
+                locationCode: selectedLocationType[0]?.value,
+                ...(requisitionType[0]?.value === 'TransferOrder' ? {
+                    transferTo: selectedTransferTo[0]?.value,
+                    transitCode: transitCode
+                } : {})
+
+            }
+            const res = await apiCreateStoreRequest(companyId, data)
+            if (res.status === 201) {
+                toast.success('Store requisition created successfully');
+                navigate(`/store-requests-details/${res.data.systemId}`)
+            }
+
         } catch (error) {
-            toast.error(`Error creating store requisition: ${error}`);
+            toast.error(`Error creating store requisition: ${getErrorMessage(error)}`);
         } finally {
             setIsLoading(false);
         }
@@ -115,7 +139,7 @@ function AddStoreRequisition() {
     const populateData = async () => {
         try {
             setIsLoading(true);
-            
+
             // Fetch locations
             const resLocationCodes = await apiLocation(companyId);
             const locationOptions = resLocationCodes.data.value.map((e) => ({
@@ -160,4 +184,4 @@ function AddStoreRequisition() {
     );
 }
 
-export default AddStoreRequisition;
+export default AddStoreRequest;

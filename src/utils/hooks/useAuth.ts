@@ -165,7 +165,7 @@ function UseAuth() {
         "aud" in azureToken &&
         azureToken.aud === "https://api.businesscentral.dynamics.com"
       ) {
-        // handleSignOutAzure();
+        handleSignOutAzure();
         dispatch(signOutSuccess());
         dispatch(
           setUser({
