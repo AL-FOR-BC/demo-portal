@@ -6,7 +6,7 @@ export default defineConfig({
   base: "/rom/",
   plugins: [react()],
   define: {
-    "import.meta.env.ENVIRONMENT": JSON.stringify("development"),
+    "import.meta.env.ENVIRONMENT": JSON.stringify("production"),
 
     "import.meta.env": JSON.stringify(process.env),
     "import.meta.env.VITE_EHUB_BACKEND_URL": JSON.stringify(
