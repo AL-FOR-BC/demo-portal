@@ -3,14 +3,13 @@ import { useEffect, useState } from "react";
 import { apiStoreRequisition } from "../../services/RequisitionServices.ts";
 import { statusFormatter, ActionFormatter, noFormatter } from "../../Components/ui/Table/TableUtils.tsx";
 import { useAppSelector } from "../../store/hook.ts";
-import { StoreRequisitionType } from "../../@types/storeReq.dto.ts";
 import { toast } from "react-toastify";
 
 function StoresRequisitions() {
     const { companyId } = useAppSelector(state => state.auth.session)
     const { employeeNo } = useAppSelector(state => state.auth.user)
     const [isLoading, setIsLoading] = useState(false);
-    const [storeRequisitions, setStoreRequisitions] = useState<StoreRequisitionType[]>([])
+    const [storeRequisitions, setStoreRequisitions] = useState<any[]>([])
 
     const defaultSorted = [{
         dataField: 'no',

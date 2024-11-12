@@ -38,17 +38,20 @@ function Approvals() {
         order: 'desc'
     }];
 
-    const getApprovalPath = (documentType: string, documentNo: string, systemId: string) => {
-        const type = (documentType || '').toLowerCase();
+    const getApprovalPath = (documentType: string, documentNo: string) => {
+        console.log("documentType:", decodeValue(documentType));
+        const type = (decodeValue(documentType) || '').toLowerCase();
+        console.log("type:", type);
+
         switch (type) {
             case 'purchase requisition':
-                return `/approve-purchase-requisition/${documentNo}/${systemId}`;
-            case 'payment requisition':
-                return `/approve-payment-requisition/${documentNo}/${systemId}`;
-            case 'store requisition':
-                return `/approve-store-requisition/${documentNo}/${systemId}`;
-            case 'leave request':
-                return `/approve-leave-request/${documentNo}/${systemId}`;
+                return `/approve-purchase-requisition/${documentNo}`
+            // case 'payment requisition':
+            //     return `/approve-payment-requisition/${documentNo}/${systemId}`;
+            // case 'store requisition':
+            //     return `/approve-store-requisition/${documentNo}/${systemId}`;
+            // case 'leave request':
+            //     return `/approve-leave-request/${documentNo}/${systemId}`;
             default:
                 return '#';
         }
@@ -87,13 +90,18 @@ function Approvals() {
             dataField: 'action',
             isDummyField: true,
             text: 'Action',
-            formatter: (cell: any, row: any) => (
-                <ActionFormatter
-                    row={row}
-                    cellContent={cell}
-                    navigateTo={getApprovalPath(row.DocumentType, row.DocumentNo, row.SystemId)}
-                />
-            )
+            formatter: (cell: any, row: any) => {
+                console.log("row:", row.DocumentNo);
+                console.log("getApprovalPath:", getApprovalPath(row.DocumentType, row.DocumentNo));
+                return (
+                    < ActionFormatter
+                        row={row}
+                        cellContent={cell}
+                        navigateTo={getApprovalPath(row.DocumentType, row.DocumentNo)}
+                        pageType="approval"
+                    />
+                )
+            }
         }
     ];
 

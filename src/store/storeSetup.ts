@@ -71,6 +71,7 @@ export function injectReducer<S>(key: string, reducer: Reducer<S, Action>) {
 }
 
 export type AppDispatch = typeof store.dispatch
+export type BaseRootState = ReturnType<typeof store.getState>;
 
 export { persistor }
 

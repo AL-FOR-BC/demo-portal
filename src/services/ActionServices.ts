@@ -34,20 +34,34 @@ export async function apiCancelApproval(
 
 export async function apiApprovalRequest(
   companyId: string,
-  filterQuery?: string
+  filterQuery?: string,
+  data?: any
 ) {
   return BcApiService.fetchData<any>({
     url: `/ODataV4/ODataV4/HRMISActions_ApproveRequest?Company=${companyId}&${filterQuery}`,
+    method: "post",
+    data,
   });
 }
 
 
 export async function apiRejectApprovalRequest(
   companyId: string,
+  data?: any,
   filterQuery?: string
 ) {
   return BcApiService.fetchData<any>({
     url: `/ODataV4/HRMISActions_RejectNFLApprovalRequest?Company=${companyId}&${filterQuery}`,
+    method: "post",
+    data,
   });
 }
 
+
+export async function apiApproveRequest(companyId: string, data: any) {
+  return BcApiService.fetchData<any>({
+    url: `/ODataV4/HRMISActions_ApproveRequest?Company=${companyId}`,
+    method: "post",
+    data,
+  });
+}

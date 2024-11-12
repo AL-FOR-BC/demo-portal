@@ -19,7 +19,7 @@ const birthday_wishes = [
     "Celebrate big today!",
     "Wishing you love and laughter!"
 ];
-const birthdayEmojis = ['🎉', '🎂'];
+const birthdayEmojis = ['🎉', '🎂', '🎈', '🎊', '🎁'];
 
 const Notifications = ({ birthdayIndividuals }) => {
     return (

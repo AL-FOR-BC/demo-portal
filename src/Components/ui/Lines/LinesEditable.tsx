@@ -6,6 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
+import { styled } from '@mui/material/styles';
 import {
   GridRowsProp,
   GridRowModesModel,
@@ -20,72 +21,114 @@ import {
   GridRowEditStopReasons,
   GridToolbarProps,
 } from '@mui/x-data-grid';
-import {
-
-  randomId,
-
-} from '@mui/x-data-grid-generator';
+import { randomId } from '@mui/x-data-grid-generator';
 import { Link } from 'react-router-dom';
 import { PlusIcon } from '../../common/icons/icons';
+import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
+// Custom styled DataGrid
+const StyledDataGrid = styled(DataGrid)(() => ({
+  border: 'none',
+  fontFamily: 'inherit',
+  '& .MuiDataGrid-main': {
+    // borderSpacing: '0 8px',
+    borderCollapse: 'separate',
+  },
+  '& .MuiDataGrid-columnHeaders': {
+    padding: '0px 16px',
+    backgroundColor: '#f8f9fa',
+    color: '#495057',
+    fontSize: '0.875rem',
+    fontWeight: 600,
+    borderBottom: 'none',
+  },
+  '& .MuiDataGrid-cell': {
+    border: 'none',
+    // padding: '6px 8px',
+    fontSize: '0.875rem',
+    color: '#495057',
+  },
+  '& .MuiDataGrid-row': {
+    backgroundColor: '#fbfbfd',
+    '&:nth-of-type(odd)': {
+      backgroundColor: '#fbfbfd',
+    },
+    '&:hover': {
+      backgroundColor: '#f3f3f9',
+    },
+    '& .MuiDataGrid-cell': {
+      borderBottom: 'none',
+    },
+  },
+  '& .MuiDataGrid-footerContainer': {
+    borderTop: 'none',
+  },
+  '& .MuiDataGrid-virtualScroller': {
+    marginTop: '0 !important',
+  },
+  // Style for edit mode
+  '& .MuiDataGrid-row.Mui-editing': {
+    backgroundColor: '#fff',
+    '& .MuiDataGrid-cell': {
+      padding: '8px',
+    },
+  },
+  // Style for action buttons
+  '& .actions': {
+    color: '#495057',
+    '& .MuiIconButton-root': {
+      padding: '4px',
+    },
+  },
+}));
 
+// Styled toolbar container
+const StyledToolbarContainer = styled(GridToolbarContainer)({
+  // padding: '16px 0',
+  justifyContent: 'flex-end',
+});
 
 interface EditToolbarProps {
   setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
   setRowModesModel: (
     newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
   ) => void;
-  documentType: string;  // Add this line
+  documentType: string;
+  columns: GridColDef[];
 }
 
 function EditToolbar(props: EditToolbarProps) {
-  const { setRows, setRowModesModel, documentType } = props;
+  const { setRows, setRowModesModel } = props;
 
   const handleClick = () => {
-    setRows((oldRows) => {
-      // Check if there's already an empty row
-      const hasEmptyRow = oldRows.some(row =>
-        !row.leaveType && !row.startDate && !row.endDate && !row.description && !row.quantity
-      );
-
-      if (hasEmptyRow) {
-        // If an empty row exists, don't add a new one
-        console.log("An empty row already exists. Please fill it before adding a new one.");
-        return oldRows;
-      }
-
-      // If no empty row, add a new one
-      const id = randomId();
-      const newRow = {
-        id,
-        leaveType: '',
-        startDate: null,
-        endDate: null,
-        description: '',
-        quantity: null,
-        isNew: true
-      };
-
-      setRowModesModel((oldModel) => ({
-        ...oldModel,
-        [id]: { mode: GridRowModes.Edit, fieldToFocus: 'leaveType' },
-      }));
-
-      return [...oldRows, newRow];
-    });
+    const id = randomId();
+    const newRow = {
+      id,
+      description2: '',
+      quantity: null,
+      unitOfMeasure: '',
+      isNew: true
+    };
+    setRows((oldRows) => [newRow, ...oldRows]);
+    setRowModesModel((oldModel) => ({
+      ...oldModel,
+      [id]: { mode: GridRowModes.Edit, fieldToFocus: 'description2' },
+    }));
   };
 
+
   return (
-    <GridToolbarContainer>
+    <StyledToolbarContainer>
       <Link
         className="btn btn-primary btn-label"
         to="#"
         onClick={handleClick}
       >
         <PlusIcon className="label-icon" />
-        {`Add ${documentType} line`}
+        {`Add ${props.documentType} line`}
       </Link>
-    </GridToolbarContainer>
+    </StyledToolbarContainer>
   );
 }
 
@@ -93,21 +136,25 @@ interface LinesEditableProps {
   columns: GridColDef[];
   rowLines: any[]
   documentType: string;
-  handleSubmitLines: (data: any, id: string) => void
+  handleSubmitLines: (data: any[]) => Promise<{ success: boolean }>
+  handleDeleteLine: (id: GridRowId) => void
+  handleEditLine: (data: any) => Promise<{ success: boolean }>
 }
 
-export default function LinesEditable({ columns, rowLines, documentType, handleSubmitLines }: LinesEditableProps) {
-  const [rows, setRows] = React.useState < GridRowsProp > ([]);
-
+export default function LinesEditable({ columns, rowLines, documentType, handleSubmitLines, handleDeleteLine, handleEditLine }: LinesEditableProps) {
+  const [rows, setRows] = React.useState < any[] > ([]);
+  const [isEditing, setIsEditing] = React.useState < boolean > (false);
+  const [rowModesModel, setRowModesModel] = React.useState < GridRowModesModel > ({});
+  const [lineTab, setLineTab] = React.useState < boolean > (true);
+  console.log("documentType:", documentType);
   React.useEffect(() => {
     console.log("Initial rowLines:", rowLines);
     if (rowLines && rowLines.length > 0) {
-      const formattedRows = rowLines.map(row => ({
+      const formattedRows = rowLines.map((row, index) => ({
         ...row,
-        id: row.SystemId || row.id,
-        startDate: row.startDate ? new Date(row.startDate) : null,
-        endDate: row.endDate ? new Date(row.endDate) : null,
+        id: row.systemId || row.lineNo || `temp-id-${index}`,
       }));
+      console.log("Formatted rows:", formattedRows);
       setRows(formattedRows);
     }
   }, [rowLines]);
@@ -116,10 +163,9 @@ export default function LinesEditable({ columns, rowLines, documentType, handleS
     console.log("Rows state:", rows);
   }, [rows]);
 
-  const [rowModesModel, setRowModesModel] = React.useState < GridRowModesModel > ({});
-  const [lineTab, setLineTab] = React.useState(true);
-
-  const toggleLines = () => setLineTab(!lineTab);
+  const toggleLines = () => {
+    setLineTab(prev => !prev);
+  };
 
   const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -128,19 +174,29 @@ export default function LinesEditable({ columns, rowLines, documentType, handleS
   };
 
   const handleEditClick = (id: GridRowId) => () => {
+    setIsEditing(true)
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
   };
 
   const handleSaveClick = (id: GridRowId) => () => {
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
-    console.log(rows, id)
-    handleSubmitLines(rows, id.toString())
-
-
   };
 
   const handleDeleteClick = (id: GridRowId) => () => {
-    setRows(rows.filter((row) => row.id !== id));
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setRows(rows.filter((row) => row.id !== id));
+        handleDeleteLine(id);
+      }
+    });
   };
 
   const handleCancelClick = (id: GridRowId) => () => {
@@ -150,15 +206,56 @@ export default function LinesEditable({ columns, rowLines, documentType, handleS
     });
 
     const editedRow = rows.find((row) => row.id === id);
-    if (editedRow!.isNew) {
+    if (editedRow?.isNew) {
       setRows(rows.filter((row) => row.id !== id));
     }
   };
 
-  const processRowUpdate = (newRow: GridRowModel) => {
-    const updatedRow = { ...newRow, isNew: false };
-    setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
-    return updatedRow;
+  const processRowUpdate = async (newRow: GridRowModel) => {
+    try {
+      // Validate the fields
+      if (!newRow.description2?.toString().trim()) {
+        throw new Error("Description is required");
+      }
+
+      if (newRow.quantity === null || newRow.quantity === undefined || isNaN(Number(newRow.quantity))) {
+        throw new Error("Valid quantity is required");
+      }
+
+      if (!newRow.unitOfMeasure?.toString().trim()) {
+        throw new Error("Unit of Measure is required");
+      }
+
+      if (isEditing) {
+        const response = await handleEditLine(newRow);
+        if (response.success) {
+          const updatedRow = { ...newRow, isNew: false };
+          setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+          return updatedRow;
+        } else {
+          throw new Error("Failed to save changes");
+        }
+
+      } else {
+        const response = await handleSubmitLines([newRow]);
+        if (response.success) {
+          const updatedRow = { ...newRow, isNew: false };
+          setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+          return updatedRow;
+        } else {
+          throw new Error("Failed to save changes");
+        }
+      }
+
+
+    } catch (error) {
+      toast.error(error.message || "Failed to save changes");
+      throw error;
+    }
+  };
+
+  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+    setRowModesModel(newRowModesModel);
   };
 
   const columnsWithActions: GridColDef[] = [
@@ -203,14 +300,17 @@ export default function LinesEditable({ columns, rowLines, documentType, handleS
     },
   ];
 
-  const CustomToolbar = (props: GridToolbarProps) => (
-    <EditToolbar
-      {...props}
-      setRows={setRows}
-      setRowModesModel={setRowModesModel}
-      documentType={documentType}
-    />
-  );
+  const ToolbarWrapper = (props: GridToolbarProps) => {
+    return (
+      <EditToolbar
+        {...props}
+        setRows={setRows as any}
+        setRowModesModel={setRowModesModel}
+        documentType={documentType}
+        columns={columns}
+      />
+    );
+  };
 
   return (
     <div className="accordion-item">
@@ -244,33 +344,31 @@ export default function LinesEditable({ columns, rowLines, documentType, handleS
               },
             }}
           >
-            <DataGrid
+            <StyledDataGrid
               rows={rows}
               columns={columnsWithActions}
               editMode="row"
               rowModesModel={rowModesModel}
-              onRowModesModelChange={setRowModesModel}
+              onRowModesModelChange={handleRowModesModelChange}
               onRowEditStop={handleRowEditStop}
               processRowUpdate={processRowUpdate}
               slots={{
-                toolbar: CustomToolbar,
+                toolbar: ToolbarWrapper,
               }}
               slotProps={{
-                toolbar: { setRows, setRowModesModel, documentType },
+                toolbar: {},
               }}
-              getRowId={(row) => row.id || row.SystemId}
+              getRowId={(row) => row.id || row.systemId || `temp-${row.lineNo}`}
               hideFooterSelectedRowCount
               hideFooterPagination
-              sx={{
-                border: 'none',
-                '& .MuiDataGrid-cell': {
-                  borderBottom: 'none',
-                },
-                '& .MuiDataGrid-columnHeaders': {
-                  borderBottom: 'none',
-                },
-                '& .MuiDataGrid-footerContainer': {
-                  borderTop: 'none',
+              autoHeight
+              disableColumnMenu
+              density="comfortable"
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 10,
+                  },
                 },
               }}
             />

@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { SLICE_BASE_NAME } from "./constants.ts";
 import { apiCompanies } from "../../../services/CommonServices.ts";
+import { BaseRootState } from "../../storeSetup.ts";
 
 export interface SessionState {
   signedIn: boolean;
@@ -32,15 +33,20 @@ const initialState: SessionState = {
   //! production companyId
   // companyId: "5219704f-f889-ef11-ac23-002248136f86",
 };
-export const fetchCompanies = createAsyncThunk(`${SLICE_BASE_NAME}/companies`, async (_, { rejectWithValue }    ) => {
-  try {
-    const response = await apiCompanies()
-    console.log(response.data)
-    return response.data
-  } catch (error) {
-    return rejectWithValue(error)
+export const fetchCompanies = createAsyncThunk(
+  `${SLICE_BASE_NAME}/companies`,
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const response = await apiCompanies();
+      const state = getState() as BaseRootState;
+
+      console.log(response.data);
+      return { data: response.data, state };
+    } catch (error) {
+      return rejectWithValue(error);
+    }
   }
-})
+);
 
 const sessionSlice = createSlice({
   name: `${SLICE_BASE_NAME}/session`,
@@ -65,7 +71,7 @@ const sessionSlice = createSlice({
       // state.token = null;
       // state.bcToken = null;
       // state.companyId = initialState.companyId;
-      return {...initialState}
+      return { ...initialState };
     },
   },
   extraReducers: (builder) => {
@@ -76,16 +82,28 @@ const sessionSlice = createSlice({
       })
       .addCase(fetchCompanies.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.companies = action.payload.value;
+        state.companies = action.payload.data.value;
         // If there's a preferred company and it exists in the companies list, use it
-        if (state.preferredCompanyId && 
-            action.payload.value.some(company => company.id === state.preferredCompanyId)) {
+        if (
+          state.preferredCompanyId &&
+          action.payload.data.value.some(
+            (company) => company.id === state.preferredCompanyId
+          )
+        ) {
           state.companyId = state.preferredCompanyId;
         }
         // Otherwise, set to first company if available
-        else if (action.payload.value.length > 0) {
-          state.companyId = action.payload.value[0].id;
-          state.preferredCompanyId = action.payload.value[0].id;
+        else if (action.payload.data.value.length > 0) {
+          // how can i get state in User  slice ( i want to ge the email )
+          // if emai is shrp@reachoutmbuya.org the use
+          const rootState = action.payload.state;
+          if (rootState.auth.user.email === "shrp@reachoutmbuya.org") {
+            state.companyId = action.payload.data.value[1].id;
+            state.preferredCompanyId = action.payload.data.value[1].id;
+          } else {
+            state.companyId = action.payload.data.value[0].id;
+            state.preferredCompanyId = action.payload.data.value[0].id;
+          }
         }
       })
       .addCase(fetchCompanies.rejected, (state, action) => {
@@ -94,6 +112,11 @@ const sessionSlice = createSlice({
       });
   },
 });
-export const { signInSuccess, signOutSuccess, bcTokenSuccess, setCompany,setAllowCompanyChange } =
-  sessionSlice.actions;
+export const {
+  signInSuccess,
+  signOutSuccess,
+  bcTokenSuccess,
+  setCompany,
+  setAllowCompanyChange,
+} = sessionSlice.actions;
 export default sessionSlice.reducer;

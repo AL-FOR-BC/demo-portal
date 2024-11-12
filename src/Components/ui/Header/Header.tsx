@@ -205,6 +205,44 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     </>
                                 )
                             }
+
+                            {
+                                pageType === "approval" && (
+                                    <>
+                                        <Row>
+
+                                            <div className="d-flex flex-wrap gap-2">
+                                                <Button color="secondary" className="btn  btn-label" onClick={handleBack}>
+                                                    <i className="label-icon">
+                                                        <ArrowBackIcon className="label-icon" />
+                                                    </i>
+
+                                                    Back
+                                                </Button>
+                                            </div>
+                                            {/* approval button */}
+                                            <div>
+                                                <Button color="primary" type="button" className="btn btn-primary btn-label" onClick={handleSubmit}>
+                                                    <i className="label-icon">
+                                                        <SaveIcon className="label-icon" />
+                                                    </i>
+                                                    Approve Request
+                                                </Button>
+
+                                            </div>
+                                            {/* reject button */}
+                                            <div>
+                                                <Button color="danger" type="button" className="btn btn-danger btn-label" onClick={handleSubmit}>
+                                                    Reject Request
+                                                </Button>
+                                            </div>
+                                        </Row>
+                                        <ApprovalEntries defaultCompany={companyId} docType={documentType} docNo={requestNo} />
+                                        {/* <ApprovalComments defaultCompany={companyId} docType={documentType} docNo={requestNo} /> */}
+                                        {/* <Attachments defaultCompany={companyId} docType={documentType} docNo={requestNo} ehub_username={userObj.ehub_username} ehub_pass={userObj.ehub_pass} status={purchaseRequisition.status} tableId={'51402104'} check_attachment={true} /> */}
+                                    </>
+                                )
+                            }
                             {/* //     <ApprovalEntries defaultCompany={userObj.default_company} docType={documentType} docNo={purchaseRequisition.no} />
                                     <ApprovalComments defaultCompany={userObj.default_company} docType={documentType} docNo={purchaseRequisition.no} />
                                 //     <Attachments defaultCompany={userObj.default_company} docType={documentType} docNo={purchaseRequisition.no} ehub_username={userObj.ehub_username} ehub_pass={userObj.ehub_pass} status={purchaseRequisition.status} tableId={'51402104'} check_attachment={true} />

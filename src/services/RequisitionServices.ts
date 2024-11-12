@@ -5,6 +5,7 @@ import {
   PurchaseRequisitionLinesSingleResponse,
   PurchaseRequisitionLinesSubmitData,
   PurchaseRequisitionResponse,
+  // PurchaseRequisitionSingleResponse,
   PurchaseRequisitionType,
   PurchaseRequisitionUpdateData,
 } from "../@types/purchaseReq.dto.ts";
@@ -102,9 +103,15 @@ export async function apiCreatePurchaseRequisition(
 
 export async function apiPurchaseRequisitionDetail(
   companyId: string,
-  id: string,
-  filterQuery?: string
+  id?: string,
+  documentNo?: string,
+  filterQuery?: string,
 ) {
+  if (documentNo) {
+    return BcApiService.fetchData<any>({
+      url: `/api/hrpsolutions/procuretopay/v2.0/purchaseRequisitionHeaders?Company=${companyId}&${filterQuery}`,
+    });
+  }
   return BcApiService.fetchData<PurchaseRequisitionLinesSingleResponse>({
     url: `/api/hrpsolutions/procuretopay/v2.0/purchaseRequisitionHeaders(${id})?Company=${companyId}&${filterQuery}`,
   });
@@ -263,10 +270,7 @@ export async function apiStoreRequisitionDetail(
   });
 }
 
-export async function apiCreateStoreRequisition(
-  companyId: string,
-  data: any
-) {
+export async function apiCreateStoreRequisition(companyId: string, data: any) {
   return BcApiService.fetchData<any>({
     url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests?Company=${companyId}`,
     method: "post",

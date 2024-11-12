@@ -9,7 +9,7 @@ import {
     CardContent,
 } from "@mui/material";
 import Select from 'react-select';
-import { GridColDef } from "@mui/x-data-grid";
+import { GridColDef, GridRowId } from "@mui/x-data-grid";
 import BreadCrumbs from "../../BreadCrumbs";
 // import ApprovalEntries from "../../common/ApprovalEntry";
 import Flatpickr from "react-flatpickr";
@@ -19,6 +19,8 @@ import classNames from "classnames";
 import { Button, Row, Col, Collapse, Input, Label } from "reactstrap";
 import Attachments from "../../common/Attachment";
 import ApprovalEntries from "../../common/ApprovalEntry";
+import LinesEditable from "../Lines/LinesEditable";
+import ApprovalAction from "../../common/ApprovalAction";
 
 interface HeaderMuiProps {
     title: string;
@@ -51,6 +53,8 @@ interface HeaderMuiProps {
     columns?: GridColDef[];
     rowLines?: any;
     handleSubmitLines?: (data: any, id: string) => void;
+    handleDeleteLine?: (id: GridRowId) => void
+    handleEditLine?: (id: GridRowId) => void
 }
 
 const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
@@ -78,6 +82,11 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
         documentType,
         requestNo,
         editableLines,
+        columns,
+        handleSubmitLines,
+        handleDeleteLine,
+        handleEditLine,
+        rowLines,
     } = props;
 
     return (
@@ -199,6 +208,42 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                     </div>
                                 </Row>
                             )}
+
+                        </>
+                    )}
+                    {pageType === 'approval' && (
+                        <>
+                            <Row className='justify-content-center mb-4'>
+                                <div className="d-flex flex-wrap gap-2">
+                                    <Button color="secondary" className="btn  btn-label" onClick={handleBack}>
+                                        <i className="label-icon">
+                                            <ArrowBackIcon className="label-icon" />
+                                        </i>
+
+                                        Back
+                                    </Button>
+                                    <ApprovalAction
+                                        docNo={requestNo}
+                                        docType={documentType}
+                                        companyId={companyId}
+                                    />
+
+                                    <Attachments
+                                        defaultCompany={companyId}
+                                        docType={documentType}
+                                        docNo={requestNo}
+                                        status={status}
+                                        tableId={50104}
+                                    />
+
+                                    <ApprovalEntries
+                                        defaultCompany={companyId}
+                                        docType={documentType}
+                                        docNo={requestNo}
+                                    />
+                                </div>
+                            </Row>
+
                         </>
                     )}
 
@@ -346,7 +391,16 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                                 </Row>
                                             </div>
                                         </Collapse>
-                                        {editableLines ? null : lines}
+                                        {editableLines ?
+                                            <LinesEditable
+                                                columns={columns ? columns : []}
+                                                handleSubmitLines={(data: any[]) => handleSubmitLines?.(data, '') || Promise.resolve({ success: false })}
+                                                documentType={documentType ? documentType : ''}
+                                                rowLines={rowLines}
+                                                handleDeleteLine={handleDeleteLine ? handleDeleteLine : () => { }}
+                                                handleEditLine={(data: any) => handleEditLine?.(data) || Promise.resolve({ success: false })}
+                                            />
+                                            : lines}
                                     </div>
                                 </div>
                             </CardContent>

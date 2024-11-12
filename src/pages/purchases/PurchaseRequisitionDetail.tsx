@@ -21,6 +21,7 @@ function PurchaseRequisitionDetail() {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { id } = useParams();
+    console.log("id:", id)
 
     const { companyId } = useAppSelector(state => state.auth.session)
     const { employeeNo, employeeName } = useAppSelector(state => state.auth.user)
@@ -220,7 +221,7 @@ function PurchaseRequisitionDetail() {
             setIsLoading(true)
             if (id) {
                 const filterQueryPurhDetail = `$expand=purchaseRequisitionLines`
-                const res = await apiPurchaseRequisitionDetail(companyId, id, filterQueryPurhDetail);
+                const res = await apiPurchaseRequisitionDetail(companyId, id, undefined, filterQueryPurhDetail);
                 const data = res.data;
 
 
@@ -236,7 +237,7 @@ function PurchaseRequisitionDetail() {
                     setSubjectOfProcurement(data.procurementDescription);
                     setExpectedReceiptDate(new Date(data.expectedReceiptDate));
                     setRequestNo(data.no);
-                    setBudgetCode(data.budgetCode);
+                    // setBudgetCode(data.budgetCode);
                     setSubjectOfProcurement(data.procurementDescription);
                     setExpectedReceiptDate(new Date(data.expectedReceiptDate));
                     setDimensionValues([{ label: data.project, value: data.project }]);

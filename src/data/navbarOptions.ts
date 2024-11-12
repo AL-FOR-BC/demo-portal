@@ -192,7 +192,7 @@ export const navbarOptions: NavigationTree[] = [
         id: 4,
         name: "Bio Data",
         path: "/bio-data",
-        subOptions: [],
+        // subOptions: [],
       },
       {
         id: 5,

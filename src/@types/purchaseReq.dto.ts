@@ -104,8 +104,23 @@ export interface PurchaseRequisitionLinesSingleResponse
   extends PurchaseRequisitionType {
   no: string;
   budgetCode: string;
+  locationCode: string;
+  projectCode: string;
   status: string;
+  currencyCode: string;
+  workPlanNo: string;
+  expectedReceiptDate: string;
+  project: string;
+  procurementMethod: string;
+  procurementType: string;
+  procurementCategory: string;
+  procurementDescription: string;
+
   purchaseRequisitionLines: PurchaseRequisitionLineType[];
+}
+
+export interface PurchaseRequisitionSingleResponse{
+  value: PurchaseRequisitionType[];
 }
 
 export interface PurchaseRequisitionUpdateData {

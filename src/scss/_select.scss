@@ -1,0 +1,37 @@
+.MuiDataGrid-cell--editing {
+    .react-select {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      
+      .select__control {
+        border-radius: 0;
+        border: none;
+      }
+      
+      .select__value-container {
+        padding: 0 8px;
+      }
+    }
+  }
+  
+  .select__menu {
+    .select__option {
+      cursor: pointer;
+      
+      &--is-focused {
+        background-color: #f3f3f9;
+      }
+      
+      &--is-selected {
+        background-color: #556ee6;
+        color: white;
+        
+        &:hover {
+          background-color: #556ee6;
+        }
+      }
+    }
+  }

@@ -95,7 +95,7 @@ const appRoutes: Routes = [
     {
         key: "store-request-details",
         path: "/store-request-details/:id",
-        component: lazy(() => import("../../pages/stores/StoreRequestsDetails.tsx"))
+        component: lazy(() => import("../../pages/stores/StoreRequestDetail.tsx"))
     },
 
     // ------------------------- approval ----------------------------------------
@@ -103,6 +103,19 @@ const appRoutes: Routes = [
         key: 'approvals',
         path: '/approvals',
         component: lazy(() => import("../../pages/approvals/Approval.tsx"))
+
+    },
+    {
+        key: 'approve-purchase-requisition',
+        path: '/approve-purchase-requisition/:documentNo',
+        component: lazy(() => import("../../pages/purchases/ApprovePurchaseRequisition.tsx"))
+    },
+
+    // ------------------------ HR SECTION ----------------------------------------
+    {
+        key: 'bio-data',
+        path: '/bio-data',
+        component: lazy(() => import("../../pages/bio-data/BioData.tsx"))
     }
 
 

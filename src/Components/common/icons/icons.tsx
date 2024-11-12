@@ -6,7 +6,7 @@ import { FaBusAlt } from "react-icons/fa";
 import Icon from '@mdi/react';
 import { mdiBadgeAccountHorizontal, mdiBagSuitcase, mdiCartPlus, mdiFileQuestion, mdiFormatListCheckbox, mdiLoginVariant, mdiMicrosoftAzure, mdiOfficeBuilding, mdiReceipt, mdiTeaOutline } from '@mdi/js';
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-
+import { BiUser, BiPhone, BiHome, BiCar, BiHealth, BiSolidBriefcaseAlt2 } from 'react-icons/bi';
 
 export const PencilIcon = (props: React.SVGProps<SVGAElement>) => <MdEdit {...props} />;
 export const DeleteIcon = (props: React.SVGProps<SVGAElement>) => <MdDelete {...props} />;
@@ -121,3 +121,11 @@ export const LabelIcon = (props: React.SVGProps<SVGAElement>) => <MdOutlineLabel
 />;
 
 export const BuildingIcon = () => <Icon path={mdiOfficeBuilding} size={1} />;
+
+export const BriefCaseIcon = (props: React.SVGProps<SVGAElement>) => <BiSolidBriefcaseAlt2 {...props} />;
+
+export const UserIcon = (props: React.SVGProps<SVGAElement>) => <BiUser {...props} />;
+export const PhoneIcon = (props: React.SVGProps<SVGAElement>) => <BiPhone {...props} />;
+export const HomeIcon = (props: React.SVGProps<SVGAElement>) => <BiHome {...props} />;
+export const CarIcon = (props: React.SVGProps<SVGAElement>) => <BiCar {...props} />;
+export const HealthIcon = (props: React.SVGProps<SVGAElement>) => <BiHealth {...props} />;

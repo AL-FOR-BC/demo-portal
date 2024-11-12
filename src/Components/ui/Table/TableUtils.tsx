@@ -50,11 +50,12 @@ export const statusFormatter = (cellContent: ReactNode, row: RowType): JSX.Eleme
 
 interface ActionFormatterProps {
     cellContent: React.ReactNode;     // Text or content inside the button
-    row: { systemId: string | number };     // Shape of the row, at least having an id
+    row: { systemId: string | number, DocumentNo: string };     // Shape of the row, at least having an id
     buttonText?: string;              // Custom button text
     buttonColor?: string;             // Custom button color, e.g., "primary", "danger", etc.
     onClick?: (row: { systemId: string | number }) => void;  // Custom onClick handler
     navigateTo?: string;              // Custom navigation path
+    pageType?: string;
 }
 // { systemId: string | undefined; "@odata.etag": string | undefined };
 interface ActionsFormatterLinesProps {
@@ -64,6 +65,7 @@ interface ActionsFormatterLinesProps {
     apiHandler: (companyId: string, method: HttpMethod, data?: any, systemId?: string, etag?: string, filterQuery?: string) => Promise<any>;
     populateData: () => void;
     handleDeleteLine: (row: { systemId: string | number }) => void;
+
 }
 export const ActionFormatter: React.FC<ActionFormatterProps> = ({
     cellContent,
@@ -71,33 +73,63 @@ export const ActionFormatter: React.FC<ActionFormatterProps> = ({
     buttonText = "Details",
     buttonColor = "primary",
     onClick,
-    navigateTo
+    navigateTo,
+    pageType = ""
 }) => {
+
+    // const [pageType, setPageType] = useState("");
+    // setPageType(pageType);
     console.log("Row data 2", row);
+    console.log("pageType:", pageType);
+    console.log("navigateTo:", navigateTo);
+    console.log("DocumentNo:", row.DocumentNo);
     const navigate = useNavigate();
 
     const handleClick = () => {
         if (onClick) {
             onClick(row);  // Use the custom onClick handler if provided
-        } else if (navigateTo) {
+        }
+        else if (pageType === "" && navigateTo) {
             navigate(`${navigateTo}/${row.systemId}`);  // Default navigation behavior
+        }
+        else if (pageType === "approval" && navigateTo) {
+            console.log("navigateTo:", `${navigateTo}/${row.DocumentNo}`);
+            navigate(`${navigateTo}`);
         }
     };
 
-    return (
-        <Link to={`${navigateTo}/${row.systemId}`}>
-            <Button
-                type="button"
-                color={buttonColor}
-                className="btn-sm btn-rounded"
-                onClick={handleClick}
-            >
 
-                {cellContent || buttonText}
-            </Button>
-        </Link>
+    if (pageType === "approval") {
+        return (
+            <Link to={`${navigateTo}`}>
+                <Button
+                    type="button"
+                    color={buttonColor}
+                    className="btn-sm btn-rounded"
+                    onClick={handleClick}
+                >
 
-    );
+                    {cellContent || buttonText}
+                </Button>
+            </Link>
+        )
+    }
+    else {
+        return (
+            <Link to={`${navigateTo}/${row.systemId}`}>
+                <Button
+                    type="button"
+                    color={buttonColor}
+                    className="btn-sm btn-rounded"
+                    onClick={handleClick}
+                >
+
+                    {cellContent || buttonText}
+                </Button>
+            </Link>
+        )
+    }
+
 };
 
 export const noFormatter = (cellContent: any) => {
