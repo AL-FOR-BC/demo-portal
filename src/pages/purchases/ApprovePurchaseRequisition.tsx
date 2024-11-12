@@ -135,7 +135,8 @@ function ApprovePurchaseRequisition() {
             if (documentNo) {
                 const filter = `$expand=purchaseRequisitionLines&$filter=no eq '${documentNo}'`;
                 const response = await apiPurchaseRequisitionDetail(companyId, undefined, documentNo, filter);
-                const data = response.data
+                const data = response.data.value[0]
+                console.log("data:", data);
                 setPurchaseRequisitionLines(data.purchaseRequisitionLines)
                 setSelectedCurrency(data.currencyCode ? data.currencyCode : 'UGX');
 
