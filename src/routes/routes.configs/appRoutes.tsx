@@ -110,7 +110,11 @@ const appRoutes: Routes = [
         path: '/approve-purchase-requisition/:documentNo',
         component: lazy(() => import("../../pages/purchases/ApprovePurchaseRequisition.tsx"))
     },
-
+    {
+        key: 'approve-payment-requisition',
+        path: '/approve-payment-requisition/:documentNo',
+        component: lazy(() => import("../../pages/payment/ApprovePaymentRequisition.tsx"))
+    },
     // ------------------------ HR SECTION ----------------------------------------
     {
         key: 'bio-data',

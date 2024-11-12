@@ -146,9 +146,15 @@ export async function apiPaymentRequisition(
 
 export async function apiPaymentRequisitionDetail(
   companyId: string,
-  id: string,
+  id?: string,
+  documentNo?: string,
   filterQuery?: string
 ) {
+  if (documentNo) {
+    return BcApiService.fetchData<any>({
+      url: `/api/hrpsolutions/procuretopay/v2.0/paymentRequestHeaders?Company=${companyId}&${filterQuery}`,
+    });
+  }
   return BcApiService.fetchData<PaymentRequisition>({
     url: `/api/hrpsolutions/procuretopay/v2.0/paymentRequestHeaders(${id})?Company=${companyId}&${filterQuery}`,
   });

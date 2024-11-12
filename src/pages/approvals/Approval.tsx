@@ -46,8 +46,8 @@ function Approvals() {
         switch (type) {
             case 'purchase requisition':
                 return `/approve-purchase-requisition/${documentNo}`
-            // case 'payment requisition':
-            //     return `/approve-payment-requisition/${documentNo}/${systemId}`;
+            case 'payment requisition':
+                return `/approve-payment-requisition/${documentNo}`;
             // case 'store requisition':
             //     return `/approve-store-requisition/${documentNo}/${systemId}`;
             // case 'leave request':
