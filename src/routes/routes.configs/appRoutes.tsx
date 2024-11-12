@@ -120,7 +120,25 @@ const appRoutes: Routes = [
         key: 'bio-data',
         path: '/bio-data',
         component: lazy(() => import("../../pages/bio-data/BioData.tsx"))
-    }
+    },
+
+    // ------------------------ Time Sheets ----------------------------------------
+    {
+        key: 'open-time-sheets',
+        path: '/open-time-sheets',
+        component: lazy(() => import("../../pages/time-sheets/OpenTimeSheets.tsx"))
+    },
+    {
+        key: "time-sheet-details",
+        path: "/time-sheet-details/:id",
+        component: lazy(() => import("../../pages/time-sheets/TimeSheetDetails.tsx"))
+    },
+    // {
+    //     key: 'approved-time-sheets',
+    //     path: '/approved-time-sheets',
+    //     component: lazy(() => import("../../pages/time-sheets/ApprovedTimeSheets.tsx"))
+    // }
+
 
 
 

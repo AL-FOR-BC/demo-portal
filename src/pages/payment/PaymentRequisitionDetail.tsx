@@ -410,7 +410,7 @@ function PaymentRequisitionDetail() {
       if (id) {
 
         const filterQueryPayetail = `$expand=paymentRequestLines`
-        const res = await apiPaymentRequisitionDetail(companyId, id, filterQueryPayetail);
+        const res = await apiPaymentRequisitionDetail(companyId, id, undefined, filterQueryPayetail);
         const resData = res.data as PaymentRequisition
         console.log(resData)
         if (resData.no) {
