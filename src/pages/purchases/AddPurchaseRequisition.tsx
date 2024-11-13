@@ -40,7 +40,9 @@ function AddPurchaseRequisition() {
 
 
     const handleSubmit = async () => {
+
         try {
+
 
             setIsLoading(true);
             if (selectedCurrency.length == 0 || selectedWorkPlan.length == 0 || subjectOfProcurement == '' || expectedReceiptDate == null) {
@@ -53,14 +55,15 @@ function AddPurchaseRequisition() {
             const data: PurchaseRequisitionType = {
                 currencyCode: selectedCurrency[0].value,
                 workPlanNo: split(selectedWorkPlan[0].value, '::')[0],
-                locationCode: selectedLocation[0].value,
+                locationCode: selectedLocation.length > 0 ? selectedLocation[0].value : '',
                 procurementDescription: subjectOfProcurement,
                 // budgetCode: budgetCode,
                 expectedReceiptDate: formatDate(expectedReceiptDate.toISOString()),
-                project: selectedDimension[0].value,
+                project: selectedDimension.length > 0 ? selectedDimension[0].value : '',
                 requestorNo: employeeNo || '',
 
             }
+            console.log("data", data)
 
 
             const resp = await apiCreatePurchaseRequisition(companyId, data);
@@ -69,6 +72,7 @@ function AddPurchaseRequisition() {
             toast.success('Requisition created successfully')
         } catch (error) {
             toast.error(`Error creating requisition:${error}`)
+            console.log(error)
         } finally {
             setIsLoading(false)
         }
