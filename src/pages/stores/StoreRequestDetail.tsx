@@ -15,9 +15,8 @@ import Swal from "sweetalert2";
 function StoreRequestDetail() {
     const navigate = useNavigate();
     const { id } = useParams();
-
     const { companyId } = useAppSelector(state => state.auth.session);
-    const { employeeNo, employeeName } = useAppSelector(state => state.auth.user);
+    const { employeeNo, employeeName, email } = useAppSelector(state => state.auth.user);
     const [isLoading, setIsLoading] = useState(false);
 
     // Form states
@@ -401,6 +400,7 @@ function StoreRequestDetail() {
 
                     await handleSendForApproval(
                         documentNo,
+                        email,
                         documentLines,
                         companyId,
                         link,

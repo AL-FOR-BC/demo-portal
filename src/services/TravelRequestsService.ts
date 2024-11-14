@@ -89,3 +89,19 @@ export async function apiTravelRequestsLines(
     data,
   });
 }
+
+export async function apiUpdateTravelRequests(
+  companyId: string,
+  id: string,
+  data: any,
+  etag: string
+) {
+  return BcApiService.fetchData<any>({
+    url: `/api/hrpsolutions/procuretopay/v2.0/travelRequisitionHeaderApi(${id})?Company=${companyId}`,
+    method: "PATCH",
+    data,
+    headers: {
+      "If-Match": etag,
+    },
+  });
+}

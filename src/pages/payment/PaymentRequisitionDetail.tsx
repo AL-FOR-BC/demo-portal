@@ -20,7 +20,7 @@ import HeaderMui from '../../Components/ui/Header/HeaderMui';
 function PaymentRequisitionDetail() {
   const { companyId } = useAppSelector(state => state.auth.session)
   const dispatch = useAppDispatch();
-  const { employeeNo, employeeName } = useAppSelector(state => state.auth.user)
+  const { employeeNo, employeeName, email } = useAppSelector(state => state.auth.user)
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -111,7 +111,7 @@ function PaymentRequisitionDetail() {
           } else if (selectedWorkPlan[0]?.value !== '') {
             Swal.fire({
               title: 'Are you sure?',
-              text: "Changing the department code will require you to re-select the work plan",
+              text: "Changing the project code will require you to re-select the work plan",
               icon: 'warning',
               showCancelButton: true,
               confirmButtonColor: '#3085d6',
@@ -914,6 +914,7 @@ function PaymentRequisitionDetail() {
       }
       console.log("data", data)
       console.log("lineEtag", lineEtag)
+      dispatch(modelLoadingRequisition(true))
       const res = await apiPaymentRequisitionLines(companyId, 'PATCH', data, lineSystemId, lineEtag)
       if (res.status == 200) {
         toast.success('Line updated successfully')
@@ -924,6 +925,8 @@ function PaymentRequisitionDetail() {
       }
     } catch (error) {
       toast.error(`Error updating line:${error}`)
+    } finally {
+      dispatch(modelLoadingRequisition(false))
     }
   }
 
@@ -1037,8 +1040,10 @@ function PaymentRequisitionDetail() {
           const documentNo = requestNo;
           const documentLines = paymentRequisitionLines;
           const link = 'sendPaymtHeaderApprovalReqs'
+          setIsLoading(true)
 
-          await handleSendForApproval(documentNo, documentLines, companyId, link, populateData);
+          await handleSendForApproval(documentNo, email, documentLines, companyId, link, populateData);
+          setIsLoading(false)
         }}
         handleDeletePurchaseRequisition={handleDeletePaymentRequisition}
 

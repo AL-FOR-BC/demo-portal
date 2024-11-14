@@ -1,11 +1,18 @@
 console.log("Environment variables:", import.meta.env);
 
-const apiPrefix = import.meta.env.VITE_EHUB_BACKEND_URL || "";
-const apiPrefixBC = import.meta.env.VITE_EHUB_BC_URL || "";
-const environment = import.meta.env.ENVIRONMENT || "";
+export let apiPrefix = import.meta.env.VITE_EHUB_BACKEND_URL || "";
+export let apiPrefixBC = import.meta.env.VITE_EHUB_BC_URL || "";
+export let environment = import.meta.env.ENVIRONMENT || "";
+export let environmentType = import.meta.env.ENVIRONMENT_TYPE || "";
 
-console.log("apiPrefix:", apiPrefix);
-console.log("apiPrefixBC:", apiPrefixBC);
+if (environmentType === "HRP") {
+  apiPrefix = import.meta.env.VITE_EHUB_BACKEND_URL_HRP || "";
+  apiPrefixBC = import.meta.env.VITE_EHUB_BC_URL_HRP || "";
+} else {
+  apiPrefix = import.meta.env.VITE_EHUB_BACKEND_URL || "";
+  apiPrefixBC = import.meta.env.VITE_EHUB_BC_URL || "";
+}
+
 
 export type AppConfig = {
   apiPrefix: string;

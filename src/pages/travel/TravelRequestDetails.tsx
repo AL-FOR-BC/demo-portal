@@ -5,11 +5,11 @@ import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiBankAccountsApi, apiCurrencyCodes, apiCustomersApi, apiDimensionValue, apiEmployees, apiGLAccountsApi, apiPaymentCategory, apiPaymentSubCategoryApi, apiWorkPlanLines, apiWorkPlans } from '../../services/CommonServices';
 import { toast } from 'react-toastify';
-import { apiCreateTravelRequestsLines, apiTravelRequestDetail, apiTravelRequests, apiTravelRequestsLines } from '../../services/TravelRequestsService';
+import { apiCreateTravelRequestsLines, apiTravelRequestDetail, apiTravelRequests, apiTravelRequestsLines, apiUpdateTravelRequests } from '../../services/TravelRequestsService';
 
 
-import { cancelApprovalButton } from '../../utils/common';
-import { closeModalPurchaseReq, editRequisitionLine, modelLoadingPurchaseReq, openModalPurchaseReq } from '../../store/slices/Requisitions';
+import { cancelApprovalButton, getErrorMessage } from '../../utils/common';
+import { closeModalPurchaseReq, editRequisitionLine, modelLoadingPurchaseReq, modelLoadingRequisition, openModalPurchaseReq } from '../../store/slices/Requisitions';
 import Swal from 'sweetalert2';
 import { ActionFormatterLines } from '../../Components/ui/Table/TableUtils';
 import { handleSendForApproval } from '../../actions/actions';
@@ -23,7 +23,7 @@ function TravelRequestDetails() {
     const { companyId } = useAppSelector(state => state.auth.session)
     const dispatch = useAppDispatch();
 
-    const { employeeNo, employeeName } = useAppSelector(state => state.auth.user)
+    const { employeeNo, employeeName, email } = useAppSelector(state => state.auth.user)
     const navigate = useNavigate();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -60,17 +60,16 @@ function TravelRequestDetails() {
     const [noOfNights, setNoOfNights] = useState < number > (0);
     const accountTypeOptions: options[] = [
         { label: 'G/L Account', value: 'G/L Account' },
-        { label: 'Fixed Asset', value: 'Fixed Asset' },
-        { label: 'Bank Account', value: 'Bank Account' }
+        // { label: 'Bank Account', value: 'Bank Account' }
     ];
     const [accountType, setAccountType] = useState < options[] > ([]);
     const [glAccounts, setGlAccounts] = useState < options[] > ([]);
 
 
 
-    const [startDate, setStartDate] = useState<string>('');
-    const [endDate, setEndDate] = useState<string>('');
-    const [budgetCode, setBudgetCode] = useState<string>('');
+    const [startDate, setStartDate] = useState < string > ('');
+    const [endDate, setEndDate] = useState < string > ('');
+    const [budgetCode, setBudgetCode] = useState < string > ('');
 
     const fields = [
         [
@@ -89,10 +88,72 @@ function TravelRequestDetails() {
 
         [
             {
-                label: 'Department Code', type: 'select',
+                label: 'Project Code', type: 'select',
                 options: dimensionValues,
-                onChange: (e: options) => setSelectedDimension([{ label: e.label, value: e.value }]),
-                id: 'departmentCode',
+                onChange: async (e: options) => {
+                    if (travelRequisitionLines.length > 0) {
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "Changing the department code will delete all existing lines. This action cannot be undone!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, delete all lines!'
+                        }).then(async (result) => {
+                            if (result.isConfirmed) {
+                                setSelectedDimension([{ label: e.label, value: e.value }])
+                                quickUpdate({
+                                    projectCode: e.value
+                                })
+                                setSelectedWorkPlan([])
+                                setBudgetCode('')
+                                const resWorkPlans = await apiWorkPlans(companyId)
+                                let workPlansOptions: options[] = [];
+                                resWorkPlans.data.value.map(plan => {
+                                    if (split(plan.shortcutDimension1Code, "::")[1] == e.value) {
+                                        workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+                                    }
+                                })
+                                setWorkPlans(workPlansOptions)
+                            }
+                        })
+
+                    } else if (selectedDimension.length !== 0 && selectedDimension[0].value !== e.value) {
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "Changing the project code will require you to re-select the work plan",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, change project code!'
+                        }).then(async (result) => {
+                            if (result.isConfirmed) {
+                                quickUpdate({
+                                    projectCode: e.value
+                                })
+                                setSelectedDimension([{ label: e.label, value: e.value }])
+                                setSelectedWorkPlan([])
+                                setBudgetCode('')
+                            }
+                        })
+                    } else {
+                        quickUpdate({
+                            projectCode: e.value
+                        })
+                        setSelectedDimension([{ label: e.label, value: e.value }])
+                        const resWorkPlans = await apiWorkPlans(companyId)
+                        let workPlansOptions: options[] = [];
+                        resWorkPlans.data.value.map(plan => {
+                            if (plan.shortcutDimension1Code === e.value) {
+                                workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
+                            }
+                        })
+                        setWorkPlans(workPlansOptions)
+                    }
+                },
+                id: 'projectCode',
                 value: selectedDimension
             },
 
@@ -313,13 +374,15 @@ function TravelRequestDetails() {
                 onChange: async (e: options) => {
                     setSelectedAccountNo([])
                     setSelectedWorkPlanLine([])
+                    dispatch(modelLoadingRequisition(true))
                     setAccountType([{ label: e.label, value: e.value }])
                     const glAccounts = await apiGLAccountsApi(companyId);
                     let glAccountsOptions: options[] = [];
                     glAccounts.data.value.map((e) => {
-                        glAccountsOptions.push({ label: e.name, value: e.no })
+                        glAccountsOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
                     });
                     setGlAccounts(glAccountsOptions)
+                    dispatch(modelLoadingRequisition(false))
                 },
 
                 style: { backgroundColor: 'grey' }
@@ -328,6 +391,7 @@ function TravelRequestDetails() {
                 label: "Account No", type: "select", value: selectedAccountNo,
                 onChange: async (e: options) => {
                     setSelectedWorkPlanLine([])
+                    dispatch(modelLoadingRequisition(true))
                     setSelectedAccountNo([{ label: e.label, value: e.value }])
                     const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${e?.value}'`
                     const workPlanLines = await apiWorkPlanLines(companyId, filterQuery);
@@ -339,6 +403,7 @@ function TravelRequestDetails() {
                         })
                     });
                     setWorkPlanLines(workPlanLinesOptions)
+                    dispatch(modelLoadingRequisition(false))
                 }
                 , options: glAccounts, isSearchable: true
             },
@@ -360,7 +425,17 @@ function TravelRequestDetails() {
                 value: noOfNights.toString(),
                 onChange: (e: React.ChangeEvent<HTMLInputElement>) => setNoOfNights(Number(e.target.value))
             },
-            { label: "Rate", type: "number", value: rate.toString(), onChange: (e) => setRate(Number(e.target.value)) },
+            {
+                label: "Rate", type: "number", value: rate.toString(),
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                    if (Number(e.target.value) < 0) {
+                        toast.error("Rate cannot be negative")
+                        return;
+                    }
+                    setRate(Number(e.target.value.replace(/,/g, '')))
+                }
+            },
+
             { label: "Description", type: "textarea", rows: 2, value: description, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setDescription(e.target.value) },
 
 
@@ -394,7 +469,6 @@ function TravelRequestDetails() {
             if (id) {
                 const filterQuery = `$expand=travelRequisitionLines`
                 const res = await apiTravelRequestDetail(companyId, id, filterQuery);
-                // if (res.data.)
                 if (res.data.no) {
                     setRequest(res.data.no)
                     setStatus(res.data.status)
@@ -497,6 +571,22 @@ function TravelRequestDetails() {
         populateData();
     }, [])
 
+
+    const quickUpdate = async (kwargs: any) => {
+        try {
+            if (id) {
+                const res = await apiUpdateTravelRequests(companyId, id, {
+                    ...kwargs,
+                }, '*')
+                if (res.status == 200) {
+                    toast.success('Travel request updated successfully')
+                    // populateData()
+                }
+            }
+        } catch (error) {
+            toast.error(`Error updating travel request:${getErrorMessage(error)}`)
+        }
+    }
 
     const updatedLineAfterBudgetCheck = async (systemId?: string, etag?: string) => {
         try {
@@ -685,6 +775,34 @@ function TravelRequestDetails() {
         })
     }
 
+
+    const handleValidateHeaderFields = () => {
+        const requiredFields = [
+            { value: selectedDelegatee[0]?.value, name: 'Delegatee' },
+            { value: startDate, name: 'Start Date' },
+            { value: endDate, name: 'End Date' },
+            { value: description, name: 'Description' },
+            // { value: selectedCurrency[0]?.value, name: 'Currency' },
+            { value: selectedPaymentCategory[0]?.value, name: 'Payment Category' },
+            { value: selectedSubCategory[0]?.value, name: 'Payment Sub Category' },
+            { value: budgetCode, name: 'Budget Code' },
+            { value: selectedEmployee[0]?.value, name: 'Employee' },
+            { value: selectedDimension[0]?.value, name: 'Project Code' },
+            { value: selectedWorkPlan[0]?.value, name: 'Work Plan' }
+        ];
+
+        const missingFields = requiredFields
+            .filter(field => !field.value || field.value === '')
+            .map(field => field.name);
+
+        if (missingFields.length > 0) {
+            toast.error(`Please fill in the missing fields: ${missingFields.join(', ')}`);
+            return false;
+        }
+
+        return true;
+    };
+
     return (
         <>
             <HeaderMui
@@ -710,7 +828,7 @@ function TravelRequestDetails() {
                     const documentLines = travelRequisitionLines;
                     const link = 'sendPaymtHeaderApprovalReqs'
 
-                    await handleSendForApproval(documentNo, documentLines, companyId, link, populateData);
+                    await handleSendForApproval(documentNo, email, documentLines, companyId, link, populateData);
                 }}
                 handleDeletePurchaseRequisition={handleDeleteTravelRequest}
 
@@ -724,7 +842,7 @@ function TravelRequestDetails() {
                         noDataMessage="No lines found"
                         iconClassName=""
                         clearLineFields={clear}
-                        handleValidateHeaderFields={() => true}
+                        handleValidateHeaderFields={handleValidateHeaderFields}
                         data={travelRequisitionLines}
                         columns={columns}
                         status={status}

@@ -20,6 +20,7 @@ import HeaderMui from "../../Components/ui/Header/HeaderMui";
 function PurchaseRequisitionDetail() {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+    const { email } = useAppSelector((state) => state.auth.user);
     const { id } = useParams();
     console.log("id:", id)
 
@@ -744,6 +745,7 @@ function PurchaseRequisitionDetail() {
                 directUnitCost: directUnitCost,
                 unitOfMeasure: selectedUnitOfMeasure[0]?.value
             }
+            dispatch(modelLoadingRequisition(true))
             const res = await apiPurchaseRequisitionLines(companyId, "PATCH", data, lineSystemId, lineEtag);
             if (res.status == 200) {
                 toast.success("Line updated successfully")
@@ -754,6 +756,8 @@ function PurchaseRequisitionDetail() {
             }
         } catch (error) {
             toast.error(`Error updating line:${getErrorMessage(error.response.data.error.message)}`)
+        } finally {
+            dispatch(modelLoadingRequisition(false))
         }
     }
 
@@ -887,8 +891,14 @@ function PurchaseRequisitionDetail() {
                     const documentNo = requestNo;
                     const documentLines = purchaseRequisitionLines;
                     const link = 'sendPurchaseHeaderApprovalReq'
-
-                    await handleSendForApproval(documentNo, documentLines, companyId, link, populateData)
+                    setIsLoading(true)
+                    try {
+                        await handleSendForApproval(documentNo, email, documentLines, companyId, link, populateData)
+                    } catch (error) {
+                        toast.error(`Error sending for approval:${getErrorMessage(error.response.data.error.message)}`)
+                    } finally {
+                        setIsLoading(false)
+                    }
                 }}
                 handleCancelApprovalRequest={handleCancelApproval}
                 handleDeletePurchaseRequisition={handleDeletePurchaseRequisition}

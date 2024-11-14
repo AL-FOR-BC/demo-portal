@@ -139,8 +139,7 @@ export const noFormatter = (cellContent: any) => {
 }
 
 export function numberFormatter(cellContent: number, row: any) {
-    console.log("cellContent", cellContent);
-    console.log("typeof cellContent", row);
+    console.log("row:", row);
     return ( //textAlign: right, 
         <div style={{ maxWidth: "100px" }}>
             {formatNumber(cellContent)}

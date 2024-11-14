@@ -107,7 +107,6 @@ export const SendApprovalButton = async ({
       return response.data;
     }
   } catch (error: unknown) {
-    console.log("error", error);
     if (isErrorResponse(error)) {
       toast.error(
         `Error sending document for approval:${error.response.data.error.message}`
@@ -133,7 +132,6 @@ export const cancelApprovalButton = async ({
       return response.data;
     }
   } catch (error: unknown) {
-    console.log("error", error);
     if (isErrorResponse(error)) {
       toast.error(
         `Error cancelling document approval:${error.response.data.error.message}`

@@ -7,23 +7,27 @@ export default defineConfig({
   plugins: [react()],
   define: {
     "import.meta.env.ENVIRONMENT": JSON.stringify("production"),
+    "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("ROM"),
+    // "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("HRP"),
+
 
     "import.meta.env": JSON.stringify(process.env),
     "import.meta.env.VITE_EHUB_BACKEND_URL": JSON.stringify(
-      // LOCAL
-      // "http://localhost:5000",
-
       // PROD
       "http://51.8.80.47:5000"
     ),
-    // "import.meta.env.VITE_EHUB_BACKEND_URL_PROD": JSON.stringify(
-    //   "http://51.8.80.47:5000"
-    // ),
     "import.meta.env.VITE_EHUB_BC_URL": JSON.stringify(
-      // LOCAL
-      // "https://api.businesscentral.dynamics.com/v2.0/df78e20f-3ca1-4018-9157-8bedb2673da2/Sandbox/"
       // PROD
       "https://api.businesscentral.dynamics.com/v2.0/24528e89-fa53-4fc5-9847-429bb50802ff/ROMSandbox/"
+    ),
+
+    // ---------------------------------- HRP ----------------------------------
+
+    "import.meta.env.VITE_EHUB_BACKEND_URL_HRP": JSON.stringify(
+      "http://51.8.80.47:5001"
+    ),
+    "import.meta.env.VITE_EHUB_BC_URL_HRP": JSON.stringify(
+      "https://api.businesscentral.dynamics.com/v2.0/df78e20f-3ca1-4018-9157-8bedb2673da2/HRPSandbox4Demos/"
     ),
   },
   build: {
