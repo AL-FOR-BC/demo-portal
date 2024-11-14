@@ -11,6 +11,20 @@ import { cancelApprovalButton, getErrorMessage } from "../../utils/common";
 import { apiStoreRequestDetail, apiUpdateStoreRequest, apiDeleteStoreRequest, apiDeleteStoreRequestLine, apiCreateStoreRequestLine, apiUpdateStoreRequestLine } from "../../services/StoreRequestServices";
 import Swal from "sweetalert2";
 
+// Add validation functions
+const validateStoreRequestLine = (line: any) => {
+    if (!line.description2?.toString().trim()) {
+        throw new Error("Description is required");
+    }
+
+    if (line.quantity === null || line.quantity === 0 || line.quantity === undefined || isNaN(Number(line.quantity))) {
+        throw new Error("Valid quantity is required");
+    }
+
+    if (!line.unitOfMeasure?.toString().trim()) {
+        throw new Error("Unit of Measure is required");
+    }
+};
 
 function StoreRequestDetail() {
     const navigate = useNavigate();
@@ -311,11 +325,12 @@ function StoreRequestDetail() {
             console.log("Raw line data received:", data);
 
             if (!id) {
-                toast.error("Document ID is missing");
-                return;
+                throw new Error("Document ID is missing");
             }
 
-            // Ensure the data is properly formatted before submission
+            // Validate the line before formatting
+            validateStoreRequestLine(data[0]);
+
             const formattedData = data.map(row => ({
                 documentNo: requestNo,
                 description2: row.description2 || '',
@@ -325,18 +340,6 @@ function StoreRequestDetail() {
 
             console.log("Formatted data for submission:", formattedData);
 
-            // Validate the formatted data
-            const isValid = formattedData.every(row =>
-                row.description2 &&
-                row.quantity > 0 &&
-                row.unitOfMeasure
-            );
-
-            if (!isValid) {
-                toast.error("Please fill in all required fields with valid values");
-                return;
-            }
-            console.log("adfadsfasdf:", formattedData[0]);
             const response = await apiCreateStoreRequestLine(companyId, formattedData[0]);
 
             if (response.status === 201 || response.status === 200) {
@@ -358,20 +361,27 @@ function StoreRequestDetail() {
         }
     }
     const handleEditLine = async (data: any) => {
-        console.log("stores request detail data:", data);
-        const formattedData = {
-            description2: data.description2,
-            quantity: data.quantity,
-            unitOfMeasure: data.unitOfMeasure
-        }
-        const etag = data["@odata.etag"]
-        const id = data.systemId
+        try {
+            // Validate before updating
+            validateStoreRequestLine(data);
 
-        const response = await apiUpdateStoreRequestLine(companyId, id, formattedData, etag);
-        if (response.status === 200) {
-            toast.success("Line updated successfully");
-            await populateData();
-            return { success: true };
+            const formattedData = {
+                description2: data.description2,
+                quantity: data.quantity,
+                unitOfMeasure: data.unitOfMeasure
+            }
+            const etag = data["@odata.etag"]
+            const id = data.systemId
+
+            const response = await apiUpdateStoreRequestLine(companyId, id, formattedData, etag);
+            if (response.status === 200) {
+                toast.success("Line updated successfully");
+                await populateData();
+                return { success: true };
+            }
+        } catch (error) {
+            toast.error(`Error updating line: ${getErrorMessage(error)}`);
+            throw error;
         }
     }
 

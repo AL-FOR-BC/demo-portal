@@ -9,7 +9,7 @@ import { useAppDispatch } from '../../../../store/hook.ts';
 import { setAllowCompanyChange, setCompany } from '../../../../store/slices/auth/sessionSlice.ts';
 import CompanyMenu from './CompanyMenu';
 import { getAllowCompanyChangeSetting } from '../../../../services/SetupServices.ts';
-import { toast } from 'react-toastify';
+
 
 
 function Header() {
@@ -24,7 +24,7 @@ function Header() {
                 const response = await getAllowCompanyChangeSetting();
                 dispatch(setAllowCompanyChange(response.data.allowCompanyChange))
             } catch (error) {
-                toast.error("Failed to fetch allow company change setting");
+                console.log(error)
             }
         }
 

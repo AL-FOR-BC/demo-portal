@@ -32,17 +32,17 @@ export async function apiCancelApproval(
 
 // -------------------------------------- Approval Actions --------------------------------------
 
-export async function apiApprovalRequest(
-  companyId: string,
-  filterQuery?: string,
-  data?: any
-) {
-  return BcApiService.fetchData<any>({
-    url: `/ODataV4/ODataV4/HRMISActions_ApproveRequest?Company=${companyId}&${filterQuery}`,
-    method: "post",
-    data,
-  });
-}
+// export async function apiApprovalRequest(
+//   companyId: string,
+//   filterQuery?: string,
+//   data?: any
+// ) {
+//   return BcApiService.fetchData<any>({
+//     url: `/ODataV4/ODataV4/HRMISActions_ApproveRequest?Company=${companyId}&${filterQuery}`,
+//     method: "post",
+//     data,
+//   });
+// }
 
 
 export async function apiRejectApprovalRequest(

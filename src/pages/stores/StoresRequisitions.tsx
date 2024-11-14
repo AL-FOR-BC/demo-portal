@@ -23,34 +23,36 @@ function StoresRequisitions() {
             sort: true,
             formatter: noFormatter
         },
-        {
-            dataField: 'documentDate',
-            text: 'Document Date',
-            sort: true
-        },
+      
         {
             dataField: 'requestorName',
             text: 'Requestor Name',
             sort: true,
         },
         {
-            dataField: 'requisitionType',
-            text: 'Requisition Type',
-            sort: true,
+            dataField: 'purpose',
+            text: 'Purpose',
+            sort: true
         },
+        // {
+        //     dataField: 'documentType',
+        //     text: 'Document Type',
+        //     sort: true,
+        //     formatter: documentTypeFormatter
+        // },
         {
             dataField: 'locationCode',
             text: 'Location',
             sort: true,
         },
-        {
-            dataField: 'transferTo',
-            text: 'Transfer To',
-            sort: true,
-            formatter: (cell: any, row: any) => {
-                return row.requisitionType === 'TransferOrder' ? cell : '-';
-            },
-        },
+        // {
+        //     dataField: 'transferTo',
+        //     text: 'Transfer To',
+        //     sort: true,
+        //     formatter: (cell: any, row: any) => {
+        //         return row.requisitionType === 'TransferOrder' ? cell : '-';
+        //     },
+        // },
         {
             dataField: "status",
             text: "Status",

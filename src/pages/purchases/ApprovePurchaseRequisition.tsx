@@ -15,7 +15,7 @@ function ApprovePurchaseRequisition() {
     const { documentNo } = useParams();
     console.log("documentNo:", documentNo);
     const { companyId } = useAppSelector(state => state.auth.session);
-    const { employeeNo, employeeName } = useAppSelector(state => state.auth.user);
+    // const { employeeNo, employeeName } = useAppSelector(state => state.auth.user);
     const [isLoading, setIsLoading] = useState(false);
 
     // Form states
@@ -29,12 +29,17 @@ function ApprovePurchaseRequisition() {
     const [requestNo, setRequestNo] = useState < string > ('');
     const [purchaseRequisitionLines, setPurchaseRequisitionLines] = useState < PurchaseRequisitionLineType[] > ([]);
     const [status, setStatus] = useState < string > ('');
+    const [requestorName, setRequestorName] = useState < string > ('');
+    const [requestorNo, setRequestorNo] = useState < string > ('');
 
     const fields = [
         [
-            { label: 'Requisition No', type: 'text', value: requestNo, disabled: true, id: 'requestNo' },
-            { label: 'Requestor No', type: 'text', value: employeeNo, disabled: true, id: 'empNo' },
-            { label: 'Requestor Name', type: 'text', value: employeeName, disabled: true, id: 'empName' },
+            { label: 'Requisition No', type: 'text',
+                 value: requestNo, disabled: true, id: 'requestNo' },
+            { label: 'Requestor No', type: 'text',
+                value: requestorNo, disabled: true, id: 'requestorNo' },
+            { label: 'Requestor Name',
+                type: 'text', value: requestorName, disabled: true, id: 'requestorName' },
             {
                 label: 'Project Code',
                 type: 'input',
@@ -146,6 +151,8 @@ function ApprovePurchaseRequisition() {
                 setBudgetCode(data.budgetCode || '');
                 setSubjectOfProcurement(data.procurementDescription || '');
                 setExpectedReceiptDate(data.expectedReceiptDate || '');
+                setRequestorNo(data.requisitionedBy || '');
+                setRequestorName(data.requestorName || '');
 
                 setStatus(data.status || '');
 

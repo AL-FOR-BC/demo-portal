@@ -213,19 +213,6 @@ export default function LinesEditable({ columns, rowLines, documentType, handleS
 
   const processRowUpdate = async (newRow: GridRowModel) => {
     try {
-      // Validate the fields
-      if (!newRow.description2?.toString().trim()) {
-        throw new Error("Description is required");
-      }
-
-      if (newRow.quantity === null || newRow.quantity === undefined || isNaN(Number(newRow.quantity))) {
-        throw new Error("Valid quantity is required");
-      }
-
-      if (!newRow.unitOfMeasure?.toString().trim()) {
-        throw new Error("Unit of Measure is required");
-      }
-
       if (isEditing) {
         const response = await handleEditLine(newRow);
         if (response.success) {
@@ -235,7 +222,6 @@ export default function LinesEditable({ columns, rowLines, documentType, handleS
         } else {
           throw new Error("Failed to save changes");
         }
-
       } else {
         const response = await handleSubmitLines([newRow]);
         if (response.success) {
@@ -246,8 +232,6 @@ export default function LinesEditable({ columns, rowLines, documentType, handleS
           throw new Error("Failed to save changes");
         }
       }
-
-
     } catch (error) {
       toast.error(error.message || "Failed to save changes");
       throw error;
