@@ -50,7 +50,7 @@ function AddPurchaseRequisition() {
                 toast.error(`${missingFields} is required`);
                 return;
             }
-
+            console.log("expectedReceiptDate", formatDate(expectedReceiptDate[0] as string))
             /* Submit logic */
             const data: PurchaseRequisitionType = {
                 currencyCode: selectedCurrency[0].value,
@@ -58,7 +58,8 @@ function AddPurchaseRequisition() {
                 locationCode: selectedLocation.length > 0 ? selectedLocation[0].value : '',
                 procurementDescription: subjectOfProcurement,
                 // budgetCode: budgetCode,
-                expectedReceiptDate: formatDate(expectedReceiptDate.toISOString()),
+                // check if it an array
+                expectedReceiptDate: Array.isArray(expectedReceiptDate) ? formatDate(expectedReceiptDate[0].toISOString()) : formatDate(expectedReceiptDate.toISOString()),
                 project: selectedDimension.length > 0 ? selectedDimension[0].value : '',
                 requestorNo: employeeNo || '',
 

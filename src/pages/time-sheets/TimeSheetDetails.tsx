@@ -7,6 +7,7 @@ import HeaderMui from "../../Components/ui/Header/HeaderMui";
 import { getErrorMessage } from "../../utils/common";
 // import Swal from "sweetalert2";
 import { isWeekend, format, eachDayOfInterval } from 'date-fns';
+import { TimeSheetsService } from '../../services/TimeSheetsService';
 
 function TimeSheetDetail() {
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ function TimeSheetDetail() {
     const [isLoading, setIsLoading] = useState(false);
 
     // Form states
-    const [requestNo, setRequestNo] = useState < string > ('');
+    const [timeSheetNo, setTimeSheetNo] = useState < string > ('');
     const [startingDate, setStartingDate] = useState < Date > (new Date());
     const [endingDate, setEndingDate] = useState < Date > (new Date());
     const [resourceNo, setResourceNo] = useState < string > ('');
@@ -25,7 +26,7 @@ function TimeSheetDetail() {
 
     const fields = [
         [
-            { label: 'No.', type: 'text', value: requestNo, disabled: true, id: 'requestNo' },
+            { label: 'No.', type: 'text', value: timeSheetNo, disabled: true, id: 'timeSheetNo' },
             {
                 label: 'Starting Date',
                 type: 'date',
@@ -63,13 +64,13 @@ function TimeSheetDetail() {
                 },
                 id: 'description'
             },
-            { label: 'Status', type: 'text', value: status, disabled: true, id: 'status' },
+            { label: 'Status', type: 'text', value: status, disabled: true,  id: 'docStatus' },
         ]
     ];
 
     const publicHolidays = [
-        '2024-10-09', // Independence Day
-        // Add other holidays as needed
+        { date: '2024-10-09', description: 'Independence Day' },
+        { date: '2024-10-20', description: "Martin Luther King Day" },
     ];
 
     const generateDateColumns = () => {
@@ -85,7 +86,7 @@ function TimeSheetDetail() {
             const dayName = format(date, 'EEE');
             const dateStr = format(date, 'yyyy-MM-dd');
             const isWeekendDay = isWeekend(date);
-            const isHoliday = publicHolidays.includes(dateStr);
+            const isHoliday = publicHolidays.some(holiday => holiday.date === dateStr);
 
             return {
                 field: `day${dayNumber}`,
@@ -117,19 +118,19 @@ function TimeSheetDetail() {
             field: 'description',
             headerName: 'Description',
             width: 200,
-            editable: status === 'Open',
+            editable: (params: any) => !params.row.id.toString().startsWith('holiday-'),
         },
         {
             field: 'project',
             headerName: 'Project',
             width: 150,
-            editable: status === 'Open',
+            editable: (params: any) => !params.row.id.toString().startsWith('holiday-'),
         },
         {
             field: 'causeOfAbsenceCode',
             headerName: 'Cause of Absence Code',
             width: 180,
-            editable: status === 'Open',
+            editable: (params: any) => !params.row.id.toString().startsWith('holiday-'),
         },
         ...generateDateColumns(),
         {
@@ -180,28 +181,28 @@ function TimeSheetDetail() {
         }
     `;
 
-    const dummyTimeSheet = {
-        no: 'TSH-00000002',
-        startingDate: '2024-10-01',
-        endingDate: '2024-10-31',
-        resourceNo: 'RES-001',
-        resourceName: 'SHRP',
-        description: 'Monthly Time Sheet',
-        status: 'Open',
-        lines: [
-            {
-                id: 1,
-                status: 'Open',
-                description: 'Development work',
-                project: 'PROJ-001',
-                causeOfAbsenceCode: '',
-                // Initialize all days with 0
-                ...Array.from({ length: 31 }, (_, i) => ({
-                    [`day${i + 1}`]: 0
-                })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
-            }
-        ]
-    };
+    // const dummyTimeSheet = {
+    //     no: 'TSH-00000002',
+    //     startingDate: '2024-10-01',
+    //     endingDate: '2024-10-31',
+    //     resourceNo: 'RES-001',
+    //     resourceName: 'SHRP',
+    //     description: 'Monthly Time Sheet',
+    //     status: 'Open',
+    //     lines: [
+    //         {
+    //             id: 1,
+    //             status: 'Open',
+    //             description: 'Development work',
+    //             project: 'PROJ-001',
+    //             causeOfAbsenceCode: '',
+    //             // Initialize all days with 0
+    //             ...Array.from({ length: 31 }, (_, i) => ({
+    //                 [`day${i + 1}`]: 0
+    //             })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
+    //         }
+    //     ]
+    // };
 
     const quickUpdate = async (kwargs: any) => {
         try {
@@ -261,24 +262,48 @@ function TimeSheetDetail() {
         const populateData = async () => {
             try {
                 setIsLoading(true);
-                // In real implementation, fetch from API
-                setRequestNo(dummyTimeSheet.no);
-                setStartingDate(new Date(dummyTimeSheet.startingDate));
-                setEndingDate(new Date(dummyTimeSheet.endingDate));
-                setResourceNo(dummyTimeSheet.resourceNo);
-                setResourceName(dummyTimeSheet.resourceName);
-                setDescription(dummyTimeSheet.description);
-                setStatus(dummyTimeSheet.status);
+                if (!id) return;
+                const filterQuery = `$expand=timeSheetLines`;
+                const res = await TimeSheetsService.getTimeSheetHeaderById(companyId, id, filterQuery);
+                console.log(res.data);
+                setTimeSheetNo(res.data.timeSheetNo);
+                setStartingDate(new Date(res.data.startingDate));
+                setEndingDate(new Date(res.data.endingDate));
+                setResourceNo(res.data.resourceNo);
+                setResourceName(res.data.resourceName);
+                setDescription(res.data.description);
+                setStatus(res.data.status);
 
-                // Ensure timeSheetLines has proper structure
-                const formattedLines = dummyTimeSheet.lines.map(line => ({
-                    ...line,
+                // Create holiday lines
+                const holidayLines = publicHolidays.map((holiday, index) => {
+                    const dayNumber = format(new Date(holiday.date), 'd');
+                    return {
+                        id: `holiday-${index}`,
+                        status: 'Closed',
+                        description: holiday.description,
+                        project: '',
+                        causeOfAbsenceCode: 'HOLIDAY',
+                        editable: false,
+                        ...Array.from({ length: 31 }, (_, i) => ({
+                            [`day${i + 1}`]: (i + 1) === parseInt(dayNumber) ? 8 : 0
+                        })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
+                    };
+                });
+
+                // Regular line
+                const regularLine = {
+                    id: 1,
+                    status: 'Open',
+                    description: 'Development work',
+                    project: 'PROJ-001',
+                    causeOfAbsenceCode: '',
+                    editable: true,
                     ...Array.from({ length: 31 }, (_, i) => ({
-                        [`day${i + 1}`]: line[`day${i + 1}`] || 0
+                        [`day${i + 1}`]: 0
                     })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
-                }));
+                };
 
-                setTimeSheetLines(formattedLines);
+                setTimeSheetLines([...holidayLines, regularLine]);
             } catch (error) {
                 toast.error(`Error fetching data: ${getErrorMessage(error)}`);
             } finally {
@@ -310,7 +335,7 @@ function TimeSheetDetail() {
                 status={status}
                 companyId={companyId}
                 documentType="Time Sheet"
-                requestNo={requestNo}
+                requestNo={timeSheetNo}
             />
         </>
     );

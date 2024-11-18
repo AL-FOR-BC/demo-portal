@@ -77,12 +77,7 @@ export const ActionFormatter: React.FC<ActionFormatterProps> = ({
     pageType = ""
 }) => {
 
-    // const [pageType, setPageType] = useState("");
-    // setPageType(pageType);
-    console.log("Row data 2", row);
-    console.log("pageType:", pageType);
-    console.log("navigateTo:", navigateTo);
-    console.log("DocumentNo:", row.DocumentNo);
+  
     const navigate = useNavigate();
 
     const handleClick = () => {

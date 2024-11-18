@@ -3,26 +3,17 @@ import { useEffect, useState } from "react";
 //import { useAppSelector } from "../../store/hook";
 import { toast } from "react-toastify";
 import { ActionFormatter, statusFormatter, noFormatter } from "../../Components/ui/Table/TableUtils";
+import { TimeSheetType } from '../../@types/timesheet.dto';
+import { TimeSheetsService } from '../../services/TimeSheetsService';
+import { useAppSelector } from '../../store/hook';
 
 // You should define this type in your types file
-interface TimeSheetType {
-    no: string;
-    startingDate: string;
-    endingDate: string;
-    description: string;
-    resourceNo: string;
-    total: number;
-    open: number;
-    submitted: number;
-    approved: number;
-    rejected: number;
-    comment?: string;
-}
 
 function TimeSheets() {
-    // const { companyId } = useAppSelector(state => state.auth.session);
+    const { companyId } = useAppSelector(state => state.auth.session);
+    const { employeeNo } = useAppSelector(state => state.auth.user);
     const [isLoading, setIsLoading] = useState(false);
-    const [timeSheets, setTimeSheets] = useState<TimeSheetType[]>([]);
+    const [timeSheets, setTimeSheets] = useState < TimeSheetType[] > ([]);
 
     const defaultSorted = [{
         dataField: 'no',
@@ -31,7 +22,7 @@ function TimeSheets() {
 
     const columns = [
         {
-            dataField: 'no',
+            dataField: 'timeSheetNo',
             text: 'No.',
             sort: true,
             formatter: noFormatter
@@ -47,6 +38,16 @@ function TimeSheets() {
             text: 'Ending Date',
             sort: true,
             formatter: (cell: string) => new Date(cell).toLocaleDateString()
+        },
+        {
+            dataField: 'resourceNo',
+            text: 'Resource No.',
+            sort: true
+        },
+        {
+            dataField: 'quantity',
+            text: 'Total',
+            sort: true
         },
         {
             dataField: 'description',
@@ -66,51 +67,22 @@ function TimeSheets() {
                 <ActionFormatter
                     row={row}
                     cellContent={cell}
-                    navigateTo="/time-sheet-details"
+                    navigateTo="/time-sheet-details/"
                 />
             )
         }
     ];
 
-    // Dummy data based on your example
-    const dummyData: TimeSheetType[] = [
-        {
-            no: "TSH-00000004",
-            startingDate: "2024-09-16",
-            endingDate: "2024-09-22",
-            description: "Week 38",
-            resourceNo: "RES-002",
-            total: 40.00,
-            open: 0.00,
-            submitted: 40.00,
-            approved: 0.00,
-            rejected: 0.00
-        },
-        {
-            no: "TSH-00000005",
-            startingDate: "2024-09-23",
-            endingDate: "2024-09-29",
-            description: "Week 39",
-            resourceNo: "RES-001",
-            total: 40.00,
-            open: 0.00,
-            submitted: 40.00,
-            approved: 0.00,
-            rejected: 0.00
-        },
-        // Add more dummy data as needed
-    ];
+
 
     useEffect(() => {
         const populateData = async () => {
             try {
                 setIsLoading(true);
-                // In a real implementation, you would fetch data from your API here
-                // const res = await apiTimeSheets(companyId);
-                // setTimeSheets(res.data.value);
-                
-                // For now, we'll use the dummy data
-                setTimeSheets(dummyData);
+                const filterQuery = `employeeNo eq '${employeeNo}'`;
+                const res = await TimeSheetsService.getTimeSheetHeader(companyId, filterQuery);
+                console.log("res", res.data.value);
+                setTimeSheets(res.data.value);
             } catch (error) {
                 toast.error(`Error fetching time sheets: ${error}`);
             } finally {
