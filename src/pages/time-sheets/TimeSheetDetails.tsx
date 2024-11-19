@@ -22,11 +22,28 @@ function TimeSheetDetail() {
     const [resourceNo, setResourceNo] = useState < string > ('');
     const [resourceName, setResourceName] = useState < string > ('');
     const [description, setDescription] = useState < string > ('');
-    const [status, setStatus] = useState < string > ('');
+    // const [status, setStatus] = useState < string > ('');
+    const status = ''
 
     const fields = [
         [
             { label: 'No.', type: 'text', value: timeSheetNo, disabled: true, id: 'timeSheetNo' },
+            { label: 'Resource No.', type: 'text', value: resourceNo, disabled: true, id: 'resourceNo' },
+            { label: 'Resource Name', type: 'text', value: resourceName, disabled: true, id: 'resourceName' },
+            {
+                label: 'Description',
+                type: 'text',
+                value: description,
+                disabled: status !== 'Open',
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                    setDescription(e.target.value);
+                    quickUpdate({ description: e.target.value });
+                },
+                id: 'description'
+            }
+         
+        ],
+        [
             {
                 label: 'Starting Date',
                 type: 'date',
@@ -49,22 +66,7 @@ function TimeSheetDetail() {
                 },
                 id: 'endingDate'
             },
-        ],
-        [
-            { label: 'Resource No.', type: 'text', value: resourceNo, disabled: true, id: 'resourceNo' },
-            { label: 'Resource Name', type: 'text', value: resourceName, disabled: true, id: 'resourceName' },
-            {
-                label: 'Description',
-                type: 'text',
-                value: description,
-                disabled: status !== 'Open',
-                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                    setDescription(e.target.value);
-                    quickUpdate({ description: e.target.value });
-                },
-                id: 'description'
-            },
-            { label: 'Status', type: 'text', value: status, disabled: true,  id: 'docStatus' },
+           
         ]
     ];
 
@@ -269,10 +271,10 @@ function TimeSheetDetail() {
                 setTimeSheetNo(res.data.timeSheetNo);
                 setStartingDate(new Date(res.data.startingDate));
                 setEndingDate(new Date(res.data.endingDate));
-                setResourceNo(res.data.resourceNo);
+                setResourceNo(res.data.ResourceNo);
                 setResourceName(res.data.resourceName);
-                setDescription(res.data.description);
-                setStatus(res.data.status);
+                setDescription(res.data.Description);
+                // setStatus(res.data.status);
 
                 // Create holiday lines
                 const holidayLines = publicHolidays.map((holiday, index) => {

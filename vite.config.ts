@@ -18,7 +18,7 @@ export default defineConfig({
     ),
     "import.meta.env.VITE_EHUB_BC_URL": JSON.stringify(
       // PROD
-      "https://api.businesscentral.dynamics.com/v2.0/24528e89-fa53-4fc5-9847-429bb50802ff/ROMSandbox/"
+      "https://api.businesscentral.dynamics.com/v2.0/24528e89-fa53-4fc5-9847-429bb50802ff/ROMProduction/"
     ),
 
     // ---------------------------------- HRP ----------------------------------
