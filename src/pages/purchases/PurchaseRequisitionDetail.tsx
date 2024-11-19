@@ -883,6 +883,7 @@ function PurchaseRequisitionDetail() {
                 breadcrumbItem="Purchase Requisition Detail"
                 fields={fields}
                 isLoading={isLoading}
+                tableId={50104}
 
                 handleBack={() => navigate('/purchase-requisitions')}
                 pageType="detail"

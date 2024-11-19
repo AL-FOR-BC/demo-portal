@@ -17,9 +17,9 @@ export const TimeSheetsService = {
         });
     },
 
-    getTimeSheetDetails: (companyId: string) => {
+    getTimeSheetDetails: (companyId: string, filterQuery?: string) => {
         return BcApiService.fetchData<any>({
-            url: `${BASE_URL}/timeSheetDetails?Company=${companyId}`,
+            url: `${BASE_URL}/timeSheetDetails?Company=${companyId}&${filterQuery}`,
             method: "get",
         });
     },

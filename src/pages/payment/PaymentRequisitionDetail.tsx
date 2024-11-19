@@ -1025,6 +1025,7 @@ function PaymentRequisitionDetail() {
         companyId={companyId}
         fields={fields}
         isLoading={isLoading}
+        tableId={50108}
         // setIsLoading={setIsLoading}
         // docError={docError}    
         handleBack={() => navigate('/payment-requisitions')}

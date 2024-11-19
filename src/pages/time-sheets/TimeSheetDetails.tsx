@@ -8,6 +8,7 @@ import { getErrorMessage } from "../../utils/common";
 // import Swal from "sweetalert2";
 import { isWeekend, format, eachDayOfInterval } from 'date-fns';
 import { TimeSheetsService } from '../../services/TimeSheetsService';
+import { TimeSheetLine } from '../../@types/timesheet.dto';
 
 function TimeSheetDetail() {
     const navigate = useNavigate();
@@ -23,7 +24,7 @@ function TimeSheetDetail() {
     const [resourceName, setResourceName] = useState < string > ('');
     const [description, setDescription] = useState < string > ('');
     // const [status, setStatus] = useState < string > ('');
-    const status = ''
+    const status = 'Open'
 
     const fields = [
         [
@@ -41,7 +42,7 @@ function TimeSheetDetail() {
                 },
                 id: 'description'
             }
-         
+
         ],
         [
             {
@@ -66,7 +67,7 @@ function TimeSheetDetail() {
                 },
                 id: 'endingDate'
             },
-           
+
         ]
     ];
 
@@ -94,13 +95,31 @@ function TimeSheetDetail() {
                 field: `day${dayNumber}`,
                 headerName: `${dayNumber} ${dayName}`,
                 width: 80,
-                editable: !isWeekendDay && !isHoliday && status === 'Open',
+                editable: true,
                 type: 'number',
-                valueFormatter: (params: any) => {
-                    if (params.value === null || params.value === undefined) {
-                        return '';
+                valueFormatter: (params: any, context: any) => {
+                    // Log the entire params object to see its structure
+                   
+
+                    // if (!params) return '0.00';
+
+                    // Get the row data
+                    const rowData = context
+
+                    // Check if this is the specific line we want (10000)
+                    if (rowData && rowData.id === 10000) {
+                        // If it's day 4, return 8
+                        if (dayNumber === '4') {
+                            console.log("Row data:", rowData);
+
+                            console.log("dayNumber is 4")
+                            return '8';
+                        }
                     }
-                    return Number(params.value).toFixed(2);
+
+                    // For all other cases, format the value
+                    const value = params ?? 0;
+                    return Number(value)
                 },
                 cellClassName: () =>
                     isWeekendDay ? 'weekend-cell' :
@@ -267,6 +286,7 @@ function TimeSheetDetail() {
                 if (!id) return;
                 const filterQuery = `$expand=timeSheetLines`;
                 const res = await TimeSheetsService.getTimeSheetHeaderById(companyId, id, filterQuery);
+
                 console.log(res.data);
                 setTimeSheetNo(res.data.timeSheetNo);
                 setStartingDate(new Date(res.data.startingDate));
@@ -274,8 +294,14 @@ function TimeSheetDetail() {
                 setResourceNo(res.data.ResourceNo);
                 setResourceName(res.data.resourceName);
                 setDescription(res.data.Description);
-                // setStatus(res.data.status);
+                setTimeSheetLines(res.data.timeSheetLines.filter((line: any) => line.timeSheetNo === res.data.timeSheetNo));
 
+
+                // setStatus(res.data.status);
+                const filterQuery2 = `&$filter=timeSheetNo eq '${res.data.timeSheetNo}'`;
+                const resTimeSheetDetail = await TimeSheetsService.getTimeSheetDetails(companyId, filterQuery2);
+
+                console.log("resTimeSheetDetail", resTimeSheetDetail.data)
                 // Create holiday lines
                 const holidayLines = publicHolidays.map((holiday, index) => {
                     const dayNumber = format(new Date(holiday.date), 'd');
@@ -292,20 +318,44 @@ function TimeSheetDetail() {
                     };
                 });
 
-                // Regular line
-                const regularLine = {
-                    id: 1,
-                    status: 'Open',
-                    description: 'Development work',
-                    project: 'PROJ-001',
-                    causeOfAbsenceCode: '',
-                    editable: true,
-                    ...Array.from({ length: 31 }, (_, i) => ({
+                const timeSheetLinesData = res.data.timeSheetLines.filter((line: TimeSheetLine) => line.timeSheetNo === res.data.timeSheetNo);
+                console.log("timeSheetLinesData", timeSheetLinesData)
+                const timeSheetLines = timeSheetLinesData.map((line: TimeSheetLine) => {
+                    // Create the base days object with all days set to 0
+                    const daysObject = Array.from({ length: 31 }, (_, i) => ({
                         [`day${i + 1}`]: 0
-                    })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
-                };
+                    })).reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
-                setTimeSheetLines([...holidayLines, regularLine]);
+                    // Explicitly set day 4 to 8 hours
+                    if (line.lineNo === 10000) {
+                        daysObject.day4 = 8;
+                    }
+                    console.log("lin n ", line.lineNo,)
+                    return {
+                        id: line.lineNo,
+                        lineNo: line.lineNo,
+                        status: line.Status,
+                        description: line.description,
+                        project: line.jobNo,
+                        causeOfAbsenceCode: line.type,
+                        editable: line.Status === 'Open',
+                        ...daysObject
+                    };
+                });
+                // Regular line
+                // const regularLine = {
+                //     id: 1,
+                //     status: 'Open',
+                //     description: 'Development work',
+                //     project: 'PROJ-001',
+                //     causeOfAbsenceCode: '',
+                //     editable: true,
+                //     ...Array.from({ length: 31 }, (_, i) => ({
+                //         [`day${i + 1}`]: 0
+                //     })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
+                // };
+
+                setTimeSheetLines([...holidayLines, ...timeSheetLines]);
             } catch (error) {
                 toast.error(`Error fetching data: ${getErrorMessage(error)}`);
             } finally {

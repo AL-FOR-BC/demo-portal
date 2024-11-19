@@ -55,6 +55,7 @@ interface HeaderMuiProps {
     handleSubmitLines?: (data: any, id: string) => void;
     handleDeleteLine?: (id: GridRowId) => void
     handleEditLine?: (id: GridRowId) => void
+    tableId?: number
 }
 
 const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
@@ -87,6 +88,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
         handleDeleteLine,
         handleEditLine,
         rowLines,
+        tableId
     } = props;
 
     return (
@@ -134,7 +136,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                             docType={documentType}
                                             docNo={requestNo}
                                             status={status}
-                                            tableId={50104}
+                                            tableId={tableId}
                                         />
                                         <ApprovalEntries
                                             defaultCompany={companyId}
@@ -169,7 +171,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                             docType={documentType}
                                             docNo={requestNo}
                                             status={status}
-                                            tableId={50104}
+                                            tableId={tableId}
                                         />
 
                                         <ApprovalEntries
@@ -197,7 +199,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                             docType={documentType}
                                             docNo={requestNo}
                                             status={status}
-                                            tableId={50104}
+                                            tableId={tableId}
                                         />
 
                                         <ApprovalEntries
@@ -233,7 +235,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                         docType={documentType}
                                         docNo={requestNo}
                                         status={status}
-                                        tableId={50104}
+                                        tableId={tableId}
                                     />
 
                                     <ApprovalEntries
