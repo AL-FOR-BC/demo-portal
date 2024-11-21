@@ -155,6 +155,7 @@ function ApprovePaymentRequisition() {
             companyId={companyId}
             documentType="Payment Requisition"
             requestNo={requestNo}
+            tableId={50108}
             lines={
                 <Lines
                     title="Payment Requisition Lines"

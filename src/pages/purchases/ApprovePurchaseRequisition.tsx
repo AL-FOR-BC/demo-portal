@@ -233,6 +233,7 @@ function ApprovePurchaseRequisition() {
                 companyId={companyId}
                 documentType="Purchase Requisition"
                 requestNo={requestNo}
+                tableId={50104}
                 lines={
                     <Lines
                         title="Purchase Requisition Lines"
