@@ -181,7 +181,7 @@ function AddPaymentRequisition() {
                             }
                         ]
                         : split(selectedPaymentCategory[0]?.value, '::')[1] === 'Supplier' || split(selectedPaymentCategory[0]?.value, '::')[1] === 'Supplier Payment' || split(selectedPaymentCategory[0]?.value, '::')[1] === 'Vendor'
-
+ 
                             ? [
                                 {
                                     label: 'Payee',

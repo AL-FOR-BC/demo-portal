@@ -12,6 +12,7 @@ import { jwtDecode } from 'jwt-decode';
 import UseAuth from '../../../utils/hooks/useAuth.ts';
 import { EmployeeData } from '../../../@types/employee.dto.ts';
 import { persistor } from '../../../store/storeSetup.ts';
+import { modelLoadingRequisition } from '../../../store/slices/Requisitions/index.ts';
 
 function HorizontalLayout() {
     const { token } = useAppSelector((state) => state.auth.session);
@@ -33,6 +34,7 @@ function HorizontalLayout() {
             try {
                 if (!companyId) {
                     await dispatch(fetchCompanies()).unwrap();
+                    dispatch(modelLoadingRequisition(false))
                     // No need to manually set company here as it's handled in the slice
                 }
                 if (companyId) {

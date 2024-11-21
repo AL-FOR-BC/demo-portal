@@ -104,7 +104,9 @@ function PaymentRequisitionDetail() {
                     workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
                   }
                 })
+               
                 setWorkPlans(workPlansOptions)
+                populateData()
 
               }
             })
@@ -179,7 +181,9 @@ function PaymentRequisitionDetail() {
                 quickUpdate({
                   workPlanNo: split(e.value, '::')[0]
                 })
+
                 setBudgetCode(workPlansList.filter(workPlan => workPlan.no == split(e.value, '::')[0])[0].budgetCode)
+                handleDeleteAllLines()
               }
             })
           } else {
@@ -201,20 +205,50 @@ function PaymentRequisitionDetail() {
         disabled: status === 'Open' ? false : true,
         options: paymentCategoryOptions,
         onChange: async (e: options) => {
-          setSelectedPaymentCategory([{ label: e.label, value: e.value }])
-          quickUpdate({
-            paymentCategory: split(e.value, '::')[0]
-          })
-          setPaymentSubCategoryOptions([])
-          const res = await apiPaymentSubCategoryApi(companyId)
-          let paymentSubCategoryOptions: options[] = [];
-          res.data.value.map((e) => {
-            paymentSubCategoryOptions.push({ label: `${e.paymentType}::${e.name}`, value: e.code })
-          });
-          console.log(paymentSubCategoryOptions.filter(sub => split(sub.label, '::')[0] == split(e.value, '::')[0]))
-          setPaymentSubCategoryOptions(paymentSubCategoryOptions.filter(sub => split(sub.label, '::')[0] == split(e.value, '::')[0]))
-          setSelectedSubCategory([])
-          setSelectedPayee([])
+          if (paymentRequisitionLines.length > 0) {
+            Swal.fire({
+              title: 'Are you sure?',
+              text: "Changing the payment category will delete all existing lines. This action cannot be undone!",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes, delete all lines!'
+            }).then(async (result) => {
+              if (result.isConfirmed) {
+                setSelectedPaymentCategory([{ label: e.label, value: e.value }])
+                quickUpdate({
+                  paymentCategory: split(e.value, '::')[0]
+                })
+                setPaymentSubCategoryOptions([])
+                const res = await apiPaymentSubCategoryApi(companyId)
+                let paymentSubCategoryOptions: options[] = [];
+                res.data.value.map((e) => {
+                  paymentSubCategoryOptions.push({ label: `${e.paymentType}::${e.name}`, value: e.code })
+                });
+                console.log(paymentSubCategoryOptions.filter(sub => split(sub.label, '::')[0] == split(e.value, '::')[0]))
+                setPaymentSubCategoryOptions(paymentSubCategoryOptions.filter(sub => split(sub.label, '::')[0] == split(e.value, '::')[0]))
+                setSelectedSubCategory([])
+                setSelectedPayee([])
+                handleDeleteAllLines()
+              }
+            })
+          } else {
+            setSelectedPaymentCategory([{ label: e.label, value: e.value }])
+            quickUpdate({
+              paymentCategory: split(e.value, '::')[0]
+            })
+            setPaymentSubCategoryOptions([])
+            const res = await apiPaymentSubCategoryApi(companyId)
+            let paymentSubCategoryOptions: options[] = [];
+            res.data.value.map((e) => {
+              paymentSubCategoryOptions.push({ label: `${e.paymentType}::${e.name}`, value: e.code })
+            });
+            console.log(paymentSubCategoryOptions.filter(sub => split(sub.label, '::')[0] == split(e.value, '::')[0]))
+            setPaymentSubCategoryOptions(paymentSubCategoryOptions.filter(sub => split(sub.label, '::')[0] == split(e.value, '::')[0]))
+            setSelectedSubCategory([])
+            setSelectedPayee([])
+          }
         },
         id: 'paymentCategory',
       }, {
@@ -422,7 +456,7 @@ function PaymentRequisitionDetail() {
           if (resData.payeeName) {
             setPayeeName(resData.payeeName)
           }
-          setSelectedPayee([{ label: resData.payeeNo, value: resData.payeeNo }])
+          // setSelectedPayee([{ label: resData.payeeNo, value: resData.payeeNo }])
 
           setSelectedCurrency(resData.currencyCode ? [{ label: resData.currencyCode, value: resData.currencyCode }] : [{ label: 'UGX', value: '' }]);
           setStatus(resData.status)
@@ -522,7 +556,27 @@ function PaymentRequisitionDetail() {
         });
         setVendorOptions(vendorOptions)
 
+        const payee = paymentCategory[0].value.split('::')[1]
+        console.log("payee", payee)
+        if (payee === 'Customer' || payee === 'Employee' || payee === 'Imprest' || payee === 'Petty Cash') {
+          const customer = customerOptions.filter(customer => customer.value === resData.payeeNo)
+          console.log("customer", customer)
+          setSelectedPayee(customer)
+
+
+        } else if (payee === 'Vendor' || payee === 'Supplier' || payee === 'Supplier Payment') {
+          const vendor = vendorOptions.filter(vendor => vendor.value === resData.payeeNo)
+          setSelectedPayee(vendor)
+        } else if (payee === 'Bank Account' || payee === 'Bank Transfer' || payee === 'Bank') {
+          const bankAccount = bankAccountOptions.filter(bankAccount => bankAccount.value === resData.payeeNo)
+          setSelectedPayee(bankAccount)
+        } else if (payee === 'Employee' || payee === 'Statutory') {
+          const employee = customerOptions.filter(employee => employee.value === resData.payeeNo)
+          setSelectedPayee(employee)
+        }
+
       }
+
 
 
 
@@ -657,6 +711,7 @@ function PaymentRequisitionDetail() {
       options: accountTypeOptions,
       readOnly: true, disabled: false,
       onChange: async (e: options) => {
+        dispatch(modelLoadingRequisition(true))
         setSelectedAccountNo([])
         setGlAccounts([])
         setSelectedWorkPlanLine([])
@@ -668,6 +723,7 @@ function PaymentRequisitionDetail() {
             bankAccountOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
           });
           setGlAccounts(bankAccountOptions)
+          dispatch(modelLoadingRequisition(false))
         } else if (e.value == 'G/L Account') {
           const glAccounts = await apiGLAccountsApi(companyId);
           let glAccountsOptions: options[] = [];
@@ -675,6 +731,7 @@ function PaymentRequisitionDetail() {
             glAccountsOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
           });
           setGlAccounts(glAccountsOptions)
+          dispatch(modelLoadingRequisition(false))
         } else if (e.value == 'Vendor') {
           const vendors = await apiVendors(companyId)
           let vendorOptions: options[] = [];
@@ -682,6 +739,7 @@ function PaymentRequisitionDetail() {
             vendorOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
           });
           setGlAccounts(vendorOptions)
+          dispatch(modelLoadingRequisition(false))
         } else if (e.value == 'Customer') {
           const customers = await apiCustomersApi(companyId)
           let customerOptions: options[] = [];
@@ -689,6 +747,7 @@ function PaymentRequisitionDetail() {
             customerOptions.push({ label: `${e.no}::${e.name}`, value: e.no })
           });
           setGlAccounts(customerOptions)
+          dispatch(modelLoadingRequisition(false))
         }
       }
       ,
@@ -698,6 +757,7 @@ function PaymentRequisitionDetail() {
     {
       label: "Account No", type: "select", value: selectedAccountNo,
       onChange: async (e: options) => {
+        dispatch(modelLoadingRequisition(true))
         setSelectedWorkPlanLine([])
         setSelectedAccountNo([{ label: e.label, value: e.value }])
         const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${e?.value}'`
@@ -710,6 +770,7 @@ function PaymentRequisitionDetail() {
           })
         });
         setWorkPlanLines(workPlanLinesOptions)
+        dispatch(modelLoadingRequisition(false))
       }
       , options: glAccounts, isSearchable: true
     },
@@ -781,7 +842,7 @@ function PaymentRequisitionDetail() {
   const updateLineAfterBudgetCheck = async (systemId: string, etag: string) => {
     try {
       const commonData: PaymentRequistionLinesSubmitData = {
-        description: description,
+        description: lineDescription,
         quantity: parseInt(quantity.toString()),
         rate: parseInt(rate.toString()),
         workPlanEntryNo: Number(selectedWorkPlanLine[0]?.value)
@@ -864,14 +925,29 @@ function PaymentRequisitionDetail() {
     setLineSystemId(row.systemId)
     setLineEtag(row['@odata.etag'])
 
-    const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${row.accountNo}'`
-    const workPlanEntryNoRes = await apiWorkPlanLines(companyId, filterQuery);
-    const workPlanLines = workPlanEntryNoRes.data.value.map(plan => ({ label: `${plan.entryNo}::${plan.activityDescription}`, value: `${plan.entryNo}` }));
-    const workPlanEntryNo = workPlanLines.filter(e => e.value === row.workPlanEntryNo.toString());
-    workPlanEntryNo.length > 0 ? setSelectedWorkPlanLine([{ label: workPlanEntryNo[0].label, value: workPlanEntryNo[0].value }]) : setSelectedWorkPlanLine([{ label: '', value: '' }]);
+    console.log("accountType", row.accountType)
+    if (row.accountType === "G/L Account") {
+      const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, '::')[0]}' and accountNo eq '${row.accountNo}'`
+      const workPlanEntryNoRes = await apiWorkPlanLines(companyId, filterQuery);
+      const workPlanLines = workPlanEntryNoRes.data.value.map(plan => ({ label: `${plan.entryNo}::${plan.activityDescription}`, value: `${plan.entryNo}` }));
+      const workPlanEntryNo = workPlanLines.filter(e => e.value === row.workPlanEntryNo.toString());
+      workPlanEntryNo.length > 0 ? setSelectedWorkPlanLine([{ label: workPlanEntryNo[0].label, value: workPlanEntryNo[0].value }]) : setSelectedWorkPlanLine([{ label: '', value: '' }]);
 
+      const glAccount = glAccounts.filter(e => e.value === row.accountNo)
+      glAccount.length > 0 ? setSelectedAccountNo([{ label: glAccount[0].label, value: glAccount[0].value }]) : setSelectedAccountNo([{ label: '', value: '' }]);
+    } else if (row.accountType === "Bank Account") {
+      const bankAccount = bankAccountOptions.filter(e => e.value === row.accountNo)
+      bankAccount.length > 0 ? setSelectedAccountNo([{ label: bankAccount[0].label, value: bankAccount[0].value }]) : setSelectedAccountNo([{ label: '', value: '' }]);
+    } else if (row.accountType === "Vendor") {
+      console.log("Vendor")
+      const vendor = vendorOptions.filter(e => e.value === row.accountNo)
+      vendor.length > 0 ? setSelectedAccountNo([{ label: vendor[0].label, value: vendor[0].value }]) : setSelectedAccountNo([{ label: '', value: '' }]);
+    } else if (row.accountType === "Customer") {
+      const customer = customerOptions.filter(e => e.value === row.accountNo)
+      customer.length > 0 ? setSelectedAccountNo([{ label: customer[0].label, value: customer[0].value }]) : setSelectedAccountNo([{ label: '', value: '' }]);
+    }
     setAccountType([{ label: row.accountType, value: row.accountType }])
-    setSelectedAccountNo([{ label: row.accountNo, value: row.accountNo }])
+    // setSelectedAccountNo([{ label: row.accountNo, value: row.accountNo }])
     setQuantity(row.quantity)
     setRate(row.rate)
     setLineDescription(row.description)
@@ -895,10 +971,25 @@ function PaymentRequisitionDetail() {
   }
 
   const handleSubmitUpdatedLine = async () => {
-    if (selectedAccountNo[0]?.value == '' || selectedWorkPlanLine[0]?.value == '' || quantity == 0 || rate == 0) {
-      const missingField = selectedAccountNo[0]?.value == '' ? 'Account No' : selectedWorkPlanLine[0]?.value == '' ? 'Work Plan Line' : quantity == 0 ? 'Quantity' : 'Rate'
+    if (
+      (accountType[0]?.value == '' || accountType[0]?.value == null || accountType[0]?.value == undefined) ||
+      (selectedAccountNo[0]?.value == '' || selectedAccountNo[0]?.value == null || selectedAccountNo[0]?.value == undefined) ||
+      quantity == 0 || rate == 0 ||
+      (description == '' || description == null || description == undefined)
+    ) {
+      const missingField = (accountType[0]?.value == '' || accountType[0]?.value == null || accountType[0]?.value == undefined) ? 'Account Type' :
+        (selectedAccountNo[0]?.value == '' || selectedAccountNo[0]?.value == null || selectedAccountNo[0]?.value == undefined) ? 'Account No' :
+          (selectedWorkPlanLine[0]?.value == '' || selectedWorkPlanLine[0]?.value == null || selectedWorkPlanLine[0]?.value == undefined) ? 'Work Plan Line' :
+            quantity == 0 ? 'Quantity' :
+              (description == '' || description == null || description == undefined) ? 'Description' : 'Rate'
       toast.error(`Please fill in the missing field: ${missingField}`)
       return
+    }
+    if (accountType[0]?.value === "G/L Account") {
+      if (selectedWorkPlanLine[0]?.value == '' || selectedWorkPlanLine[0]?.value == null || selectedWorkPlanLine[0]?.value == undefined) {
+        toast.error(`Please fill in the missing field: Work Plan Line`)
+        return
+      }
     }
     try {
       const data: PaymentRequistionLinesSubmitData = {
@@ -915,16 +1006,20 @@ function PaymentRequisitionDetail() {
       console.log("data", data)
       console.log("lineEtag", lineEtag)
       dispatch(modelLoadingRequisition(true))
-      const res = await apiPaymentRequisitionLines(companyId, 'PATCH', data, lineSystemId, lineEtag)
-      if (res.status == 200) {
-        toast.success('Line updated successfully')
-        populateData()
-        dispatch(closeModalRequisition())
-        dispatch(editRequisitionLine(false))
-        clearModalFields()
+      if (lineSystemId != '' && lineEtag != '') {
+        const res = await apiPaymentRequisitionLines(companyId, 'PATCH', data, lineSystemId, lineEtag)
+        if (res.status == 200) {
+          toast.success('Line updated successfully')
+          populateData()
+          dispatch(closeModalRequisition())
+          dispatch(editRequisitionLine(false))
+          clearModalFields()
+        }
+      } else {
+        await handleSubmitLines()
       }
     } catch (error) {
-      toast.error(`Error updating line:${error}`)
+      toast.error(`Error updating line:${getErrorMessage(error)}`)
     } finally {
       dispatch(modelLoadingRequisition(false))
     }
@@ -1012,6 +1107,25 @@ function PaymentRequisitionDetail() {
 
     return true
 
+  }
+  const handleDeleteAllLines = async () => {
+    try {
+      paymentRequisitionLines.map(async (line) => {
+        const res = await apiPaymentRequisitionLines(companyId, "DELETE", undefined, line.systemId, line['@odata.etag'])
+      if (res.status == 204) {
+        console.log("Line deleted successfully")
+        toast.success("Line deleted successfully")
+          populateData()
+        } else {
+          console.log("Error deleting line", res)
+          populateData()
+        }
+      })
+    } catch (error) {
+      console.log("Error deleting lines", error)
+      populateData()
+      // toast.error(`Error deleting lines:${getErrorMessage(error)}`)
+    }
   }
 
   return (

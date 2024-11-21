@@ -105,7 +105,7 @@ function ApprovePaymentRequisition() {
                 setPaymentRequisitionLines(data.paymentRequestLines);
                 setSelectedCurrency(data.currencyCode || 'UGX');
                 setPurpose(data.purpose || '');
-                setExpectedReceiptDate(data.expectedReceiptDate || '');
+                setExpectedReceiptDate(data.documentDate || '');
                 setRequestNo(data.no || '');
                 setBudgetCode(data.budgetCode || '');
                 setStatus(data.status || '');

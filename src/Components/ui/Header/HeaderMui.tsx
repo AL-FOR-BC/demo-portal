@@ -21,6 +21,7 @@ import Attachments from "../../common/Attachment";
 import ApprovalEntries from "../../common/ApprovalEntry";
 import LinesEditable from "../Lines/LinesEditable";
 import ApprovalAction from "../../common/ApprovalAction";
+import ApprovalComments from "../../common/ApprovalComments";
 
 interface HeaderMuiProps {
     title: string;
@@ -56,6 +57,7 @@ interface HeaderMuiProps {
     handleDeleteLine?: (id: GridRowId) => void
     handleEditLine?: (id: GridRowId) => void
     tableId?: number
+    createNewLine?: (lineNo: number) => void
 }
 
 const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
@@ -88,7 +90,8 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
         handleDeleteLine,
         handleEditLine,
         rowLines,
-        tableId
+        tableId,
+        createNewLine
     } = props;
 
     return (
@@ -142,6 +145,11 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                             defaultCompany={companyId}
                                             docType={documentType}
                                             docNo={requestNo}
+                                        />
+                                        <ApprovalComments
+                                            defaultCompany={companyId || ''}
+                                            docType={documentType || ''}
+                                            docNo={requestNo || ''}
                                         />
                                         <Button color="danger" className="btn btn-label" onClick={handleDeletePurchaseRequisition}>
                                             <DeleteIcon className="label-icon" style={{ padding: "8px" }} />
@@ -206,6 +214,11 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                             defaultCompany={companyId}
                                             docType={documentType}
                                             docNo={requestNo}
+                                        />
+                                        <ApprovalComments
+                                            defaultCompany={companyId || ''}
+                                            docType={documentType || ''}
+                                            docNo={requestNo || ''}
                                         />
                                     </div>
                                 </Row>
@@ -401,7 +414,9 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                                 rowLines={rowLines}
                                                 handleDeleteLine={handleDeleteLine ? handleDeleteLine : () => { }}
                                                 handleEditLine={(data: any) => handleEditLine?.(data) || Promise.resolve({ success: false })}
+                                                createNewLine={createNewLine ? createNewLine : () => { }}
                                             />
+
                                             : lines}
                                     </div>
                                 </div>
