@@ -105,7 +105,7 @@ function ApprovePaymentRequisition() {
                 setPaymentRequisitionLines(data.paymentRequestLines);
                 setSelectedCurrency(data.currencyCode || 'UGX');
                 setPurpose(data.purpose || '');
-                setExpectedReceiptDate(data.expectedReceiptDate || '');
+                setExpectedReceiptDate(data.documentDate || '');
                 setRequestNo(data.no || '');
                 setBudgetCode(data.budgetCode || '');
                 setStatus(data.status || '');
@@ -155,6 +155,7 @@ function ApprovePaymentRequisition() {
             companyId={companyId}
             documentType="Payment Requisition"
             requestNo={requestNo}
+            tableId={50108}
             lines={
                 <Lines
                     title="Payment Requisition Lines"

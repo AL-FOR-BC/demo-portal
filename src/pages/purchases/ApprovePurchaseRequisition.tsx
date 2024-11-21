@@ -151,7 +151,7 @@ function ApprovePurchaseRequisition() {
                 setBudgetCode(data.budgetCode || '');
                 setSubjectOfProcurement(data.procurementDescription || '');
                 setExpectedReceiptDate(data.expectedReceiptDate || '');
-                setRequestorNo(data.requisitionedBy || '');
+                setRequestorNo(data.requestorNo || '');
                 setRequestorName(data.requestorName || '');
 
                 setStatus(data.status || '');

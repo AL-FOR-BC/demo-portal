@@ -95,35 +95,25 @@ function TimeSheetDetail() {
                 field: `day${dayNumber}`,
                 headerName: `${dayNumber} ${dayName}`,
                 width: 80,
-                editable: true,
-                type: 'number',
-                valueFormatter: (params: any, context: any) => {
-                    // Log the entire params object to see its structure
-                   
-
-                    // if (!params) return '0.00';
-
-                    // Get the row data
-                    const rowData = context
-
-                    // Check if this is the specific line we want (10000)
-                    if (rowData && rowData.id === 10000) {
-                        // If it's day 4, return 8
-                        if (dayNumber === '4') {
-                            console.log("Row data:", rowData);
-
-                            console.log("dayNumber is 4")
-                            return '8';
-                        }
-                    }
-
-                    // For all other cases, format the value
-                    const value = params ?? 0;
-                    return Number(value)
+                // Disable editing if status is 'Submitted' or it's a weekend/holiday
+                editable: (params: any) => {
+                    if (!params.row) return false;
+                    return params.row.status !== 'Submitted' && !isWeekendDay && !isHoliday;
                 },
-                cellClassName: () =>
-                    isWeekendDay ? 'weekend-cell' :
-                        isHoliday ? 'holiday-cell' : '',
+                type: 'number',
+                valueFormatter: (params: any) => {
+                    // if (!params) return '0.00';
+                    const value = params ?? 0;
+                    return Number(value);
+                },
+                // Add cellClassName to style disabled cells
+                cellClassName: (params: any) => {
+                    if (params.row?.status === 'Submitted') {
+                        return 'submitted-cell';
+                    }
+                    return isWeekendDay ? 'weekend-cell' : 
+                           isHoliday ? 'holiday-cell' : '';
+                },
             };
         });
     };
@@ -134,6 +124,7 @@ function TimeSheetDetail() {
             headerName: 'Status',
             width: 120,
             editable: false,
+            
         },
         {
             field: 'description',
@@ -200,6 +191,12 @@ function TimeSheetDetail() {
             background-color: #fff3e0;
             color: #ff9800;
         }
+        .submitted-cell {
+            background-color: #f5f5f5;
+            color: #666;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
     `;
 
     // const dummyTimeSheet = {
@@ -225,19 +222,18 @@ function TimeSheetDetail() {
     //     ]
     // };
 
-    const quickUpdate = async (kwargs: any) => {
+    const quickUpdate = async (data) => {
         try {
+            console.log(data)
             // In real implementation, call your API here
-            console.log('Updating with:', kwargs);
             toast.success("Updated successfully");
         } catch (error) {
             toast.error(`Error updating: ${getErrorMessage(error)}`);
         }
     };
 
-    const handleSubmitLines = async (data: any[]) => {
+    const handleSubmitLines = async () => {
         try {
-            console.log('Submitting line:', data);
             // Implement your line submission logic here
             return { success: true };
         } catch (error) {
@@ -246,9 +242,8 @@ function TimeSheetDetail() {
         }
     };
 
-    const handleDeleteLine = async (id: string) => {
+    const handleDeleteLine = async () => {
         try {
-            console.log('Deleting line:', id);
             // Implement your line deletion logic here
             return true;
         } catch (error) {
@@ -257,9 +252,8 @@ function TimeSheetDetail() {
         }
     };
 
-    const handleEditLine = async (data: any) => {
+    const handleEditLine = async () => {
         try {
-            console.log('Editing line:', data);
             // Implement your line editing logic here
             return { success: true };
         } catch (error) {
@@ -268,7 +262,7 @@ function TimeSheetDetail() {
         }
     };
 
-    const [timeSheetLines, setTimeSheetLines] = useState < Array < any >> ([{
+    const [timeSheetLines, setTimeSheetLines] = useState<Array<any>>([{
         id: 1,
         status: 'Open',
         description: 'Development work',
@@ -279,6 +273,21 @@ function TimeSheetDetail() {
         })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
     }]);
 
+    const createNewLine = (lineNo: number) => {
+        return {
+            id: lineNo,
+            lineNo: lineNo,
+            status: 'Open',
+            description: '',
+            project: '',
+            causeOfAbsenceCode: '',
+            editable: true,
+            ...Array.from({ length: 31 }, (_, i) => ({
+                [`day${i + 1}`]: 0
+            })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
+        };
+    };
+
     useEffect(() => {
         const populateData = async () => {
             try {
@@ -287,7 +296,6 @@ function TimeSheetDetail() {
                 const filterQuery = `$expand=timeSheetLines`;
                 const res = await TimeSheetsService.getTimeSheetHeaderById(companyId, id, filterQuery);
 
-                console.log(res.data);
                 setTimeSheetNo(res.data.timeSheetNo);
                 setStartingDate(new Date(res.data.startingDate));
                 setEndingDate(new Date(res.data.endingDate));
@@ -301,7 +309,6 @@ function TimeSheetDetail() {
                 const filterQuery2 = `&$filter=timeSheetNo eq '${res.data.timeSheetNo}'`;
                 const resTimeSheetDetail = await TimeSheetsService.getTimeSheetDetails(companyId, filterQuery2);
 
-                console.log("resTimeSheetDetail", resTimeSheetDetail.data)
                 // Create holiday lines
                 const holidayLines = publicHolidays.map((holiday, index) => {
                     const dayNumber = format(new Date(holiday.date), 'd');
@@ -319,26 +326,32 @@ function TimeSheetDetail() {
                 });
 
                 const timeSheetLinesData = res.data.timeSheetLines.filter((line: TimeSheetLine) => line.timeSheetNo === res.data.timeSheetNo);
-                console.log("timeSheetLinesData", timeSheetLinesData)
                 const timeSheetLines = timeSheetLinesData.map((line: TimeSheetLine) => {
-                    // Create the base days object with all days set to 0
-                    const daysObject = Array.from({ length: 31 }, (_, i) => ({
-                        [`day${i + 1}`]: 0
-                    })).reduce((acc, curr) => ({ ...acc, ...curr }), {});
+                    const daysObject = {};
 
-                    // Explicitly set day 4 to 8 hours
-                    if (line.lineNo === 10000) {
-                        daysObject.day4 = 8;
+                    for (let i = 1; i <= 31; i++) {
+                        daysObject[`day${i}`] = 0;
                     }
-                    console.log("lin n ", line.lineNo,)
+
+                    // Find all details for this line number
+                    const lineDetails = resTimeSheetDetail.data.value.filter(
+                        (detail: any) => detail.timeSheetLineNo === line.lineNo
+                    );
+
+                    // Map the quantities to the corresponding days
+                    lineDetails.forEach((detail) => {
+                        const dayNumber = format(new Date(detail.date), 'd');
+                        daysObject[`day${dayNumber}`] = detail.quantity;
+                    });
+
                     return {
                         id: line.lineNo,
                         lineNo: line.lineNo,
-                        status: line.Status,
+                        status: line.Status || 'Open',
                         description: line.description,
                         project: line.jobNo,
                         causeOfAbsenceCode: line.type,
-                        editable: line.Status === 'Open',
+                        editable: line.Status === 'Submitted' ? false : true,
                         ...daysObject
                     };
                 });
@@ -388,6 +401,7 @@ function TimeSheetDetail() {
                 companyId={companyId}
                 documentType="Time Sheet"
                 requestNo={timeSheetNo}
+                createNewLine={createNewLine}
             />
         </>
     );

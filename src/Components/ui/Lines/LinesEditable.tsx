@@ -21,7 +21,6 @@ import {
   GridRowEditStopReasons,
   GridToolbarProps,
 } from '@mui/x-data-grid';
-import { randomId } from '@mui/x-data-grid-generator';
 import { Link } from 'react-router-dom';
 import { PlusIcon } from '../../common/icons/icons';
 import { toast } from 'react-toastify';
@@ -32,25 +31,28 @@ const StyledDataGrid = styled(DataGrid)(() => ({
   border: 'none',
   fontFamily: 'inherit',
   '& .MuiDataGrid-main': {
-    // borderSpacing: '0 8px',
     borderCollapse: 'separate',
   },
   '& .MuiDataGrid-columnHeaders': {
-    padding: '0px 16px',
+    padding: '0px 8px',
     backgroundColor: '#f8f9fa',
     color: '#495057',
     fontSize: '0.875rem',
     fontWeight: 600,
     borderBottom: 'none',
+    minHeight: '40px !important',
+    maxHeight: '40px !important',
   },
   '& .MuiDataGrid-cell': {
     border: 'none',
-    // padding: '6px 8px',
+    padding: '2px 8px',
     fontSize: '0.875rem',
     color: '#495057',
   },
   '& .MuiDataGrid-row': {
     backgroundColor: '#fbfbfd',
+    minHeight: '35px !important',
+    maxHeight: '35px !important',
     '&:nth-of-type(odd)': {
       backgroundColor: '#fbfbfd',
     },
@@ -71,14 +73,15 @@ const StyledDataGrid = styled(DataGrid)(() => ({
   '& .MuiDataGrid-row.Mui-editing': {
     backgroundColor: '#fff',
     '& .MuiDataGrid-cell': {
-      padding: '8px',
+      padding: '2px 8px',
     },
   },
   // Style for action buttons
   '& .actions': {
     color: '#495057',
     '& .MuiIconButton-root': {
-      padding: '4px',
+      padding: '2px',
+      fontSize: '0.8rem',
     },
   },
 }));
@@ -96,27 +99,21 @@ interface EditToolbarProps {
   ) => void;
   documentType: string;
   columns: GridColDef[];
+  createNewLine: (lineNo: number) => any;
 }
 
 function EditToolbar(props: EditToolbarProps) {
-  const { setRows, setRowModesModel } = props;
+  const { setRows, setRowModesModel, createNewLine } = props;
 
   const handleClick = () => {
-    const id = randomId();
-    const newRow = {
-      id,
-      description2: '',
-      quantity: null,
-      unitOfMeasure: '',
-      isNew: true
-    };
+    const newLineNo = Math.floor(Math.random() * 1000000);
+    const newRow = createNewLine(newLineNo);
     setRows((oldRows) => [newRow, ...oldRows]);
     setRowModesModel((oldModel) => ({
       ...oldModel,
-      [id]: { mode: GridRowModes.Edit, fieldToFocus: 'description2' },
+      [newRow.id]: { mode: GridRowModes.Edit, fieldToFocus: 'description' },
     }));
   };
-
 
   return (
     <StyledToolbarContainer>
@@ -134,14 +131,23 @@ function EditToolbar(props: EditToolbarProps) {
 
 interface LinesEditableProps {
   columns: GridColDef[];
-  rowLines: any[]
+  rowLines: any[];
   documentType: string;
-  handleSubmitLines: (data: any[]) => Promise<{ success: boolean }>
-  handleDeleteLine: (id: GridRowId) => void
-  handleEditLine: (data: any) => Promise<{ success: boolean }>
+  handleSubmitLines: (data: any[]) => Promise<{ success: boolean }>;
+  handleDeleteLine: (id: GridRowId) => void;
+  handleEditLine: (data: any) => Promise<{ success: boolean }>;
+  createNewLine: (lineNo: number) => any;
 }
 
-export default function LinesEditable({ columns, rowLines, documentType, handleSubmitLines, handleDeleteLine, handleEditLine }: LinesEditableProps) {
+export default function LinesEditable({ 
+  columns, 
+  rowLines, 
+  documentType, 
+  handleSubmitLines, 
+  handleDeleteLine, 
+  handleEditLine,
+  createNewLine 
+}: LinesEditableProps) {
   const [rows, setRows] = React.useState < any[] > ([]);
   const [isEditing, setIsEditing] = React.useState < boolean > (false);
   const [rowModesModel, setRowModesModel] = React.useState < GridRowModesModel > ({});
@@ -292,6 +298,7 @@ export default function LinesEditable({ columns, rowLines, documentType, handleS
         setRowModesModel={setRowModesModel}
         documentType={documentType}
         columns={columns}
+        createNewLine={createNewLine}
       />
     );
   };
@@ -347,7 +354,7 @@ export default function LinesEditable({ columns, rowLines, documentType, handleS
               hideFooterPagination
               autoHeight
               disableColumnMenu
-              density="comfortable"
+              density="compact"
               initialState={{
                 pagination: {
                   paginationModel: {

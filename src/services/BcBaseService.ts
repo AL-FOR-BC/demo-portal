@@ -9,7 +9,6 @@ import {
 } from "../constants/api.constants.ts";
 import { signOutSuccess } from "../store/slices/auth";
 
-
 const unauthorizedCode = [401];
 
 const BcBaseService = axios.create({
@@ -21,17 +20,20 @@ BcBaseService.interceptors.request.use(
   (config) => {
     const rawPersistData = localStorage.getItem(PERSIST_STORE_NAME);
     const persistData = deepParseJson(rawPersistData);
-    
+    console.log("persistData", persistData);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let accessToken = (persistData as any).auth.session.bcToken;
+    if (persistData) {
+      let accessToken = (persistData as any).auth.session.bcToken;
 
-    if (!accessToken) {
-      const { auth } = store.getState();
-      accessToken = auth.session.token;
-    }
+      if (!accessToken) {
+        const { auth } = store.getState();
+        accessToken = auth.session.token;
+      }
 
-    if (accessToken) {
-      config.headers[REQUEST_HEADER_AUTH_KEY] = `${TOKEN_TYPE}${accessToken}`;
+      if (accessToken) {
+        config.headers[REQUEST_HEADER_AUTH_KEY] = `${TOKEN_TYPE}${accessToken}`;
+      }
+      return config;
     }
     return config;
   },

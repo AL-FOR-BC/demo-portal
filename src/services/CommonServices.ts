@@ -246,3 +246,13 @@ export async function apiCompanies() {
     url: `/api/hrpsolutions/procuretopay/v2.0/companies`,
   });
 }
+
+// -------------------------------------- End of Companies --------------------------------------
+
+// -------------------------------------- Comments --------------------------------------
+  
+export const apiApprovalComments = async (company: string, filter: string) => {
+  return BcApiService.fetchData<any>({
+    url: `/api/hrpsolutions/procuretopay/v2.0/approvalComments?Company=${company}&${filter}`,
+  });
+};

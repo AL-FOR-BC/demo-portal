@@ -1,5 +1,5 @@
-import { 
-    Dialog, 
+import {
+    Dialog,
     Grid,
     Typography,
     IconButton,
@@ -12,6 +12,7 @@ import { RiseLoader } from "react-spinners";
 import Select from 'react-select';
 import { Input, Label, Button as ReactstrapButton } from "reactstrap";
 import { customStyles } from "../../../utils/common.ts";
+import { useState } from 'react';
 
 interface ModelMuiProps {
     title: string;
@@ -61,6 +62,19 @@ const ModelMui: React.FC<ModelMuiProps> = ({
 }) => {
     const maxWidth = size as Breakpoint;
 
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
+    const handleSubmitWithLoading = async () => {
+        if (handleSubmit) {
+            setIsSubmitting(true)
+            try {
+                await handleSubmit()
+            } finally {
+                setIsSubmitting(false)
+            }
+        }
+    }
+
     return (
         <StyledDialog
             open={isOpen}
@@ -72,8 +86,8 @@ const ModelMui: React.FC<ModelMuiProps> = ({
                 <Typography variant="subtitle1" component="h6">
                     {isEdit ? `Update ${title}` : `Add ${title}`}
                 </Typography>
-                <IconButton 
-                    onClick={toggleModal} 
+                <IconButton
+                    onClick={toggleModal}
                     size="small"
                     className="close"
                 >
@@ -125,18 +139,19 @@ const ModelMui: React.FC<ModelMuiProps> = ({
 
             <div className="modal-footer">
                 {isEdit ? (
-                    <ReactstrapButton 
-                        color="success" 
+                    <ReactstrapButton
+                        color="success"
                         onClick={handleUpdateLine}
                     >
                         Update
                     </ReactstrapButton>
                 ) : (
-                    <ReactstrapButton 
-                        color="primary" 
-                        onClick={handleSubmit}
+                    <ReactstrapButton
+                        color="primary"
+                        onClick={handleSubmitWithLoading}
+                        disabled={isSubmitting}
                     >
-                        Submit
+                         {isSubmitting ? 'Submitting...' : 'Submit'}
                     </ReactstrapButton>
                 )}
             </div>
