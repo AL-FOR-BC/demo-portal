@@ -8,29 +8,22 @@ import { apiLocation, apiDimensionValue, apiUnitOfMeasure } from "../../services
 import { handleSendForApproval } from "../../actions/actions";
 import { cancelApprovalButton, getErrorMessage } from "../../utils/common";
 
-import { apiStoreRequestDetail, apiUpdateStoreRequest, apiDeleteStoreRequest, apiDeleteStoreRequestLine, apiCreateStoreRequestLine, apiUpdateStoreRequestLine } from "../../services/StoreRequestServices";
+import { apiStoreRequestDetail, apiUpdateStoreRequest, apiDeleteStoreRequest, apiDeleteStoreRequestLine, apiCreateStoreRequestLine, apiUpdateStoreRequestLine, apiStoreRequestLines } from "../../services/StoreRequestServices";
 import Swal from "sweetalert2";
+import Lines from "../../Components/ui/Lines/Lines";
+import { openModalRequisition } from '../../store/slices/Requisitions/purchaseRequisitionSlice';
+import { useDispatch } from 'react-redux';
+import { ActionFormatterLines } from '../../Components/ui/Table/TableUtils';
+import { closeModalRequisition, modelLoadingRequisition } from '../../store/slices/Requisitions';
 
-// Add validation functions
-const validateStoreRequestLine = (line: any) => {
-    if (!line.description2?.toString().trim()) {
-        throw new Error("Description is required");
-    }
 
-    if (line.quantity === null || line.quantity === 0 || line.quantity === undefined || isNaN(Number(line.quantity))) {
-        throw new Error("Valid quantity is required");
-    }
-
-    if (!line.unitOfMeasure?.toString().trim()) {
-        throw new Error("Unit of Measure is required");
-    }
-};
 
 function StoreRequestDetail() {
     const navigate = useNavigate();
     const { id } = useParams();
     const { companyId } = useAppSelector(state => state.auth.session);
     const { employeeNo, employeeName, email } = useAppSelector(state => state.auth.user);
+    const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
 
     // Form states
@@ -48,6 +41,12 @@ function StoreRequestDetail() {
     // Options states
     const [locationOptions, setLocationOptions] = useState < options[] > ([]);
     const [dimensionValues, setDimensionValues] = useState < options[] > ([]);
+
+    const [lineDescription, setLineDescription] = useState('');
+    const [lineQuantity, setLineQuantity] = useState(0);
+    const [selectedUnitOfMeasure, setSelectedUnitOfMeasure] = useState < options[] > ([]);
+    const [lineSystemId, setLineSystemId] = useState < string | undefined > (undefined);
+    const [lineEtag, setLineEtag] = useState < string | undefined > (undefined);
 
     const requisitionTypeOptions = [
         { label: 'Issue', value: 'Issue' },
@@ -183,7 +182,7 @@ function StoreRequestDetail() {
 
             // Fetch store request details
             if (id) {
-                const filter = `$expand=storeRequestline   `;
+                const filter = `$expand=storeRequestline`;
                 const response = await apiStoreRequestDetail(companyId, id, filter);
                 const data = response.data;
 
@@ -243,7 +242,7 @@ function StoreRequestDetail() {
                     if (dim) setSelectedDimension([dim]);
                 }
 
-                // Set store requisition lines
+                // Ensure each line has a unique ID
                 if (data.storeRequestline) {
                     setStoreRequestLines(data.storeRequestline);
                 }
@@ -291,99 +290,192 @@ function StoreRequestDetail() {
         }
     }
 
-    const columns = [
+    const columns = (status == "Open") ? [
         {
-            field: 'description2',
-            headerName: 'Description',
-            type: 'text',
-            width: 400,
-            editable: true,
+            dataField: 'description2',
+            text: 'Description',
+            sort: true,
         },
         {
-            field: 'quantity',
-            headerName: 'Quantity',
-            type: 'number',
-            width: 180,
-            editable: true,
-            valueParser: (value: any) => {
-                const parsed = Number(value);
-                return isNaN(parsed) ? 0 : parsed;
+            dataField: 'quantity',
+            text: 'Quantity',
+            sort: true,
+        },
+        {
+            dataField: 'unitOfMeasure',
+            text: 'Unit of Measure',
+
+        },
+        {
+            dataField: 'actions',
+            text: 'Actions',
+            formatter: (cell: any, row: any) => {
+                console.log(cell);
+                return <ActionFormatterLines
+                    row={row}
+                    companyId={companyId}
+                    apiHandler={apiStoreRequestLines}
+                    handleDeleteLine={handleDeleteLine}
+                    populateData={populateData}
+                    handleEditLine={handleEditLine}
+
+                />
             }
+
+        }
+    ] : [
+        {
+            dataField: 'description2',
+            text: 'Description',
+            sort: true,
         },
         {
-            field: 'unitOfMeasure',
-            headerName: 'Unit of Measure',
-            type: 'singleSelect',
-            width: 400,
-            editable: true,
-            valueOptions: unitOfMeasureOptions,
+            dataField: 'quantity',
+            text: 'Quantity',
+            sort: true,
+        },
+        {
+            dataField: 'unitOfMeasure',
+            text: 'Unit of Measure',
+
         }
     ];
 
-    const handleSubmitLines = async (data: any) => {
-        try {
-            console.log("Raw line data received:", data);
+    const modalFields = [
+        [
+            {
+                label: 'Description',
+                type: 'text',
+                value: lineDescription,
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) => setLineDescription(e.target.value),
+                id: 'description'
+            },
+            {
+                label: 'Quantity',
+                type: 'number',
+                value: lineQuantity,
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) => setLineQuantity(Number(e.target.value)),
+                id: 'quantity'
+            },
+            {
+                label: 'Unit of Measure',
+                type: 'select',
+                options: unitOfMeasureOptions,
+                value: selectedUnitOfMeasure,
+                onChange: (e: options) => setSelectedUnitOfMeasure([{ label: e.label, value: e.value }]),
+                id: 'unitOfMeasure'
+            }
+        ]
+    ];
 
+    const clearLineFields = () => {
+        setLineDescription('');
+        setLineQuantity(0);
+        setSelectedUnitOfMeasure([]);
+    };
+
+
+
+    const handleSubmitLines = async () => {
+        try {
             if (!id) {
                 throw new Error("Document ID is missing");
             }
 
-            // Validate the line before formatting
-            validateStoreRequestLine(data[0]);
+            // Validate before submitting
+            if (!lineDescription || !lineQuantity || !selectedUnitOfMeasure[0]?.value) {
+                toast.error("Please fill in all required fields");
+                return { success: false };
+            }
 
-            const formattedData = data.map(row => ({
+            const formattedData = {
                 documentNo: requestNo,
-                description2: row.description2 || '',
-                quantity: row.quantity ? Number(row.quantity) : 0,
-                unitOfMeasure: row.unitOfMeasure || '',
-            }));
+                description2: lineDescription,
+                quantity: Number(lineQuantity),
+                unitOfMeasure: selectedUnitOfMeasure[0]?.value,
+            };
 
-            console.log("Formatted data for submission:", formattedData);
 
-            const response = await apiCreateStoreRequestLine(companyId, formattedData[0]);
 
-            if (response.status === 201 || response.status === 200) {
-                toast.success("Line saved successfully");
+            const response = await apiCreateStoreRequestLine(companyId, formattedData);
+
+            if (response.status === 201) {
+                toast.success("Line added successfully");
                 await populateData();
+                dispatch(closeModalRequisition())
                 return { success: true };
+            } else {
+                throw new Error("Failed to create line");
             }
         } catch (error) {
             toast.error(`Error submitting line: ${getErrorMessage(error)}`);
-            throw error;
+            return { success: false };
         }
     };
-    const handleDeleteLine = async (id: any) => {
-        console.log(id);
-        const response = await apiDeleteStoreRequestLine(companyId, id);
-        if (response.status === 204) {
-            toast.success("Line deleted successfully");
-            return response.status;
-        }
-    }
-    const handleEditLine = async (data: any) => {
+
+    const handleEditLine = async (row: any) => {
+        dispatch(openModalRequisition())
+        dispatch(modelLoadingRequisition(true))
+        clearLineFields()
+        setLineSystemId(row.systemId)
+        setLineEtag(row['@odata.etag'])
+        setLineDescription(row.description2)
+        setLineQuantity(row.quantity)
+        const unitOfMeasureRes = await apiUnitOfMeasure(companyId)
+        const unitOfMeasureOptions = unitOfMeasureRes.data.value.map(e => ({ label: `${e.code}::${e.description}`, value: e.code }))
+        setUnitOfMeasureOptions(unitOfMeasureOptions)
+        const unitOfMeasureData = unitOfMeasureOptions.filter(e => e.value === row.unitOfMeasure);
+        unitOfMeasureData.length > 0 ? setSelectedUnitOfMeasure([{ label: unitOfMeasureData[0].label, value: unitOfMeasureData[0].value }]) : setSelectedUnitOfMeasure([{ label: '', value: '' }]);
+        dispatch(modelLoadingRequisition(false))
+
+    };
+
+    const handleSubmitUpdatedLine = async () => {
         try {
-            // Validate before updating
-            validateStoreRequestLine(data);
+            if (!lineSystemId || !lineEtag) {
+                throw new Error("Line ID or ETag is missing");
+            }
 
             const formattedData = {
-                description2: data.description2,
-                quantity: data.quantity,
-                unitOfMeasure: data.unitOfMeasure
-            }
-            const etag = data["@odata.etag"]
-            const id = data.systemId
+                description2: lineDescription,
+                quantity: Number(lineQuantity),
+                unitOfMeasure: selectedUnitOfMeasure[0]?.value,
+            };
 
-            const response = await apiUpdateStoreRequestLine(companyId, id, formattedData, etag);
+            const response = await apiUpdateStoreRequestLine(
+                companyId,
+                lineSystemId,
+                formattedData,
+                lineEtag
+            );
+
             if (response.status === 200) {
                 toast.success("Line updated successfully");
-                await populateData();
-                return { success: true };
+                await populateData(); // Refresh the data
+                dispatch(closeModalRequisition())
+
+            } else {
+                throw new Error("Failed to update line");
             }
         } catch (error) {
             toast.error(`Error updating line: ${getErrorMessage(error)}`);
+
+        }
+    };
+
+    const handleDeleteLine = async (row: any) => {
+        try {
+            const response = await apiDeleteStoreRequestLine(companyId, row.systemId);
+            if (response.status === 204) {
+                toast.success("Line deleted successfully");
+                await populateData(); // Refresh the data
+                return response.status;
+            }
+        } catch (error) {
+            toast.error(`Error deleting line: ${getErrorMessage(error)}`);
             throw error;
         }
-    }
+    };
 
     return (
         <>
@@ -391,18 +483,14 @@ function StoreRequestDetail() {
                 title="Store Requisition Detail"
                 subtitle="Store Requisition Detail"
                 breadcrumbItem="Store Requisition Detail"
-
                 fields={fields}
                 isLoading={isLoading}
-                editableLines={true}
-                columns={columns as any}
-                rowLines={storeRequestLines}
-                handleSubmitLines={handleSubmitLines}
-                handleDeleteLine={handleDeleteLine}
-                handleEditLine={handleEditLine}
                 handleBack={() => navigate('/store-requisitions')}
                 pageType="detail"
                 status={status}
+                companyId={companyId}
+                documentType="Store Requisition"
+                requestNo={requestNo}
                 handleSendApprovalRequest={async () => {
                     const documentNo = requestNo;
                     const documentLines = storeRequestLines;
@@ -418,15 +506,30 @@ function StoreRequestDetail() {
                     )
                 }}
                 handleCancelApprovalRequest={handleCancelApproval}
-                // handleDeletePurchaseRequisition={handleDeleteStoreRequisition}
                 handleDeletePurchaseRequisition={handleDeleteStoreRequisition}
-                companyId={companyId}
-                documentType="Store Requisition"
-                requestNo={requestNo}
-
+                lines={
+                    <Lines
+                        clearLineFields={clearLineFields}
+                        title="Store Requisition Lines"
+                        subTitle="Store Requisition Lines"
+                        breadcrumbItem="Store Requisition Lines"
+                        addLink=""
+                        addLabel=""
+                        iconClassName=""
+                        data={storeRequestLines}
+                        columns={columns}
+                        noDataMessage="No Store Requisition Lines found"
+                        status={status}
+                        modalFields={modalFields}
+                        handleSubmitLines={handleSubmitLines}
+                        handleDeleteLines={handleDeleteLine}
+                        handleSubmitUpdatedLine={handleSubmitUpdatedLine}
+                        handleValidateHeaderFields={() => true}
+                    />
+                }
             />
         </>
-    )
+    );
 }
 
 export default StoreRequestDetail;

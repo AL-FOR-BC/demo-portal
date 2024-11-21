@@ -8,11 +8,13 @@ export let environmentType = import.meta.env.ENVIRONMENT_TYPE || "";
 if (environmentType === "HRP") {
   apiPrefix = import.meta.env.VITE_EHUB_BACKEND_URL_HRP || "";
   apiPrefixBC = import.meta.env.VITE_EHUB_BC_URL_HRP || "";
+} else if (environmentType === "ROM_TEST") {
+  apiPrefix = import.meta.env.VITE_EHUB_BACKEND_URL_ROM || "";
+  apiPrefixBC = import.meta.env.VITE_EHUB_BC_URL_ROM || "";
 } else {
   apiPrefix = import.meta.env.VITE_EHUB_BACKEND_URL || "";
   apiPrefixBC = import.meta.env.VITE_EHUB_BC_URL || "";
 }
-
 
 export type AppConfig = {
   apiPrefix: string;

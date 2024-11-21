@@ -74,3 +74,16 @@ export async function apiDeleteStoreRequestLine(companyId: string, id: string) {
     method: "delete",
   });
 }
+
+export async function apiStoreRequestLines(companyId: string, method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH", data?: any, systemId?: string, etag?: string, filterQuery?: string) {
+  if (method === "PATCH" || "DELETE") {
+    return BcApiService.fetchData<any>({
+      url: `/api/hrpsolutions/procuretopay/v2.0/storeRequestline(${systemId})?Company=${companyId}&${filterQuery}`,
+      method,
+      data,
+      headers: {
+        "If-Match": etag,
+      },
+    });
+  }
+}

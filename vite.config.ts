@@ -29,6 +29,16 @@ export default defineConfig({
     "import.meta.env.VITE_EHUB_BC_URL_HRP": JSON.stringify(
       "https://api.businesscentral.dynamics.com/v2.0/df78e20f-3ca1-4018-9157-8bedb2673da2/HRPSandbox4Demos/"
     ),
+
+    // ---------------------------------- End of HRP ----------------------------------
+
+    // ---------------------------------- ROM TEST ------------------------------------
+    "import.meta.env.VITE_EHUB_BC_URL_ROM": JSON.stringify(
+      "https://api.businesscentral.dynamics.com/v2.0/24528e89-fa53-4fc5-9847-429bb50802ff/ROMCopy/"
+
+    ),
+    // ---------------------------------- End of ROM TEST ------------------------------------
+
   },
   build: {
     minify: "terser",

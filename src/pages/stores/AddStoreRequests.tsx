@@ -177,7 +177,7 @@ function AddStoreRequest() {
             isLoading={isLoading}
             showError={showError}
             toggleError={() => setShowError(!showError)}
-            handleBack={() => navigate('/store-requisitions')}
+            handleBack={() => navigate('/stores-requests')}
             handleSubmit={handleSubmit}
             pageType='add'
         />
