@@ -67,6 +67,8 @@ function PaymentRequisitionDetail() {
   const [accountType, setAccountType] = useState < options[] > ([]);
 
   const [quantity, setQuantity] = useState < number > (0);
+  const [totalAmount, setTotalAmount] = useState < string > ('');
+
   const [rate, setRate] = useState < number > (0);
   const fields = [
     [
@@ -104,7 +106,7 @@ function PaymentRequisitionDetail() {
                     workPlansOptions.push({ label: `${plan.no}::${plan.description}`, value: `${plan.no}::${plan.shortcutDimension1Code}` })
                   }
                 })
-               
+
                 setWorkPlans(workPlansOptions)
                 populateData()
 
@@ -396,6 +398,8 @@ function PaymentRequisitionDetail() {
           })
         },
         id: 'currency',
+        disabled: status === 'Open' ? false : true,
+        
       },
 
       {
@@ -417,7 +421,10 @@ function PaymentRequisitionDetail() {
           })
         },
         id: 'documentDate',
+        disabled: status === 'Open' ? false : true,
+
       },
+      { label: 'Total Amount', type: 'text', value: totalAmount, disabled: true, id: 'totalAmount' },
       {
         label: 'Purpose',
         type: 'textarea',
@@ -432,6 +439,7 @@ function PaymentRequisitionDetail() {
         },
         id: 'purpose',
         rows: 2,
+        disabled: status === 'Open' ? false : true,
       },
 
 
@@ -461,6 +469,7 @@ function PaymentRequisitionDetail() {
           setSelectedCurrency(resData.currencyCode ? [{ label: resData.currencyCode, value: resData.currencyCode }] : [{ label: 'UGX', value: '' }]);
           setStatus(resData.status)
           setPaymentRequisitionLines(resData.paymentRequestLines)
+          setTotalAmount(resData.totalAmount.toLocaleString())
         }
 
 
@@ -1112,9 +1121,9 @@ function PaymentRequisitionDetail() {
     try {
       paymentRequisitionLines.map(async (line) => {
         const res = await apiPaymentRequisitionLines(companyId, "DELETE", undefined, line.systemId, line['@odata.etag'])
-      if (res.status == 204) {
-        console.log("Line deleted successfully")
-        toast.success("Line deleted successfully")
+        if (res.status == 204) {
+          console.log("Line deleted successfully")
+          toast.success("Line deleted successfully")
           populateData()
         } else {
           console.log("Error deleting line", res)

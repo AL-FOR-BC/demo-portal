@@ -31,6 +31,7 @@ function ApprovePurchaseRequisition() {
     const [status, setStatus] = useState < string > ('');
     const [requestorName, setRequestorName] = useState < string > ('');
     const [requestorNo, setRequestorNo] = useState < string > ('');
+    const [totalAmount, setTotalAmount] = useState<string>('');
 
     const fields = [
         [
@@ -87,6 +88,7 @@ function ApprovePurchaseRequisition() {
             },
             { label: 'Budget Code', type: 'text', value: budgetCode, disabled: true, id: 'budgetCode' },
             { label: "Status", type: 'text', value: status, disabled: true, id: 'docStatus' },
+            { label: 'Total Amount', type: 'text', value: totalAmount, disabled: true, id: 'totalAmount' },
         ]
     ];
 
@@ -155,7 +157,7 @@ function ApprovePurchaseRequisition() {
                 setRequestorName(data.requestorName || '');
 
                 setStatus(data.status || '');
-
+                setTotalAmount(data.amount.toLocaleString() || '');
 
 
                 const resLocationCodes = await apiLocation(companyId);

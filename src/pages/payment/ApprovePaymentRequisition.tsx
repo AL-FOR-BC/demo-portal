@@ -32,6 +32,7 @@ function ApprovePaymentRequisition() {
     const [payeeName, setPayeeName] = useState<string>('');
     const [requestorNo, setRequestorNo] = useState<string>('');
     const [requestorName, setRequestorName] = useState<string>('');
+    const [totalAmount, setTotalAmount] = useState<string>('');
 
     const fields = [
         [
@@ -49,7 +50,8 @@ function ApprovePaymentRequisition() {
             { label: 'Budget Code', type: 'text', value: budgetCode, disabled: true, id: 'budgetCode' },
             { label: 'Document Date', type: 'text', value: expectedReceiptDate, disabled: true, id: 'documentDate' },
             { label: 'Purpose', type: 'textarea', value: purpose, disabled: true, id: 'purpose', rows: 2 },
-            { label: "Status", type: 'text', value: status, disabled: true, id: 'docStatus' }
+            { label: "Status", type: 'text', value: status, disabled: true, id: 'docStatus' },
+            { label: 'Total Amount', type: 'text', value: totalAmount, disabled: true, id: 'totalAmount' }
         ]
     ];
 
@@ -114,6 +116,7 @@ function ApprovePaymentRequisition() {
                 setSelectedSubCategory(data.paySubcategory || '');
                 setRequestorNo(data.requisitionedBy || '');
                 setRequestorName(data.requestorName || '');
+                setTotalAmount(data.totalAmount.toLocaleString() || '');
 
                 // Get dimension value
                 const resDimension = await apiDimensionValue(companyId);

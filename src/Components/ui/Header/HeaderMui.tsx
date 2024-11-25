@@ -19,7 +19,6 @@ import classNames from "classnames";
 import { Button, Row, Col, Collapse, Input, Label } from "reactstrap";
 import Attachments from "../../common/Attachment";
 import ApprovalEntries from "../../common/ApprovalEntry";
-import LinesEditable from "../Lines/LinesEditable";
 import ApprovalAction from "../../common/ApprovalAction";
 import ApprovalComments from "../../common/ApprovalComments";
 
@@ -85,13 +84,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
         documentType,
         requestNo,
         editableLines,
-        columns,
-        handleSubmitLines,
-        handleDeleteLine,
-        handleEditLine,
-        rowLines,
         tableId,
-        createNewLine
     } = props;
 
     return (
@@ -407,15 +400,16 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                             </div>
                                         </Collapse>
                                         {editableLines ?
-                                            <LinesEditable
-                                                columns={columns ? columns : []}
-                                                handleSubmitLines={(data: any[]) => handleSubmitLines?.(data, '') || Promise.resolve({ success: false })}
-                                                documentType={documentType ? documentType : ''}
-                                                rowLines={rowLines}
-                                                handleDeleteLine={handleDeleteLine ? handleDeleteLine : () => { }}
-                                                handleEditLine={(data: any) => handleEditLine?.(data) || Promise.resolve({ success: false })}
-                                                createNewLine={createNewLine ? createNewLine : () => { }}
-                                            />
+                                            // <LinesEditable
+                                            //     columns={columns ? columns : []}
+                                            //     handleSubmitLines={(data: any[]) => handleSubmitLines?.(data, '') || Promise.resolve({ success: false })}
+                                            //     documentType={documentType ? documentType : ''}
+                                            //     rowLines={rowLines}
+                                            //     handleDeleteLine={handleDeleteLine ? handleDeleteLine : () => { }}
+                                            //     handleEditLine={(data: any) => handleEditLine?.(data) || Promise.resolve({ success: false })}
+                                            //     createNewLine={createNewLine ? createNewLine : () => { }}
+                                            // />
+                                            ''
 
                                             : lines}
                                     </div>

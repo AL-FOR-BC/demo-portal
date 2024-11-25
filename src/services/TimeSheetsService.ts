@@ -56,6 +56,17 @@ export const TimeSheetsService = {
     updateTimeSheetLines: (companyId: string, systemId: string, data: any, filterQuery: string) => {
         return BcApiService.fetchData<any>({
             url: `${BASE_URL}/timeSheetLines(${systemId})?Company=${companyId}&${filterQuery}`,
+            method: "patch",
+            data,
+            headers: {
+                "If-Match": "*",
+            },
+        });
+    },
+
+    updateTimeSheetDetails: (companyId: string, id: string, data: any, filterQuery: string) => {
+        return BcApiService.fetchData<any>({
+            url: `${BASE_URL}/timeSheetDetails(${id})?Company=${companyId}&${filterQuery}`,
             method: "put",
             data,
         });

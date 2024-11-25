@@ -67,6 +67,7 @@ function PurchaseRequisitionDetail() {
     const accountTypeOptions = [{ label: 'G/L Account', value: 'G/L Account' }, { label: 'Item', value: 'Item' }]
 
     const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
+    const [totalAmount, setTotalAmount] = useState<string>('');
 
     const fields = [
         [
@@ -199,6 +200,9 @@ function PurchaseRequisitionDetail() {
                 id: 'docStatus'
             },
             {
+                label: 'Total Amount', type: 'text', value: totalAmount, disabled: true, id: 'totalAmount'
+            },
+            {
                 label: "Subject of Procurement", type: 'textarea', value: subjectOfProcurement, id: 'subjectOfProcurement',
                 rows: 2,
                 disabled: status === 'Open' ? false : true,
@@ -243,6 +247,7 @@ function PurchaseRequisitionDetail() {
                     setExpectedReceiptDate(new Date(data.expectedReceiptDate));
                     setDimensionValues([{ label: data.project, value: data.project }]);
                     setStatus(data.status);
+                    setTotalAmount(data.amount.toLocaleString())
                 }
 
 
