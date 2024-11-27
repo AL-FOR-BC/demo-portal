@@ -14,7 +14,7 @@ import BreadCrumbs from "../../BreadCrumbs";
 // import ApprovalEntries from "../../common/ApprovalEntry";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
-import { ArrowBackIcon, CancelIcon, DeleteIcon, SaveIcon, SendIcon } from "../../common/icons/icons";
+import { ArrowBackIcon, CancelIcon, DeleteIcon, PencilIcon, ReopenIcon, SaveIcon, SendIcon } from "../../common/icons/icons";
 import classNames from "classnames";
 import { Button, Row, Col, Collapse, Input, Label } from "reactstrap";
 import Attachments from "../../common/Attachment";
@@ -57,6 +57,7 @@ interface HeaderMuiProps {
     handleEditLine?: (id: GridRowId) => void
     tableId?: number
     createNewLine?: (lineNo: number) => void
+    handleReopen?: () => void
 }
 
 const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
@@ -85,6 +86,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
         requestNo,
         editableLines,
         tableId,
+        handleReopen
     } = props;
 
     return (
@@ -216,6 +218,32 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                     </div>
                                 </Row>
                             )}
+                            {pageType === 'time-sheet' && (
+                                <>
+                                    {/*  reopen buttion */}
+                                    <Row className='justify-content-center mb-4'>
+                                        <div className="d-flex flex-wrap gap-2">
+                                            <Button color="secondary" className="btn  btn-label" onClick={handleReopen}>
+                                                <i className="label-icon">
+                                                    <ReopenIcon className="label-icon" />
+                                                </i>
+                                                Reopen
+                                            </Button>
+                                        </div>
+                                        {/*  submit button  */}
+                                        <div className="d-flex flex-wrap gap-2">
+                                            <Button color="primary" className="btn btn-label" onClick={handleSubmit}>
+                                                <i className="label-icon">
+                                                    <SaveIcon className="label-icon" />
+                                                </i>
+                                                Submit
+                                            </Button>
+                                        </div>
+
+                                    </Row>
+
+                                </>
+                            )}
 
                         </>
                     )}
@@ -252,8 +280,43 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                 </div>
                             </Row>
 
+
                         </>
                     )}
+                    {pageType === 'time-sheet' && (
+                        <>
+                            {/*  reopen buttion */}
+                            <Row className='justify-content-center mb-4'>
+                                <div className="d-flex flex-wrap gap-2">
+                                    <Button color="secondary" className="btn btn-label" onClick={handleBack}>
+                                        <i className="label-icon">
+                                            <ArrowBackIcon className="label-icon" />
+                                        </i>
+                                        Back
+                                    </Button>
+                                    <Button color="primary" className="btn  btn-label" onClick={handleReopen}>
+                                        <i className="label-icon">
+                                            <ReopenIcon className="label-icon" style={{ padding: "6px" }} />
+                                        </i>
+                                        Reopen
+                                    </Button>
+
+                                    {/*  submit button  */}
+
+                                    <Button color="success" className="btn btn-label" onClick={handleSubmit}>
+                                        <i className="label-icon">
+                                            <SaveIcon className="label-icon" />
+                                        </i>
+                                        Submit
+                                    </Button>
+                                </div>
+
+                            </Row>
+
+                        </>
+                    )}
+
+
 
                     {showError && (
                         <Row>

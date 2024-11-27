@@ -40,24 +40,19 @@ function TimeSheets() {
             formatter: (cell: string) => new Date(cell).toLocaleDateString()
         },
         {
-            dataField: 'resourceNo',
+            dataField: 'ResourceNo',
             text: 'Resource No.',
+            sort: true
+        },
+        {
+            dataField: 'Description',
+            text: 'Description',
             sort: true
         },
         {
             dataField: 'quantity',
             text: 'Total',
             sort: true
-        },
-        {
-            dataField: 'description',
-            text: 'Description',
-            sort: true
-        },
-        {
-            dataField: "status",
-            text: "Status",
-            formatter: statusFormatter
         },
         {
             dataField: "action",

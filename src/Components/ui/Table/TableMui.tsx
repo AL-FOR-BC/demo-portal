@@ -155,13 +155,13 @@ const TableMui: React.FC<TableComponentProps> = ({
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 InputProps={{
                                   startAdornment: (
-                                    <SearchIcon 
-                                      style={{ 
+                                    <SearchIcon
+                                      style={{
                                         marginRight: '8px',
                                         color: '#6c757d',
                                         width: '16px',
                                         height: '16px'
-                                      }} 
+                                      }}
                                     />
                                   ),
                                   sx: {
@@ -181,31 +181,33 @@ const TableMui: React.FC<TableComponentProps> = ({
                           </div>
                         </Col>
                         <Col sm="8">
-                          <div className="text-sm-end">
-                            <Link
-                              className="btn btn-primary btn-label"
-                              to={addLink}
-                            >
-                              <PlusIcon className="label-icon" />
-                              {addLabel}
-                            </Link>
-                          </div>
+                          {title !== "Time Sheets" && (
+                            <div className="text-sm-end">
+                              <Link
+                                className="btn btn-primary btn-label"
+                                to={addLink}
+                              >
+                                <PlusIcon className="label-icon" />
+                                {addLabel}
+                              </Link>
+                            </div>
+                          )}
                         </Col>
                       </Row>
-                      <TableContainer 
-                        component={Paper} 
-                        sx={{ 
+                      <TableContainer
+                        component={Paper}
+                        sx={{
                           boxShadow: 'none',
                           border: 'none'
                         }}
                       >
-                        <Table 
-                          sx={{ 
+                        <Table
+                          sx={{
                             minWidth: 650,
                             borderCollapse: 'separate',
                             borderSpacing: '0 8px',
                             fontFamily: 'inherit',
-                          }} 
+                          }}
                           size="small"
                         >
                           <TableHead>

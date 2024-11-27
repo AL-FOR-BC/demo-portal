@@ -11,10 +11,13 @@ interface TimeSheetLinesProps {
   startingDate: Date;
   endingDate: Date;
   lines: any[];
+  timeSheetNo: string;
   projects: { value: string; label: string }[];
   onLineUpdate: (updatedLine: any) => Promise<void>;
   onLineDelete: (lineId: string) => Promise<void>;
-  onLineAdd: (newLine: any) => Promise<void>;
+  onLineAdd: (newLine: any) => Promise<any>;
+  onLineHoursUpdate: (lineId: string, date: Date, value: number, systemId: string) => Promise<void>;
+  onLineHoursSubmit: (data: any) => Promise<any>;
   publicHolidays: { date: string; description: string }[];
 }
 
@@ -23,7 +26,10 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
   endingDate,
   lines,
   projects,
+  timeSheetNo,
   onLineUpdate,
+  onLineHoursSubmit,
+  onLineHoursUpdate,
   onLineDelete,
   onLineAdd,
   publicHolidays
@@ -45,13 +51,86 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
     const updatedLines = localLines.map(line => {
       if (line.id === lineId) {
         const updatedLine = { ...line, [field]: value };
-        // Trigger save
-        onLineUpdate(updatedLine).catch(error => {
-          toast.error(`Failed to save changes: ${getErrorMessage(error)}`);
-          // Revert changes on error
-          setLocalLines(prevLines => prevLines.map(l => l.id === lineId ? line : l));
-        });
-        return updatedLine;
+
+        if (typeof value === 'object' && value?.systemId) {
+          onLineHoursUpdate(lineId, value.date, value.value, value.systemId).catch(error => {
+            setLocalLines(prevLines => prevLines.map(l => l.id === lineId ? line : l));
+            toast.error(`Failed to update hours: ${getErrorMessage(error)}`);
+          });
+
+          return updatedLine;
+        }
+
+        if (typeof value === 'object' && value?.date && value?.value && value?.systemId === '') {
+          if (value.value > 0) {
+            const data = {
+              jobNo: line.project,
+              jobTaskNo: line.jobTaskNo,
+              timeSheetNo: line.timeSheetNo,
+              timeSheetLineNo: line.id,
+              date: value.date,
+              quantity: value.value
+            }
+            console.log(data)
+
+            onLineHoursSubmit(data).then(result => {
+
+              // update the line with the new systemId
+              const dayKey = `day${format(value.date, 'd')}`;
+              const updatedLine = { ...line, [dayKey]: { ...line[dayKey], systemId: result.data.systemId } };
+              setLocalLines(prevLines => prevLines.map(l => l.id === lineId ? updatedLine : l));
+
+            }).catch(error => {
+              setLocalLines(prevLines => prevLines.map(l => l.id === lineId ? line : l));
+              toast.error(`Failed to submit hours: ${getErrorMessage(error)}`);
+            });
+          }
+
+        }
+
+        if (typeof updatedLine === 'object' && typeof updatedLine.id === 'string' && updatedLine.id.startsWith('temp-') && updatedLine?.description === '') {
+          const newLine = {
+            jobNo: updatedLine.project,
+            timeSheetNo: updatedLine.timeSheetNo,
+            // type: 'project',
+            // jobTaskNo: updatedLine.jobTaskNo,
+            description: updatedLine.description,
+            // status: 'Open'
+          }
+          console.log('newLine')
+          console.log(newLine)
+
+          onLineAdd(newLine).then(result => {
+            const prevLineNo = updatedLine.lineNo;
+
+            if (result.status === 201) {
+              console.log('updatedLine')
+              console.log(updatedLine)
+              const line = {
+                ...updatedLine,
+                systemId: result.data.systemId,
+                lineNo: result.data.lineNo,
+                jobTaskNo: result.data.jobTaskNo,
+                id: result.data.lineNo
+              }
+              console.log('line')
+              console.log(line)
+              console.log(prevLineNo)
+              setLocalLines(prevLines => prevLines.map(l => l.id === prevLineNo ? line : l));
+              return line;
+            }
+          })
+        }
+        if (typeof updatedLine === 'object' && updatedLine.systemId !== '') {
+          onLineUpdate(updatedLine).catch(error => {
+            toast.error(`Failed to save changes: ${getErrorMessage(error)}`);
+            console.log('it runs runser ursnesrusern usernsuer ')
+
+            // Revert changes on error
+            setLocalLines(prevLines => prevLines.map(l => l.id === lineId ? line : l));
+          });
+          return updatedLine;
+        }
       }
       return line;
     });
@@ -65,9 +144,10 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
       date: format(date, 'yyyy-MM-dd'),
       systemId: localLines.find(l => l.id === lineId)?.[dayKey]?.systemId || ''
     });
+
   };
 
-  const handleDelete = async (lineId: string) => {
+  const handleDelete = async (line: any) => {
     Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -79,8 +159,13 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await onLineDelete(lineId);
-          setLocalLines(prevLines => prevLines.filter(line => line.id !== lineId));
+          // if id starts temp- then delete from 
+          if (line.systemId === "") {
+            setLocalLines(prevLines => prevLines.filter(l => l.id !== line.id));
+          } else {
+            await onLineDelete(line.systemId);
+            setLocalLines(prevLines => prevLines.filter(l => l.id !== line.id));
+          }
           toast.success('Line deleted successfully');
         } catch (error) {
           toast.error('Failed to delete line');
@@ -98,6 +183,9 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
       description: '',
       project: '',
       causeOfAbsenceCode: '',
+      jobTaskNo: '',
+      timeSheetNo: timeSheetNo,
+      systemId: '',
       ...dateRange.reduce((acc, date) => ({
         ...acc,
         [`day${format(date, 'd')}`]: { value: 0, date: format(date, 'yyyy-MM-dd') }
@@ -105,9 +193,9 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
     };
 
     try {
-      await onLineAdd(newLine);
-      setLocalLines(prevLines => [newLine, ...prevLines]);
-      toast.success('New line added successfully');
+      // await onLineAdd(newLine);
+      setLocalLines(prevLines => [...prevLines, newLine]);
+      // toast.success('New line added successfully');
     } catch (error) {
       toast.error('Failed to add new line');
     }
@@ -119,23 +207,25 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
   };
 
   const isEditable = (line: any, date: Date) => {
-    if (!line || !line.id) return false;
-    
+    // if (!line || !line.id) return false;
+
     const isHolidayLine = typeof line.id === 'string' && line.id.startsWith('holiday-');
     const isSubmitted = line.status === 'Submitted';
+    const isApproved = line.status === 'Approved';
     const isWeekendDay = isWeekend(date);
     const isHolidayDate = publicHolidays.some(
-        holiday => holiday.date === format(date, 'yyyy-MM-dd')
+      holiday => holiday.date === format(date, 'yyyy-MM-dd')
     );
 
-    return !isHolidayLine && 
-           !isSubmitted && 
-           !isWeekendDay && 
-           !isHolidayDate;
+    return !isHolidayLine &&
+      !isSubmitted &&
+      !isApproved &&
+      !isWeekendDay &&
+      !isHolidayDate;
   };
 
   const handleLocalChange = (lineId: string, field: string, value: any) => {
-    setLocalLines(prevLines => prevLines.map(line => 
+    setLocalLines(prevLines => prevLines.map(line =>
       line.id === lineId ? { ...line, [field]: value } : line
     ));
   };
@@ -147,6 +237,18 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
       date: format(date, 'yyyy-MM-dd'),
       systemId: localLines.find(l => l.id === lineId)?.[dayKey]?.systemId || ''
     });
+  };
+
+  // Add a function to calculate total for a line
+  const calculateLineTotal = (line: any) => {
+    let total = 0;
+    for (let i = 1; i <= 31; i++) {
+      const dayKey = `day${i}`;
+      if (line[dayKey]?.value) {
+        total += parseFloat(line[dayKey].value) || 0;
+      }
+    }
+    return total;
   };
 
   return (
@@ -177,39 +279,29 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
               <thead>
                 <tr>
                   <th>Status</th>
-                  <th style={{ minWidth: '200px' }}>Description</th>
                   <th style={{ minWidth: '200px' }}>Project</th>
-                  <th style={{ minWidth: '150px' }}>Absence Code</th>
+                  <th style={{ minWidth: '200px' }}>Description</th>
                   {dateRange.map(date => (
-                    <th 
-                      key={format(date, 'yyyy-MM-dd')} 
+                    <th
+                      key={format(date, 'yyyy-MM-dd')}
                       className={classNames("text-center", {
                         'bg-light': isWeekend(date),
                         'bg-warning-subtle': isHoliday(date)
                       })}
                       style={{ minWidth: '60px' }}
                     >
-                      {format(date, 'd')}<br/>
+                      {format(date, 'd')}<br />
                       {format(date, 'EEE')}
                     </th>
                   ))}
+                  <th className="text-center">Total</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {localLines.map(line => (
+                {[...localLines].reverse().map(line => (
                   <tr key={line.id}>
                     <td>{line.status}</td>
-                    <td>
-                      <input
-                        type="text"
-                        className="form-control form-control-sm"
-                        value={line.description}
-                        onChange={e => handleLocalChange(line.id, 'description', e.target.value)}
-                        onBlur={e => handleInputChange(line.id, 'description', e.target.value)}
-                        disabled={!isEditable(line, new Date())}
-                      />
-                    </td>
                     <td>
                       <select
                         className="form-select form-select-sm"
@@ -230,14 +322,14 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                       <input
                         type="text"
                         className="form-control form-control-sm"
-                        value={line.causeOfAbsenceCode}
-                        onChange={e => handleLocalChange(line.id, 'causeOfAbsenceCode', e.target.value)}
-                        onBlur={e => handleInputChange(line.id, 'causeOfAbsenceCode', e.target.value)}
+                        value={line.description}
+                        onChange={e => handleLocalChange(line.id, 'description', e.target.value)}
+                        onBlur={e => handleInputChange(line.id, 'description', e.target.value)}
                         disabled={!isEditable(line, new Date())}
                       />
                     </td>
                     {dateRange.map(date => (
-                      <td 
+                      <td
                         key={format(date, 'yyyy-MM-dd')}
                         className={classNames("text-center", {
                           'bg-light': isWeekend(date),
@@ -247,8 +339,15 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                         <input
                           type="number"
                           className="form-control form-control-sm text-center"
-                          value={line[`day${format(date, 'd')}`]?.value || 0}
-                          onChange={e => handleLocalHoursChange(line.id, date, Number(e.target.value))}
+                          value={line[`day${format(date, 'd')}`]?.value}
+                          onChange={e => {
+
+                            if (Number(e.target.value) > 8) {
+                              toast.error('Hours cannot be greater than 8');
+                              return
+                            }
+                            handleLocalHoursChange(line.id, date, Number(e.target.value))
+                          }}
                           onBlur={e => handleHoursChange(line.id, date, Number(e.target.value))}
                           disabled={!isEditable(line, date)}
                           min="0"
@@ -258,11 +357,14 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                         />
                       </td>
                     ))}
+                    <td className="text-center" style={{ fontWeight: 'bold' }}>
+                      {calculateLineTotal(line).toFixed(2)}
+                    </td>
                     <td>
                       {isEditable(line, new Date()) && (
                         <button
                           className="btn btn-sm btn-danger"
-                          onClick={() => handleDelete(line.id)}
+                          onClick={() => handleDelete(line)}
                         >
                           Delete
                         </button>

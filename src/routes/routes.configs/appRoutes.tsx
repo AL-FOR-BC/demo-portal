@@ -124,9 +124,9 @@ const appRoutes: Routes = [
 
     // ------------------------ Time Sheets ----------------------------------------
     {
-        key: 'open-time-sheets',
-        path: '/open-time-sheets',
-        component: lazy(() => import("../../pages/time-sheets/OpenTimeSheets.tsx"))
+        key: 'time-sheets',
+        path: '/time-sheets',
+        component: lazy(() => import("../../pages/time-sheets/TimeSheets.tsx"))
     },
     {
         key: "time-sheet-details",

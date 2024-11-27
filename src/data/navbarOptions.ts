@@ -385,26 +385,6 @@ export const navbarOptions: NavigationTree[] = [
         id: 35,
         name: "Time Sheets",
         path: "/time-sheets",
-        subOptions: [
-          {
-            id: 36,
-            name:"Open Time Sheets",
-            path: "/open-time-sheets",
-            subOptions: [],
-          },
-          {
-            id: 37,
-            name:"Submitted Time Sheets",
-            path: "/submitted-time-sheets",
-            subOptions: [],
-          },
-          {
-            id: 38,
-            name:"Approved Time Sheets",
-            path: "/approved-time-sheets",
-            subOptions: [],
-          }
-        ],
       },
     ],
   },

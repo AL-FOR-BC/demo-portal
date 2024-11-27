@@ -2,13 +2,14 @@ import React from "react";
 import { BiSave } from "react-icons/bi";
 import { MdArrowBack, MdArrowForward, MdDelete, MdEdit, MdHistory, MdOutlineLabel, MdSearch, MdSend } from "react-icons/md";
 import { TbPlus, TbX } from "react-icons/tb";
-import { FaBusAlt } from "react-icons/fa";
+import { FaBusAlt, FaEdit } from "react-icons/fa";
 import Icon from '@mdi/react';
 import { mdiBadgeAccountHorizontal, mdiBagSuitcase, mdiCartPlus, mdiFileQuestion, mdiFormatListCheckbox, mdiLoginVariant, mdiMicrosoftAzure, mdiOfficeBuilding, mdiReceipt, mdiTeaOutline } from '@mdi/js';
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { BiUser, BiPhone, BiHome, BiCar, BiHealth, BiSolidBriefcaseAlt2 } from 'react-icons/bi';
 
 export const PencilIcon = (props: React.SVGProps<SVGAElement>) => <MdEdit {...props} />;
+export const ReopenIcon = (props: React.SVGProps<SVGAElement>) => <FaEdit {...props} />;
 export const DeleteIcon = (props: React.SVGProps<SVGAElement>) => <MdDelete {...props} />;
 export const ArrowBackIcon = (props: React.SVGProps<SVGAElement>) => <MdArrowBack {...props} style={{
     padding: "8px"
