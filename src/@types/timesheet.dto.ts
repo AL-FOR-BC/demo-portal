@@ -28,3 +28,19 @@ export interface TimeSheetLine {
     approvalDate: string;
     approvedBy: string;
 }
+
+
+export interface TimeSheetLinesProps {
+    startingDate: Date;
+    endingDate: Date;
+    lines: any[];
+    timeSheetNo: string;
+    projects: { value: string; label: string }[];
+    onLineUpdate: (updatedLine: any) => Promise<void>;
+    onLineDelete: (lineId: string) => Promise<void>;
+    onLineAdd: (newLine: any) => Promise<any>;
+    onLineHoursUpdate: (lineId: string, date: Date, value: number, systemId: string) => Promise<void>;
+    onLineHoursSubmit: (data: any) => Promise<any>;
+    publicHolidays: { date: string; description: string }[];
+    isApprovalMode?: boolean;
+  }

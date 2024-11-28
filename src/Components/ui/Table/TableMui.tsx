@@ -180,8 +180,9 @@ const TableMui: React.FC<TableComponentProps> = ({
                             </div>
                           </div>
                         </Col>
-                        <Col sm="8">
-                          {title !== "Time Sheets" && (
+                        {title !== "Time Sheets" && (
+                          <Col sm="8">
+
                             <div className="text-sm-end">
                               <Link
                                 className="btn btn-primary btn-label"
@@ -191,8 +192,9 @@ const TableMui: React.FC<TableComponentProps> = ({
                                 {addLabel}
                               </Link>
                             </div>
-                          )}
-                        </Col>
+
+                          </Col>
+                        )}
                       </Row>
                       <TableContainer
                         component={Paper}
@@ -246,12 +248,14 @@ const TableMui: React.FC<TableComponentProps> = ({
                       <div>
                         <h6>{noDataMessage}</h6>
                       </div>
-                      <div className="text-center mt-4">
-                        <Link to={addLink} className="btn btn-primary btn-sm">
-                          {addLabel}
-                          <ArrowRightIcon className="mdi mdi-arrow-right ms-1" />
-                        </Link>
-                      </div>
+                      {title !== "Time Sheets" && (
+                        <div className="text-center mt-4">
+                          <Link to={addLink} className="btn btn-primary btn-sm">
+                            {addLabel}
+                            <ArrowRightIcon className="mdi mdi-arrow-right ms-1" />
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardBody>

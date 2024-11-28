@@ -2,7 +2,7 @@ import TableMui from '../../Components/ui/Table/TableMui';
 import { useEffect, useState } from "react";
 //import { useAppSelector } from "../../store/hook";
 import { toast } from "react-toastify";
-import { ActionFormatter, statusFormatter, noFormatter } from "../../Components/ui/Table/TableUtils";
+import { ActionFormatter, noFormatter } from "../../Components/ui/Table/TableUtils";
 import { TimeSheetType } from '../../@types/timesheet.dto';
 import { TimeSheetsService } from '../../services/TimeSheetsService';
 import { useAppSelector } from '../../store/hook';
@@ -74,9 +74,8 @@ function TimeSheets() {
         const populateData = async () => {
             try {
                 setIsLoading(true);
-                const filterQuery = `employeeNo eq '${employeeNo}'`;
+                const filterQuery = `$filter=employeeNo eq '${employeeNo}'`;
                 const res = await TimeSheetsService.getTimeSheetHeader(companyId, filterQuery);
-                console.log("res", res.data.value);
                 setTimeSheets(res.data.value);
             } catch (error) {
                 toast.error(`Error fetching time sheets: ${error}`);

@@ -14,7 +14,7 @@ import BreadCrumbs from "../../BreadCrumbs";
 // import ApprovalEntries from "../../common/ApprovalEntry";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
-import { ArrowBackIcon, CancelIcon, DeleteIcon, PencilIcon, ReopenIcon, SaveIcon, SendIcon } from "../../common/icons/icons";
+import { ArrowBackIcon, CancelIcon, DeleteIcon, ReopenIcon, SaveIcon, SendIcon } from "../../common/icons/icons";
 import classNames from "classnames";
 import { Button, Row, Col, Collapse, Input, Label } from "reactstrap";
 import Attachments from "../../common/Attachment";
@@ -218,7 +218,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                     </div>
                                 </Row>
                             )}
-                            {pageType === 'time-sheet' && (
+                            {(documentType === 'TIME SHEET' || documentType === "Time Sheet") && (
                                 <>
                                     {/*  reopen buttion */}
                                     <Row className='justify-content-center mb-4'>

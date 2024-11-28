@@ -257,3 +257,15 @@ function isErrorResponse(error: unknown): error is ErrorResponse {
     "error" in error.response.data
   );
 }
+
+export const formatEmailFirstPart = (email: string) => {
+  const emailString = email.split('@')[0].toUpperCase();
+  const emailDomain = email.split('@')[1];
+  return `${emailString}@${emailDomain}`;
+}
+
+export const formatEmailDomain = (email: string) => {
+  const emailString = email.split('@')[0];
+  const emailDomain = email.split('@')[1].toUpperCase();
+  return `${emailString}@${emailDomain}`;
+}

@@ -33,11 +33,14 @@ const ApprovalAction = ({ docNo, docType, companyId }) => {
                     timer: 1500
                 });
 
+
                 const response = await apiApproveRequest(companyId, { no: docNo });
                 if (response.data.value) {
                     toast.success(`${docType} ${docNo} Approved Successfully`);
                     navigate('/approvals');
                 }
+
+
 
             } catch (err) {
                 toast.error(getErrorMessage(err.response.data.error.message));
@@ -82,14 +85,18 @@ const ApprovalAction = ({ docNo, docType, companyId }) => {
                         timer: 1500
                     });
 
-                    const response = await apiRejectApprovalRequest(companyId, {
-                        no: docNo,
-                        rejectioncomment: rejComment
-                    },
+
+                    const response = await apiRejectApprovalRequest(companyId,
+                        {
+                            no: docNo,
+                            rejectioncomment: rejComment
+                        },
 
                     );
 
                     toast.success(response.data.value);
+
+
                     navigate('/approvals');
                 } catch (err) {
                     toast.error(getErrorMessage(err.response.data.error.message));
@@ -126,5 +133,7 @@ const ApprovalAction = ({ docNo, docType, companyId }) => {
         </div>
     );
 };
+
+
 
 export default ApprovalAction;

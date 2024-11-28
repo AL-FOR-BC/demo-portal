@@ -6,7 +6,7 @@ import { statusFormatter, ActionFormatter } from '../../Components/ui/Table/Tabl
 import { useAppSelector } from '../../store/hook';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
-import { decodeValue } from '../../utils/common';
+import { decodeValue, formatEmailDomain, formatEmailFirstPart } from '../../utils/common';
 
 interface ApprovalType {
     DocumentNo: string;          // Updated to match API response
@@ -48,6 +48,9 @@ function Approvals() {
                 return `/approve-purchase-requisition/${documentNo}`
             case 'payment requisition':
                 return `/approve-payment-requisition/${documentNo}`;
+
+            case 'time sheets':
+                return `/approved-time-sheets/${documentNo}`;
             // case 'store requisition':
             //     return `/approve-store-requisition/${documentNo}/${systemId}`;
             // case 'leave request':
@@ -56,6 +59,8 @@ function Approvals() {
                 return '#';
         }
     };
+
+
 
     const columns = [
         {
@@ -104,18 +109,21 @@ function Approvals() {
             }
         }
     ];
+   
 
     const fetchApprovals = async (filterType = '') => {
         try {
             setIsLoading(true);
-            let filterQuery = `$filter=Status eq 'Open' and UserEmail eq '${email}'`;
+            let filterQuery = `$filter=(UserEmail eq '${email}' or UserEmail eq '${email}' or UserEmail eq '${email.toUpperCase()}' or UserEmail eq '${formatEmailFirstPart(email)}' or UserEmail eq '${formatEmailDomain(email)}') and Status eq 'Open'`;
 
             if (filterType) {
-                filterQuery += ` and ApprovalCode eq '${filterType}'`;
+                filterQuery += `and ApprovalCode eq '${filterType}'`;
             }
+
 
             const response = await apiApprovalToRequest(companyId, filterQuery);
             if (response.data?.value) {
+                console.log("response.data.value:", response.data.value);
                 setApprovals(response.data.value);
             }
         } catch (error) {
@@ -124,6 +132,13 @@ function Approvals() {
             setIsLoading(false);
         }
     };
+
+    // const fetchTimeSheetApprovals = async () => {
+    //     const response = await TimeSheetsService.getTimeSheetHeader(companyId, `$filter=Status eq 'Open' and UserEmail eq '${email}'`);
+    //     if (response.data?.value) {
+    //         setApprovals(response.data.value);
+    //     }
+    // }
 
     useEffect(() => {
         fetchApprovals(selectedType);

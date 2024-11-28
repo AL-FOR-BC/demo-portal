@@ -8,7 +8,7 @@ import {
   apiApprovalToRequest,
   apiEmployees,
 } from "../../../services/CommonServices";
-import { formatDate } from "../../../utils/common";
+import { formatDate, formatEmailDomain, formatEmailFirstPart } from "../../../utils/common";
 import { Employee } from "../../../@types/employee.dto";
 const SLICE_NAME = "userDashBoardData";
 // const employeeGender= useAppSelector(state=> state.auth.user.employeeGender)
@@ -181,7 +181,7 @@ export const fetchPaymentRequests = createAsyncThunk(
 export const fetchRequestToApprove = createAsyncThunk(
   `${SLICE_NAME}/fetchRequestToApprove`,
   async ({ companyId, email }: { companyId: string; email: string }) => {
-    const filterQuery = `$filter=Status eq 'Open' and UserEmail eq '${email}'`;
+    const filterQuery = `$filter=(UserEmail eq '${email}' or UserEmail eq '${email}' or UserEmail eq '${email.toUpperCase()}' or UserEmail eq '${formatEmailFirstPart(email)}' or UserEmail eq '${formatEmailDomain(email)}') and Status eq 'Open'`;
     const response = await apiApprovalToRequest(companyId, filterQuery);
     return response.data.value.length;
   }

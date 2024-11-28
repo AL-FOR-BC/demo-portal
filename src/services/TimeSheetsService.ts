@@ -43,6 +43,7 @@ export const TimeSheetsService = {
     });
   },
 
+
   getTimeSheetLines: (companyId: string, filterQuery: string) => {
     return BcApiService.fetchData<any>({
       url: `${BASE_URL}/timeSheetLines?Company=${companyId}&${filterQuery}`,
@@ -117,7 +118,7 @@ export const TimeSheetsService = {
   //*    reopen time sheet
   reopenTimeSheet: (companyId: string, data: any) => {
     return BcApiService.fetchData<any>({
-      url: `${BASE_URL_ACTIONS}/UnboundActions_reopenSubmittedTimeSheets?Company=${companyId}`,
+      url: `${BASE_URL_ACTIONS}/HRMISActions_reopenSubmittedTimeSheets?Company=${companyId}`,
       method: "post",
       data,
     });
@@ -126,9 +127,27 @@ export const TimeSheetsService = {
   //*    submit time sheet
   submitTimeSheet: (companyId: string, data: any) => {
     return BcApiService.fetchData<any>({
-      url: `${BASE_URL_ACTIONS}/UnboundActions_submitTimeSheets?Company=${companyId}`,
+      url: `${BASE_URL_ACTIONS}/HRMISActions_submitTimeSheets?Company=${companyId}`,
       method: "post",
       data,
     });
   },
+
+  // //*    approve time sheet
+  // approveTimeSheet: (companyId: string, data: any) => {
+  //   return BcApiService.fetchData<any>({
+  //     url: `${BASE_URL_ACTIONS}/UnboundActions_approveTimeSheets?Company=${companyId}`,
+  //     method: "post",
+  //     data,
+  //   });
+  // },
+
+  // //*    reject time sheet
+  // rejectTimeSheet: (companyId: string, data: any) => {
+  //   return BcApiService.fetchData<any>({
+  //     url: `${BASE_URL_ACTIONS}/UnboundActions_rejectTimeSheets?Company=${companyId}`,
+  //     method: "post",
+  //     data,
+  //   });
+  // },
 };

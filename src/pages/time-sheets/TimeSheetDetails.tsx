@@ -13,6 +13,7 @@ function TimeSheetDetail() {
     const navigate = useNavigate();
     const { id } = useParams();
     const { companyId } = useAppSelector(state => state.auth.session);
+    const { email } = useAppSelector(state => state.auth.user);
     const [isLoading, setIsLoading] = useState(false);
 
     // Form states
@@ -227,6 +228,7 @@ function TimeSheetDetail() {
                     })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
                 };
             });
+            console.log(holidayLines)
 
             const projectRes = await TimeSheetsService.getJobs(companyId)
             const projectOptions = projectRes.data.value.map(e => ({ label: `${e.jobNo}::${e.description}`, value: e.jobNo }))
@@ -289,7 +291,7 @@ function TimeSheetDetail() {
 
     const handleReopen = async () => {
         try {
-            const res = await TimeSheetsService.reopenTimeSheet(companyId, { documentNo: timeSheetNo });
+            const res = await TimeSheetsService.reopenTimeSheet(companyId, { documentNo: timeSheetNo});
             if (res.status === 200 || res.status === 204) {
                 populateData();
                 toast.success('Time sheet reopened successfully');
@@ -301,7 +303,7 @@ function TimeSheetDetail() {
 
     const handleSubmit = async () => {
         try {
-            const res = await TimeSheetsService.submitTimeSheet(companyId, { documentNo: timeSheetNo });
+            const res = await TimeSheetsService.submitTimeSheet(companyId, { documentNo: timeSheetNo, senderEmailAddress: email });
             if (res.status === 200 || res.status === 204) {
                 populateData();
                 toast.success('Time sheet submitted successfully');
