@@ -174,7 +174,7 @@ function ApprovalTimeSheet() {
       breadcrumbItem="Time Sheet Approval"
       fields={fields}
       isLoading={isLoading}
-      handleBack={() => navigate("/time-sheets")}
+      handleBack={() => navigate("/approvals")}
       companyId={companyId}
       documentType={"Time Sheets"}
       requestNo={timeSheetNo}

@@ -7,6 +7,7 @@ import { useAppSelector } from '../../store/hook';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
 import { decodeValue, formatEmailDomain, formatEmailFirstPart } from '../../utils/common';
+import { TimeSheetsService } from '../../services/TimeSheetsService';
 
 interface ApprovalType {
     DocumentNo: string;          // Updated to match API response
@@ -31,6 +32,7 @@ function Approvals() {
     const { email } = useAppSelector(state => state.auth.user);
     const [isLoading, setIsLoading] = useState(false);
     const [approvals, setApprovals] = useState < ApprovalType[] > ([]);
+    const [timeSheetApprovals, setTimeSheetApprovals] = useState < ApprovalType[] > ([]);
     const [selectedType, setSelectedType] = useState('');
 
     const defaultSorted = [{
@@ -109,7 +111,7 @@ function Approvals() {
             }
         }
     ];
-   
+
 
     const fetchApprovals = async (filterType = '') => {
         try {
@@ -120,12 +122,62 @@ function Approvals() {
                 filterQuery += `and ApprovalCode eq '${filterType}'`;
             }
 
-
+            // export const fetchTimeSheetApproval = createAsyncThunk(
+            //     `${SLICE_NAME}/fetchTimeSheetApproval`,
+            //     async ({ companyId, email }: { companyId: string; email: string }) => {
+            //       const filterQuery = `$filter=(approverEmailAddress eq '${email}' or approverEmailAddress eq '${email}' or approverEmailAddress eq '${email.toUpperCase()}' or approverEmailAddress eq '${formatEmailFirstPart(
+            //         email
+            //       )}' or approverEmailAddress eq '${formatEmailDomain(
+            //         email
+            //       )}')&$expand=timeSheetLines`;
+            //       const response = await TimeSheetsService.getTimeSheetHeader(
+            //         companyId,
+            //         filterQuery
+            //       );
+            //       // if lines contain any line with status submitted if yes return the count
+            //       const timeSheetWithSubmittedLines = response.data.value.filter(
+            //         (timeSheet) =>
+            //           timeSheet.timeSheetLines.some((line) => line.Status === "Submitted")
+            //       );
+            //       if (timeSheetWithSubmittedLines.length > 0) {
+            //         return timeSheetWithSubmittedLines.length;
+            //       }
+            //       return 0;
+            //     }
             const response = await apiApprovalToRequest(companyId, filterQuery);
             if (response.data?.value) {
                 console.log("response.data.value:", response.data.value);
                 setApprovals(response.data.value);
             }
+            const filterQuery2 = `$filter=(approverEmailAddress eq '${email}' or approverEmailAddress eq '${email}' or approverEmailAddress eq '${email.toUpperCase()}' or approverEmailAddress eq '${formatEmailFirstPart(email)}' or approverEmailAddress eq '${formatEmailDomain(email)}')&$expand=timeSheetLines`;
+
+            const timeSheetApproval = await TimeSheetsService.getTimeSheetHeader(companyId, filterQuery2);
+
+            if (timeSheetApproval.data.value.length > 0) {
+                const hasSubmittedLines = timeSheetApproval.data.value.filter(
+                    (timeSheet) =>
+                        timeSheet.timeSheetLines.some((line) => line.Status === "Submitted")
+                );
+                if (hasSubmittedLines.length > 0) {
+                    // Map through the filtered list to add "documentType" after approverEmailAddress
+                    const approvalList = hasSubmittedLines.map((timeSheet) => {
+                        return {
+                            ...timeSheet,
+                            DocumentType: "Time_x0020_Sheets",
+                            DocumentNo: timeSheet.timeSheetNo,
+                            SenderID: timeSheet.ResourceNo,
+                            Status: 'Open'
+                        };
+                    });
+
+                    console.log("approvalList:", approvalList);
+                    setTimeSheetApprovals(approvalList);
+                }
+            }
+
+
+
+
         } catch (error) {
             toast.error(`Error fetching approvals: ${error}`);
         } finally {
@@ -151,7 +203,7 @@ function Approvals() {
     return (
         <TableMui
             isLoading={isLoading}
-            data={approvals}
+            data={[...approvals, ...timeSheetApprovals]}
             columns={columns}
             defaultSorted={defaultSorted}
             noDataMessage="No approvals pending"

@@ -133,21 +133,21 @@ export const TimeSheetsService = {
     });
   },
 
-  // //*    approve time sheet
-  // approveTimeSheet: (companyId: string, data: any) => {
-  //   return BcApiService.fetchData<any>({
-  //     url: `${BASE_URL_ACTIONS}/UnboundActions_approveTimeSheets?Company=${companyId}`,
-  //     method: "post",
-  //     data,
-  //   });
-  // },
+  //*    approve time sheet
+  approveTimeSheet: (companyId: string, data: any) => {
+    return BcApiService.fetchData<any>({
+      url: `${BASE_URL_ACTIONS}/HRMISActions_approveTimeSheets?Company=${companyId}`,
+      method: "post",
+      data,
+    });
+  },
 
-  // //*    reject time sheet
-  // rejectTimeSheet: (companyId: string, data: any) => {
-  //   return BcApiService.fetchData<any>({
-  //     url: `${BASE_URL_ACTIONS}/UnboundActions_rejectTimeSheets?Company=${companyId}`,
-  //     method: "post",
-  //     data,
-  //   });
-  // },
+  //*    reject time sheet
+  rejectTimeSheet: (companyId: string, data: any) => {
+    return BcApiService.fetchData<any>({
+      url: `${BASE_URL_ACTIONS}/HRMISActions_rejectTimeSheets?Company=${companyId}`,
+      method: "post",
+      data,
+    });
+  },
 };

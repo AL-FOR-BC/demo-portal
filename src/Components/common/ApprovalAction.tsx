@@ -8,6 +8,7 @@ import { getErrorMessage } from "../../utils/common";
 import { toast } from "react-toastify";
 import { Button } from "reactstrap";
 import { CancelIcon, SendIcon } from "./icons/icons";
+import { TimeSheetsService } from "../../services/TimeSheetsService";
 
 const ApprovalAction = ({ docNo, docType, companyId }) => {
     const navigate = useNavigate();
@@ -33,11 +34,18 @@ const ApprovalAction = ({ docNo, docType, companyId }) => {
                     timer: 1500
                 });
 
-
-                const response = await apiApproveRequest(companyId, { no: docNo });
-                if (response.data.value) {
-                    toast.success(`${docType} ${docNo} Approved Successfully`);
-                    navigate('/approvals');
+                if (docType === "Time Sheet" || docType === "Time Sheets") {
+                    const response = await TimeSheetsService.approveTimeSheet(companyId, { documentNo: docNo });
+                    if (response.status === 200 || response.status === 204) {
+                        toast.success(`${docType} ${docNo} Approved Successfully`);
+                        navigate('/approvals');
+                    }
+                } else {
+                    const response = await apiApproveRequest(companyId, { no: docNo });
+                    if (response.data.value) {
+                        toast.success(`${docType} ${docNo} Approved Successfully`);
+                        navigate('/approvals');
+                    }
                 }
 
 
@@ -84,20 +92,28 @@ const ApprovalAction = ({ docNo, docType, companyId }) => {
                         showConfirmButton: false,
                         timer: 1500
                     });
+                    if (docType === "Time Sheet" || docType === "Time Sheets") {
+                        const response = await TimeSheetsService.rejectTimeSheet(companyId, { documentNo: docNo});
+                        console.log("response:", response);
+                        if (response.status === 200 || response.status === 204) {
+                            toast.success(`${docType} ${docNo} Rejected Successfully`);
+                            navigate('/approvals');
+                        }
+                    } else {
+                        const response = await apiRejectApprovalRequest(companyId,
+                            {
+                                no: docNo,
+                                rejectioncomment: rejComment
+                            },
+
+                        );
+
+                        toast.success(response.data.value);
 
 
-                    const response = await apiRejectApprovalRequest(companyId,
-                        {
-                            no: docNo,
-                            rejectioncomment: rejComment
-                        },
+                        navigate('/approvals');
+                    }
 
-                    );
-
-                    toast.success(response.data.value);
-
-
-                    navigate('/approvals');
                 } catch (err) {
                     toast.error(getErrorMessage(err.response.data.error.message));
                     setIsDisabled(false);

@@ -8,8 +8,13 @@ import {
   apiApprovalToRequest,
   apiEmployees,
 } from "../../../services/CommonServices";
-import { formatDate, formatEmailDomain, formatEmailFirstPart } from "../../../utils/common";
+import {
+  formatDate,
+  formatEmailDomain,
+  formatEmailFirstPart,
+} from "../../../utils/common";
 import { Employee } from "../../../@types/employee.dto";
+import { TimeSheetsService } from "../../../services/TimeSheetsService";
 const SLICE_NAME = "userDashBoardData";
 // const employeeGender= useAppSelector(state=> state.auth.user.employeeGender)
 export type userDashBoardState = {
@@ -181,9 +186,35 @@ export const fetchPaymentRequests = createAsyncThunk(
 export const fetchRequestToApprove = createAsyncThunk(
   `${SLICE_NAME}/fetchRequestToApprove`,
   async ({ companyId, email }: { companyId: string; email: string }) => {
-    const filterQuery = `$filter=(UserEmail eq '${email}' or UserEmail eq '${email}' or UserEmail eq '${email.toUpperCase()}' or UserEmail eq '${formatEmailFirstPart(email)}' or UserEmail eq '${formatEmailDomain(email)}') and Status eq 'Open'`;
+    const filterQuery = `$filter=(UserEmail eq '${email}' or UserEmail eq '${email}' or UserEmail eq '${email.toUpperCase()}' or UserEmail eq '${formatEmailFirstPart(
+      email
+    )}' or UserEmail eq '${formatEmailDomain(email)}') and Status eq 'Open'`;
     const response = await apiApprovalToRequest(companyId, filterQuery);
     return response.data.value.length;
+  }
+);
+
+export const fetchTimeSheetApproval = createAsyncThunk(
+  `${SLICE_NAME}/fetchTimeSheetApproval`,
+  async ({ companyId, email }: { companyId: string; email: string }) => {
+    const filterQuery = `$filter=(approverEmailAddress eq '${email}' or approverEmailAddress eq '${email}' or approverEmailAddress eq '${email.toUpperCase()}' or approverEmailAddress eq '${formatEmailFirstPart(
+      email
+    )}' or approverEmailAddress eq '${formatEmailDomain(
+      email
+    )}')&$expand=timeSheetLines`;
+    const response = await TimeSheetsService.getTimeSheetHeader(
+      companyId,
+      filterQuery
+    );
+    // if lines contain any line with status submitted if yes return the count
+    const timeSheetWithSubmittedLines = response.data.value.filter(
+      (timeSheet) =>
+        timeSheet.timeSheetLines.some((line) => line.Status === "Submitted")
+    );
+    if (timeSheetWithSubmittedLines.length > 0) {
+      return timeSheetWithSubmittedLines.length;
+    }
+    return 0;
   }
 );
 const dashBoardSlice = createSlice({
@@ -244,6 +275,15 @@ const dashBoardSlice = createSlice({
         state.userDashBoardData.pendingApprovals = action.payload;
       })
       .addCase(fetchRequestToApprove.pending, (state) => {
+        state.loading = true;
+      });
+
+    builder
+      .addCase(fetchTimeSheetApproval.fulfilled, (state, action) => {
+        // incrementt the pendingApprovals by the action payload
+        state.userDashBoardData.pendingApprovals += action.payload;
+      })
+      .addCase(fetchTimeSheetApproval.pending, (state) => {
         state.loading = true;
       });
   },

@@ -291,6 +291,7 @@ function TimeSheetDetail() {
 
     const handleReopen = async () => {
         try {
+            setIsLoading(true);
             const res = await TimeSheetsService.reopenTimeSheet(companyId, { documentNo: timeSheetNo});
             if (res.status === 200 || res.status === 204) {
                 populateData();
@@ -298,11 +299,14 @@ function TimeSheetDetail() {
             }
         } catch (error) {
             toast.error(`Error reopening time sheet: ${getErrorMessage(error)}`);
+        } finally {
+            setIsLoading(false);
         }
     }
 
     const handleSubmit = async () => {
         try {
+            setIsLoading(true);
             const res = await TimeSheetsService.submitTimeSheet(companyId, { documentNo: timeSheetNo, senderEmailAddress: email });
             if (res.status === 200 || res.status === 204) {
                 populateData();
@@ -310,6 +314,8 @@ function TimeSheetDetail() {
             }
         } catch (error) {
             toast.error(`Error submitting time sheet: ${getErrorMessage(error)}`);
+        } finally {
+            setIsLoading(false);
         }
     }
 
