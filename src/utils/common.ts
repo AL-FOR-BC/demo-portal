@@ -126,7 +126,7 @@ export const cancelApprovalButton = async ({
   const documentData = JSON.stringify(data);
   try {
     const response = await apiCancelApproval(companyId, documentData, action);
-    if (response.status === 204) {
+    if (response.status === 204 || response.status === 200) {
       toast.success(`Document ${data.documentNo} approval cancelled`);
       populateDoc();
       return response.data;

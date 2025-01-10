@@ -2,7 +2,7 @@ import React from "react";
 import { BiSave } from "react-icons/bi";
 import { MdArrowBack, MdArrowForward, MdDelete, MdEdit, MdHistory, MdOutlineLabel, MdSearch, MdSend } from "react-icons/md";
 import { TbPlus, TbX } from "react-icons/tb";
-import { FaBusAlt, FaEdit } from "react-icons/fa";
+import { FaBusAlt, FaEdit, FaCheckCircle, FaSearch} from "react-icons/fa";
 import Icon from '@mdi/react';
 import { mdiBadgeAccountHorizontal, mdiBagSuitcase, mdiCartPlus, mdiFileQuestion, mdiFormatListCheckbox, mdiLoginVariant, mdiMicrosoftAzure, mdiOfficeBuilding, mdiReceipt, mdiTeaOutline } from '@mdi/js';
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
@@ -130,3 +130,8 @@ export const PhoneIcon = (props: React.SVGProps<SVGAElement>) => <BiPhone {...pr
 export const HomeIcon = (props: React.SVGProps<SVGAElement>) => <BiHome {...props} />;
 export const CarIcon = (props: React.SVGProps<SVGAElement>) => <BiCar {...props} />;
 export const HealthIcon = (props: React.SVGProps<SVGAElement>) => <BiHealth {...props} />;
+// check-line
+
+export const CheckIcon = (props: React.SVGProps<SVGAElement>) => <FaCheckCircle {...props} />;
+
+export const SearchIconV2 = (props: React.SVGProps<SVGAElement>) => <FaSearch  {...props} />;

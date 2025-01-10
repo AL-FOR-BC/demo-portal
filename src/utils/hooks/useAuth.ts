@@ -15,7 +15,6 @@ import appConfig from "../../configs/navigation.config/app.config.ts";
 import { useMsal } from "@azure/msal-react";
 import { InteractionRequiredAuthError, AccountInfo } from "@azure/msal-browser";
 import { lowercaseOrganizationEmail } from "../common.ts";
-import { jwtDecode } from "jwt-decode";
 
 function UseAuth() {
   const dispatch = useAppDispatch();
@@ -127,7 +126,6 @@ function UseAuth() {
         const response = await instance.acquireTokenPopup(request);
         return { token: response.accessToken, account: response.account };
       } else {
-        console.error(error);
         return { token: undefined, account: null };
       }
     }
@@ -158,34 +156,39 @@ function UseAuth() {
     }
   };
   const handleSignOut = async () => {
-    if (token) {
-      const azureToken = jwtDecode(token);
-      if (
-        typeof azureToken === "object" &&
-        "aud" in azureToken &&
-        azureToken.aud === "https://api.businesscentral.dynamics.com"
-      ) {
-        handleSignOutAzure();
-        dispatch(signOutSuccess());
-        dispatch(
-          setUser({
-            email: "",
-            verified: false,
-          })
-        );
-      } else {
-        dispatch(signOutSuccess());
-        dispatch(
-          setUser({
-            email: "",
-            verified: false,
-          })
-        );
-      }
-    }
+    // if (token) {
+    //   const azureToken = jwtDecode(token);
+    //   if (
+    //     typeof azureToken === "object" &&
+    //     "aud" in azureToken &&
+    //     azureToken.aud === "https://api.businesscentral.dynamics.com"
+    //   ) {
+    //     handleSignOutAzure();
+    //     dispatch(signOutSuccess());
+    //     dispatch(
+    //       setUser({
+    //         email: "",
+    //         verified: false,
+    //       })
+    //     );
+    //   } else {
+    //     dispatch(signOutSuccess());
+    //     dispatch(
+    //       setUser({
+    //         email: "",
+    //         verified: false,
+    //       })
+    //     );
+    //   }
+    // }
+    dispatch(signOutSuccess());
+    dispatch(
+      setUser({
+        email: "",
+        verified: false,
+      })
+    );
 
-    console.log(token);
-    // handleSignOutAzure();
     // navigate(appConfig.unAuthenticatedEntryPath);
   };
   const handleSignOutAzure = () => {

@@ -11,6 +11,7 @@ if (environmentType === "HRP") {
 } else if (environmentType === "ROM_TEST") {
   apiPrefix = import.meta.env.VITE_EHUB_BACKEND_URL_ROM || "";
   apiPrefixBC = import.meta.env.VITE_EHUB_BC_URL_ROM || "";
+  console.log("Environment variables:", import.meta.env);
 } else {
   apiPrefix = import.meta.env.VITE_EHUB_BACKEND_URL || "";
   apiPrefixBC = import.meta.env.VITE_EHUB_BC_URL || "";
@@ -34,5 +35,6 @@ const appConfig: AppConfig = {
   apiPrefixBC,
   environment,
 };
+console.log("appConfig", appConfig);
 
 export default appConfig;

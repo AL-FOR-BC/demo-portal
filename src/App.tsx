@@ -7,6 +7,7 @@ import { MsalProvider } from "@azure/msal-react";
 import { PublicClientApplication, EventType, LogLevel } from "@azure/msal-browser";
 import { AuthenticationResult } from "@azure/msal-browser";
 import {  environmentType } from "./configs/navigation.config/app.config.ts";
+import { IdleTimerContainer } from "./Components/ui/Model/IdleTimerContainer.tsx";
 
 const pca = new PublicClientApplication({
   auth: {
@@ -66,6 +67,7 @@ function App() {
     <Provider store={store}>
       <MsalProvider instance={pca}>
         <BrowserRouter basename="/rom">
+          <IdleTimerContainer />
           <ToastContainer
             theme="colored"
           />

@@ -50,7 +50,7 @@ function SingleSignOn() {
                     navigate("/dashboard");
                     setLoading(false)
                 } else {
-                    toast.error("Error signing in with Azure");
+                    // toast.error("Error signing in with Azure");
                 }
             } else {
                 navigate("/single-sign-on")

@@ -8,6 +8,7 @@ import { options } from '../../@types/common.dto'
 import { GridColDef } from '@mui/x-data-grid'
 import { apiEmployees } from '../../services/CommonServices'
 import { apiCreateLeavePlan } from '../../services/LeaveServices'
+import { getErrorMessage } from '../../utils/common'
 
 function AddLeavePlan() {
     const { companyId } = useAppSelector(state => state.auth.session)
@@ -70,7 +71,7 @@ function AddLeavePlan() {
                 navigate(`/leave-plan-details/${res.data.systemId}`)
             }
         } catch (error) {
-            toast.error(`Error Adding Leave Plan :${error}`)
+            toast.error(`Error Adding Leave Plan :${getErrorMessage(error)}`)
         } finally {
             setIsLoading(false)
         }
@@ -88,7 +89,7 @@ function AddLeavePlan() {
 
 
             } catch (error) {
-                toast.error(`Error fetching data :${error}`)
+                toast.error(`Error fetching data :${getErrorMessage(error)}`)
             }
         }
         populateData()

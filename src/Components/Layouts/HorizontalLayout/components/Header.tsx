@@ -9,6 +9,7 @@ import { useAppDispatch } from '../../../../store/hook.ts';
 import { setAllowCompanyChange, setCompany } from '../../../../store/slices/auth/sessionSlice.ts';
 import CompanyMenu from './CompanyMenu';
 import { getAllowCompanyChangeSetting } from '../../../../services/SetupServices.ts';
+import Search from './Search.tsx';
 
 
 
@@ -86,6 +87,10 @@ function Header() {
                                 }} />
                             </button>
                         </div>
+                        {/* search */}
+                        <Search />
+
+
                         {allowCompanyChange && (
                             <CompanyMenu
                                 companies={companies}

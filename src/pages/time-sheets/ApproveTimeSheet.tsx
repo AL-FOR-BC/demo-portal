@@ -24,6 +24,13 @@ function ApprovalTimeSheet() {
   const [description, setDescription] = useState<string>("");
   const [projects, setProjects] = useState([]);
   const [timeSheetLines, setTimeSheetLines] = useState<Array<any>>([]);
+  const [viewStats, setViewStats] = useState<any>({
+    quantityOpen: 0,
+    quantityApproved: 0,
+    quantitySubmitted: 0,
+    quantityRejected: 0,
+    quantity: 0,
+  });
 
   // Define fields with all inputs disabled
   const fields = [
@@ -65,7 +72,7 @@ function ApprovalTimeSheet() {
         disabled: true,
         id: "startingDate",
       },
-        {
+      {
         label: "Ending Date",
         type: "text",
         value: endingDate,
@@ -100,6 +107,13 @@ function ApprovalTimeSheet() {
         setResourceNo(res.data.ResourceNo);
         setResourceName(res.data.resourceName);
         setDescription(res.data.Description);
+        setViewStats({
+          quantityOpen: res.data.quantityOpen,
+          quantityApproved: res.data.quantityApproved,
+          quantitySubmitted: res.data.quantitySubmitted,
+          quantityRejected: res.data.quantityRejected,
+          quantity: res.data.quantity,
+        });
         // setDocumentType(res.data.documentType);
 
         const filterQuery2 = `&$filter=timeSheetNo eq '${res.data.timeSheetNo}'`;
@@ -165,8 +179,6 @@ function ApprovalTimeSheet() {
     populateData();
   }, [id]);
 
-  
-
   return (
     <HeaderMui
       title="Time Sheet Approval"
@@ -179,10 +191,12 @@ function ApprovalTimeSheet() {
       documentType={"Time Sheets"}
       requestNo={timeSheetNo}
       pageType="approval"
-    //   handleApprove={handleApprove}
-    //   handleReject={handleReject}
+      //   handleApprove={handleApprove}
+      //   handleReject={handleReject}
       lines={
         <TimeSheetLines
+          viewStats={viewStats}
+          resourceNo={resourceNo}
           startingDate={startingDate}
           endingDate={endingDate}
           lines={timeSheetLines}

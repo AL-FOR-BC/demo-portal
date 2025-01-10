@@ -263,20 +263,23 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                         docType={documentType}
                                         companyId={companyId}
                                     />
-
-                                    <Attachments
-                                        defaultCompany={companyId}
-                                        docType={documentType}
-                                        docNo={requestNo}
-                                        status={status}
-                                        tableId={tableId}
-                                    />
-
-                                    <ApprovalEntries
-                                        defaultCompany={companyId}
-                                        docType={documentType}
-                                        docNo={requestNo}
-                                    />
+                                    {documentType != "Time Sheets" && (
+                                    <>
+                                        <Attachments
+                                            defaultCompany={companyId}
+                                            docType={documentType}
+                                            docNo={requestNo}
+                                            status={status}
+                                            tableId={tableId}
+                                        />
+                                   
+                                        <ApprovalEntries
+                                            defaultCompany={companyId}
+                                            docType={documentType}
+                                            docNo={requestNo}
+                                        />
+                                    </>
+                                )}
                                 </div>
                             </Row>
 

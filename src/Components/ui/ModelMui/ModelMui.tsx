@@ -13,6 +13,8 @@ import Select from 'react-select';
 import { Input, Label, Button as ReactstrapButton } from "reactstrap";
 import { customStyles } from "../../../utils/common.ts";
 import { useState } from 'react';
+import Flatpickr from "react-flatpickr";
+import "flatpickr/dist/themes/material_blue.css";
 
 interface ModelMuiProps {
     title: string;
@@ -120,6 +122,18 @@ const ModelMui: React.FC<ModelMuiProps> = ({
                                             onChange={onChange}
                                             disabled={disabled}
                                             rows={rows}
+                                            
+                                        />
+                                    ) : type === 'date' ? (
+                                        <Flatpickr
+                                            className="form-control"
+                                            value={value}
+                                            disabled={disabled}
+                                            onChange={onChange}
+                                            options={{
+                                                dateFormat: "Y-m-d",
+                                            }}
+                                            id={id}
                                         />
                                     ) : (
                                         <Input
@@ -151,7 +165,7 @@ const ModelMui: React.FC<ModelMuiProps> = ({
                         onClick={handleSubmitWithLoading}
                         disabled={isSubmitting}
                     >
-                         {isSubmitting ? 'Submitting...' : 'Submit'}
+                        {isSubmitting ? 'Submitting...' : 'Submit'}
                     </ReactstrapButton>
                 )}
             </div>

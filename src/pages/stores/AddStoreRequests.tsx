@@ -23,16 +23,17 @@ function AddStoreRequest() {
     const [selectedDimension, setSelectedDimension] = useState < options[] > ([]);
     const [requisitionType, setRequisitionType] = useState < options[] > ([]);
     const [purpose, setPurpose] = useState < string > ('');
-    const [transitCode, setTransitCode] = useState < string > ('');
+    const [transitCode, setTransitCode] = useState <options[] > ([]);
     const [status] = useState < string > ('Open');
 
     // Options states
-    const [locationOptions, setLocationOptions] = useState < options[] > ([]);
-    const [dimensionValues, setDimensionValues] = useState < options[] > ([]);
+  const [locationOptions, setLocationOptions] = useState<options[]>([]);
+  const [dimensionValues, setDimensionValues] = useState<options[]>([]);
+  const [transitCodeOptions, setTransitCodeOptions] = useState<options[]>([]);
 
     const requisitionTypeOptions = [
         { label: 'Issue', value: 'Issue' },
-        { label: 'Transfer Order', value: 'TransferOrder' }
+        { label: 'Transfer Order', value: 'Transfer Order' }
     ];
 
     const fields = [
@@ -58,9 +59,9 @@ function AddStoreRequest() {
                 onChange: (e: options) => {
                     setRequisitionType([{ label: e.label, value: e.value }]);
                     // Reset transfer-related fields when switching types
-                    if (e.value !== 'TransferOrder') {
+                    if (e.value !== 'Transfer Order') {
                         setSelectedTransferTo([]);
-                        setTransitCode('');
+                        setTransitCode([]);
                     }
                 },
                 id: 'requisitionType'
@@ -73,7 +74,7 @@ function AddStoreRequest() {
                 onChange: (e: options) => setSelectedLocationType([{ label: e.label, value: e.value }]),
                 id: 'location'
             },
-            ...(requisitionType[0]?.value === 'TransferOrder' ? [
+            ...(requisitionType[0]?.value === 'Transfer Order' ? [
                 {
                     label: 'Transfer To',
                     type: 'select',
@@ -90,9 +91,10 @@ function AddStoreRequest() {
                 },
                 {
                     label: 'Transit Code',
-                    type: 'text',
+                    type: 'select',
                     value: transitCode,
-                    onChange: (e: React.ChangeEvent<HTMLInputElement>) => setTransitCode(e.target.value),
+                    options: transitCodeOptions,
+                    onChange: (e: options) => setTransitCode([{ label: e.label, value: e.value }]),
                     id: 'transitCode'
                 }
             ] : []),
@@ -113,20 +115,20 @@ function AddStoreRequest() {
             setIsLoading(true);
             const data = {
                 requestorNo: employeeNo,
-                // projectCode: selectedDimension[0]?.value,
+                globalDimension1Code: selectedDimension[0]?.value,
                 purpose: purpose,
                 storeReqType: requisitionType[0]?.value,
                 locationCode: selectedLocationType[0]?.value,
-                ...(requisitionType[0]?.value === 'TransferOrder' ? {
+                ...(requisitionType[0]?.value === 'Transfer Order' ? {
                     transferTo: selectedTransferTo[0]?.value,
-                    transitCode: transitCode
+                    transitCode: transitCode[0]?.value
                 } : {})
 
             }
             const res = await apiCreateStoreRequest(companyId, data)
             if (res.status === 201) {
                 toast.success('Store requisition created successfully');
-                navigate(`/store-requests-details/${res.data.systemId}`)
+                navigate(`/store-request-details/${res.data.systemId}`)
             }
 
         } catch (error) {
@@ -149,6 +151,7 @@ function AddStoreRequest() {
             setLocationOptions(locationOptions);
 
             // Fetch dimension values
+            //? filter by globalDimensionNo eq 1 
             const dimensionFilter = `&$filter=globalDimensionNo eq 1`;
             const resDimensionValues = await apiDimensionValue(companyId, dimensionFilter);
             const dimensionValues = resDimensionValues.data.value.map((e) => ({
@@ -156,6 +159,15 @@ function AddStoreRequest() {
                 value: e.code
             }));
             setDimensionValues(dimensionValues);
+
+            // Fetch transit codes
+            const transitCodeFilter = `&$filter=useInTransit eq true`;
+            const resTransitCodes = await apiLocation(companyId, transitCodeFilter);
+            const transitCodeOptions = resTransitCodes.data.value.map((e) => ({
+                label: `${e.code}::${e.name}`,
+                value: e.code
+            }));
+            setTransitCodeOptions(transitCodeOptions);
 
         } catch (error) {
             toast.error(`Error fetching data: ${error}`);

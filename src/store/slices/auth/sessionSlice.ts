@@ -70,7 +70,29 @@ const sessionSlice = createSlice({
       // state.signedIn = false;
       // state.token = null;
       // state.bcToken = null;
-      // state.companyId = initialState.companyId;
+      // state.companyId = initialState.companyId
+
+      Object.keys(sessionStorage).forEach((key) => {
+        // Clear MSAL-related keys
+        if (
+          key.startsWith("msal.") ||
+          key.includes("login.windows.net") ||
+          key.includes("421c7fd5-2b20-45df-9b69-fcfca41d6ce2")
+        ) {
+          sessionStorage.removeItem(key);
+        }
+      });
+
+      // Clear all localStorage MSAL items as well
+      Object.keys(localStorage).forEach((key) => {
+        if (
+          key.startsWith("msal.") ||
+          key.includes("login.windows.net") ||
+          key.includes("421c7fd5-2b20-45df-9b69-fcfca41d6ce2")
+        ) {
+          localStorage.removeItem(key);
+        }
+      });
       return { ...initialState };
     },
   },

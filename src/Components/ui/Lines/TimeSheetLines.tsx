@@ -1,5 +1,11 @@
 import * as React from "react";
-import { Collapse } from "reactstrap";
+import {
+  Collapse,
+  Tooltip,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+} from "reactstrap";
 import classNames from "classnames";
 import { format, eachDayOfInterval, isWeekend } from "date-fns";
 import { toast } from "react-toastify";
@@ -11,6 +17,7 @@ import { TimeSheetLinesProps } from "../../../@types/timesheet.dto";
 const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
   startingDate,
   endingDate,
+  viewStats,
   lines,
   projects,
   timeSheetNo,
@@ -24,12 +31,20 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
 }) => {
   const [isOpen, setIsOpen] = React.useState(true);
   const [localLines, setLocalLines] = React.useState(lines);
+  const [savingStatus, setSavingStatus] = React.useState(false);
+
+  const [tooltipOpen, setTooltipOpen] = React.useState(false);
+  const toggle = () => setTooltipOpen(!tooltipOpen);
+
+  const [dropdownOpen, setDropdownOpen] = React.useState<boolean>(false);
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
   // Generate array of dates between start and end
-  const dateRange = React.useMemo(() => {
-    if (!startingDate || !endingDate) return [];
-    return eachDayOfInterval({ start: startingDate, end: endingDate });
-  }, [startingDate, endingDate]);
+  const dateRange =
+    !startingDate || !endingDate
+      ? []
+      : //? return array of all days between startingDate and endingDate
+        eachDayOfInterval({ start: startingDate, end: endingDate });
 
   React.useEffect(() => {
     setLocalLines(lines);
@@ -43,19 +58,17 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
     const updatedLines = localLines.map((line) => {
       if (line.id === lineId) {
         const updatedLine = { ...line, [field]: value };
-
         if (typeof value === "object" && value?.systemId) {
-          onLineHoursUpdate(
-            lineId,
-            value.date,
-            value.value,
-            value.systemId
-          ).catch((error) => {
-            setLocalLines((prevLines) =>
-              prevLines.map((l) => (l.id === lineId ? line : l))
-            );
-            toast.error(`Failed to update hours: ${getErrorMessage(error)}`);
-          });
+          setSavingStatus(true);
+
+          onLineHoursUpdate(lineId, value.date, value.value, value.systemId)
+            .catch((error) => {
+              // Revert to the previous value stored in value.previousValue
+              toast.error(`Failed to update hours: ${getErrorMessage(error)}`);
+            })
+            .finally(() => {
+              setSavingStatus(false);
+            });
 
           return updatedLine;
         }
@@ -75,7 +88,7 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
               date: value.date,
               quantity: value.value,
             };
-            console.log(data);
+            setSavingStatus(true);
 
             onLineHoursSubmit(data)
               .then((result) => {
@@ -96,6 +109,9 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                 toast.error(
                   `Failed to submit hours: ${getErrorMessage(error)}`
                 );
+              })
+              .finally(() => {
+                setSavingStatus(false);
               });
           }
         }
@@ -106,6 +122,8 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
           updatedLine.id.startsWith("temp-") &&
           updatedLine?.description === ""
         ) {
+          setSavingStatus(true);
+
           const newLine = {
             jobNo: updatedLine.project,
             timeSheetNo: updatedLine.timeSheetNo,
@@ -114,39 +132,47 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
             description: updatedLine.description,
             // status: 'Open'
           };
-          console.log("newLine");
-          console.log(newLine);
 
-          onLineAdd(newLine).then((result) => {
-            const prevLineNo = updatedLine.lineNo;
+          onLineAdd(newLine)
+            .then((result) => {
+              const prevLineNo = updatedLine.lineNo;
 
-            if (result.status === 201) {
-              console.log("updatedLine");
-              console.log(updatedLine);
-              const line = {
-                ...updatedLine,
-                systemId: result.data.systemId,
-                lineNo: result.data.lineNo,
-                jobTaskNo: result.data.jobTaskNo,
-                id: result.data.lineNo,
-              };
-              setLocalLines((prevLines) =>
-                prevLines.map((l) => (l.id === prevLineNo ? line : l))
-              );
-              return line;
-            }
-          });
+              if (result.status === 201) {
+                console.log("updatedLine");
+                console.log(updatedLine);
+                const line = {
+                  ...updatedLine,
+                  systemId: result.data.systemId,
+                  lineNo: result.data.lineNo,
+                  jobTaskNo: result.data.jobTaskNo,
+                  id: result.data.lineNo,
+                };
+                setLocalLines((prevLines) =>
+                  prevLines.map((l) => (l.id === prevLineNo ? line : l))
+                );
+                return line;
+              }
+            })
+            .finally(() => {
+              setSavingStatus(false);
+            });
         }
         if (typeof updatedLine === "object" && updatedLine.systemId !== "") {
-          onLineUpdate(updatedLine).catch((error) => {
-            toast.error(`Failed to save changes: ${getErrorMessage(error)}`);
-            console.log("it runs runser ursnesrusern usernsuer ");
+          setSavingStatus(true);
 
-            // Revert changes on error
-            setLocalLines((prevLines) =>
-              prevLines.map((l) => (l.id === lineId ? line : l))
-            );
-          });
+          onLineUpdate(updatedLine)
+            .catch((error) => {
+              toast.error(`Failed to save changes: ${getErrorMessage(error)}`);
+              console.log("it runs runser ursnesrusern usernsuer ");
+
+              // Revert changes on error
+              setLocalLines((prevLines) =>
+                prevLines.map((l) => (l.id === lineId ? line : l))
+              );
+            })
+            .finally(() => {
+              setSavingStatus(false);
+            });
           return updatedLine;
         }
       }
@@ -161,6 +187,31 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
     value: number
   ) => {
     const dayKey = `day${format(date, "d")}`;
+    // const currentLine = localLines.find((l) => l.id === lineId);
+    // const previousValue = currentLine?.[dayKey]?.value || 0;
+
+    // first get the date column being edited.
+    const columnDate = dayKey;
+    // second get sum up all the values of that date column.
+    const columnTotal = localLines.reduce((acc, line) => {
+      return acc + (line[columnDate]?.value || 0);
+    }, 0);
+    console.log("columnTotal --------------");
+    console.log("columnTotal", columnTotal);
+
+    // if (columnTotal + value > 8) {
+    //   console.log("running here -----------------------------")
+    //   toast.error("Total hours cannot be greater than 8");
+    //   //revert the value to the previous value
+    //   await handleInputChange(lineId, dayKey, {
+    //     value: previousValue,
+    //     date: format(date, "yyyy-MM-dd"),
+    //     systemId:
+    //       localLines.find((l) => l.id === lineId)?.[dayKey]?.systemId || "",
+    //   });
+    //   return;
+    // }
+
     await handleInputChange(lineId, dayKey, {
       value,
       date: format(date, "yyyy-MM-dd"),
@@ -273,17 +324,47 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
     );
   };
 
-  const handleLocalHoursChange = (
+  const handleLocalHoursChange = async (
     lineId: string,
     date: Date,
     value: number
   ) => {
     const dayKey = `day${format(date, "d")}`;
+    const currentLine = localLines.find((l) => l.id === lineId);
+    const previousValue = currentLine?.[dayKey]?.value || 0;
+
+    // first get the date column being edited.
+    const columnDate = dayKey;
+    // second get sum up all the values of that date column.
+    const columnTotal = localLines.reduce((acc, line) => {
+      return acc + (line[columnDate]?.value || 0);
+    }, 0);
+
+    console.log("columnTotal", columnTotal);
+    console.log("value", value);
+    console.log(
+      "total + value",
+      parseInt(columnTotal) + parseInt(value.toString())
+    );
+
+    // third if the sum is greater than 8 then don't allow to save.
+    if (parseInt(columnTotal) + parseInt(value.toString()) > 8) {
+      toast.error("Total hours cannot be greater than 8");
+      //revert the value to the previous value
+      await handleInputChange(lineId, dayKey, {
+        value: previousValue,
+        date: format(date, "yyyy-MM-dd"),
+        systemId:
+          localLines.find((l) => l.id === lineId)?.[dayKey]?.systemId || "",
+      });
+      return;
+    }
+
     handleLocalChange(lineId, dayKey, {
       value,
       date: format(date, "yyyy-MM-dd"),
-      systemId:
-        localLines.find((l) => l.id === lineId)?.[dayKey]?.systemId || "",
+      systemId: currentLine?.[dayKey]?.systemId || "",
+      previousValue, // This value will now be used in the revert logic
     });
   };
 
@@ -315,16 +396,116 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
       </h2>
       <Collapse isOpen={isOpen} className="accordion-collapse">
         <div className="accordion-body">
-          <div className="d-flex justify-content-end mb-3">
-            {canAddLine && (
-              <button
-                className="btn btn-primary btn-label"
-                onClick={handleAddLine}
-              >
-                <PlusIcon className="label-icon" />
-                Add Line
-              </button>
-            )}
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex flex-column gap-3">
+              {/* Saving Status */}
+              <div>
+                {savingStatus ? (
+                  <span className="badge bg-primary">Saving...</span>
+                ) : (
+                  <span className="badge bg-success">Saved</span>
+                )}
+              </div>
+
+              {/* Stats Cards */}
+              <div className="d-flex gap-3">
+                {/* Total Hours Card */}
+                <div className="card border-0 bg-light">
+                  <div className="card-body p-2">
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="ri-time-line text-primary fs-4"></i>
+                      <div>
+                        <small className="text-muted d-block">
+                          Total Hours
+                        </small>
+                        <h5 className="mb-0 fw-semibold">
+                          {viewStats.quantity}
+                        </h5>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats Dropdown */}
+                <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+                  <DropdownToggle className="btn btn-light">
+                    <i className="ri-bar-chart-line me-1"></i>
+                    View Stats
+                  </DropdownToggle>
+                  <DropdownMenu className="p-3" style={{ minWidth: "240px" }}>
+                    <h6 className="dropdown-header border-bottom pb-2">
+                      Hours Breakdown
+                    </h6>
+                    <div className="pt-2">
+                      {/* Open Hours */}
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <div className="d-flex align-items-center">
+                          <div className="me-2">
+                            <i className="ri-checkbox-blank-circle-fill text-info fs-6"></i>
+                          </div>
+                          <span className="text-muted">Open</span>
+                        </div>
+                        <span className="badge text-bg-info">
+                          {viewStats.quantityOpen}
+                        </span>
+                      </div>
+
+                      {/* Submitted Hours */}
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <div className="d-flex align-items-center">
+                          <div className="me-2">
+                            <i className="ri-checkbox-blank-circle-fill text-warning fs-6"></i>
+                          </div>
+                          <span className="text-muted">Submitted</span>
+                        </div>
+                        <span className="badge text-bg-warning">
+                          {viewStats.quantitySubmitted}
+                        </span>
+                      </div>
+
+                      {/* Approved Hours */}
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <div className="d-flex align-items-center">
+                          <div className="me-2">
+                            <i className="ri-checkbox-blank-circle-fill text-success fs-6"></i>
+                          </div>
+                          <span className="text-muted">Approved</span>
+                        </div>
+                        <span className="badge text-bg-success">
+                          {viewStats.quantityApproved}
+                        </span>
+                      </div>
+
+                      {/* Rejected Hours */}
+                      <div className="d-flex justify-content-between align-items-center">
+                        <div className="d-flex align-items-center">
+                          <div className="me-2">
+                            <i className="ri-checkbox-blank-circle-fill text-danger fs-6"></i>
+                          </div>
+                          <span className="text-muted">Rejected</span>
+                        </div>
+                        <span className="badge text-bg-danger">
+                          {viewStats.quantityRejected}
+                        </span>
+                      </div>
+                    </div>
+                  </DropdownMenu>
+                </Dropdown>
+              </div>
+            </div>
+
+            {/* Add Line Button */}
+            <div>
+              {canAddLine && (
+                <button
+                  className="btn btn-primary btn-label"
+                  onClick={handleAddLine}
+                >
+                  <PlusIcon className="label-icon" />
+                  Add Line
+                </button>
+              )}
+            </div>
           </div>
           <div className="table-responsive">
             <table className="table table-bordered mb-0">
@@ -348,6 +529,24 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                     </th>
                   ))}
                   <th className="text-center">Total</th>
+                  <th
+                    className="text-center"
+                    id="loeTooltip"
+                    style={{ cursor: "help" }}
+                    onMouseEnter={toggle}
+                    onMouseLeave={toggle}
+                  >
+                    Loe
+                    <Tooltip
+                      target="loeTooltip"
+                      placement="top"
+                      isOpen={tooltipOpen}
+                      toggle={toggle}
+                    >
+                      Level of Effort
+                    </Tooltip>
+                  </th>
+
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -406,21 +605,40 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                     </td>
                     {dateRange.map((date, index) => (
                       <td
-                        key={`${line.id}-${format(date, "yyyy-MM-dd")}` || `date-cell-${line.id}-${index}`}
+                        key={
+                          `${line.id}-${format(date, "yyyy-MM-dd")}` ||
+                          `date-cell-${line.id}-${index}`
+                        }
                         className={classNames("text-center", {
                           "bg-light": isWeekend(date),
                           "bg-warning-subtle": isHoliday(date),
                         })}
                       >
+                        <style>
+                          {`
+          /* Chrome, Safari, Edge, Opera */
+          .number-input::-webkit-outer-spin-button,
+          .number-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+
+          /* Firefox */
+          .number-input {
+            -moz-appearance: textfield;
+          }
+        `}
+                        </style>
                         <input
                           type="number"
-                          className="form-control form-control-sm text-center"
+                          className="form-control form-control-sm text-center number-input"
                           value={line[`day${format(date, "d")}`]?.value}
                           onChange={(e) => {
-                            if (Number(e.target.value) > 8) {
-                              toast.error("Hours cannot be greater than 8");
-                              return;
-                            }
+                            // if (!lineValidation(`day${format(date, "d")}`, Number(e.target.value))) {
+                            //   toast.error("Total hours cannot be greater than 8");
+                            //   handleLocalHoursChange(line.id, date, Number(''));
+                            //   return;
+                            // }
                             // project is empty then show error
                             if (line.project === "") {
                               toast.error("Please first select a project");
@@ -429,26 +647,41 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                             handleLocalHoursChange(
                               line.id,
                               date,
-                              Number(e.target.value)
+                              // i want to prevent having 03 i want it to be 3
+                              Number(e.target.value.replace(/^0+/, ""))
                             );
                           }}
                           onBlur={(e) =>
                             handleHoursChange(
                               line.id,
                               date,
-                              Number(e.target.value)
+                              Number(e.target.value.replace(/^0+/, ""))
                             )
                           }
                           disabled={!isEditable(line, date)}
                           min="0"
-                          max="24"
-                          step="0.5"
-                          style={{ width: "60px" }}
+                          max="8"
+                          step="1"
+                          style={{
+                            width: "60px",
+                            // style to remove the arrows?
+                            // Remove spinner for Firefox
+                            MozAppearance: "textfield",
+                            // Remove spinner for Safari and Chrome
+                            WebkitAppearance: "none",
+                            margin: "0", // Need this for Safari
+                            // Remove spinner for modern browsers
+                            appearance: "none",
+                          }}
                         />
                       </td>
                     ))}
+
                     <td className="text-center" style={{ fontWeight: "bold" }}>
                       {calculateLineTotal(line).toFixed(2)}
+                    </td>
+                    <td className="text-center" style={{ fontWeight: "bold" }}>
+                      {line?.loe ? line.loe : 0}
                     </td>
                     <td>
                       {isEditable(line, new Date()) && (

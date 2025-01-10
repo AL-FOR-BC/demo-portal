@@ -16,7 +16,7 @@ export const handleSendForApproval = async (
         const response = await SendApprovalButton({ data, documentLines, companyId, link, populateDoc });
 
         if (response) {
-
+           
         }
     } catch (error) {
         console.error("Error sending for approval:", error);
