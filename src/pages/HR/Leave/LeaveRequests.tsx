@@ -1,35 +1,17 @@
-import { useState, useEffect } from "react";
-import { useAppSelector } from "../../../store/hook";
-import { LeaveRequestValue } from "../../../@types/leave.dto";
-import { apiLeaveRequest } from "../../../services/LeaveServices";
+import { useEffect } from "react";
+import { useLeaveDocument } from "../../../hooks/documents/useLeaveDocument";
 import TableMui from "../../../Components/ui/Table/TableMui";
-import { toast } from "react-toastify";
 import { decodeValue } from "../../../utils/common";
 import {
   ActionFormatter,
   statusFormatter,
 } from "../../../Components/ui/Table/TableUtils";
 
-export const LeaveRequests = () => {
-  const { companyId } = useAppSelector((state) => state.auth.session);
+const LeaveRequests = () => {
+  const { state, populateDocument } = useLeaveDocument({ mode: "list" });
+  const { isLoading, leaveRequests } = state;
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [leaveRequest, setLeaveRequest] = useState<LeaveRequestValue[]>([]);
-
-  const populateData = async () => {
-    try {
-      setIsLoading(true);
-      const responseLR = await apiLeaveRequest(companyId, "GET");
-      console.log(responseLR.data.value);
-      setLeaveRequest(responseLR.data.value);
-    } catch (error) {
-      toast.error(`Error fetching leave requests: ${error}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const columns = [
+  const columns = [   
     {
       dataField: "documentNo",
       text: "Document No",
@@ -77,26 +59,31 @@ export const LeaveRequests = () => {
 
   const defaultSorted = [
     {
-      dataField: "requestNo",
+      dataField: "documentNo",
       order: "asc",
     },
   ];
+
   useEffect(() => {
-    populateData();
+    populateDocument();
+    console.log("------------------------  LeaveRequests ------------------------ ");
+    console.log(leaveRequests);
+    console.log("------------------------  LeaveRequests ------------------------ ");
   }, []);
+
   return (
     <TableMui
       title="Leave Requests"
       subTitle="List of Leave Requests"
-      addLink={"/add-leave-request"}
-      addLabel={"Add Leave Request"}
+      addLink="/add-leave-request"
+      addLabel="Add Leave Request"
       isLoading={isLoading}
-      data={leaveRequest}
+      data={leaveRequests || []}
       columns={columns}
       noDataMessage="No Leave Requests found"
       breadcrumbItem="Leave Requests"
       defaultSorted={defaultSorted}
-      iconClassName="bx bx-cart"
+      iconClassName="bx bx-calendar-check"
     />
   );
 };

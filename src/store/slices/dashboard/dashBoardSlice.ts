@@ -15,6 +15,7 @@ import {
 } from "../../../utils/common";
 import { Employee } from "../../../@types/employee.dto";
 import { TimeSheetsService } from "../../../services/TimeSheetsService";
+import { leaveService } from "../../../services/LeaveServices";
 const SLICE_NAME = "userDashBoardData";
 // const employeeGender= useAppSelector(state=> state.auth.user.employeeGender)
 export type userDashBoardState = {
@@ -217,6 +218,15 @@ export const fetchTimeSheetApproval = createAsyncThunk(
     return 0;
   }
 );
+
+export const fetchLeaveRequests = createAsyncThunk(
+  `${SLICE_NAME}/fetchLeaveRequests`,
+  async({companyId,employeeNo}:{companyId:string,employeeNo:string})=>{
+    const filterQuery = `$filter=employeeNo eq '${employeeNo}'`
+    const response = await leaveService.getLeaveRequests(companyId,filterQuery)
+    return response.length
+  }
+)
 const dashBoardSlice = createSlice({
   name: `${SLICE_NAME}/dashboard`,
   initialState,
@@ -284,6 +294,13 @@ const dashBoardSlice = createSlice({
         state.userDashBoardData.pendingApprovals += action.payload;
       })
       .addCase(fetchTimeSheetApproval.pending, (state) => {
+        state.loading = true;
+      });
+    builder
+      .addCase(fetchLeaveRequests.fulfilled, (state, action) => {
+        state.userDashBoardData.leaveRequests = action.payload;
+      })
+      .addCase(fetchLeaveRequests.pending, (state) => {
         state.loading = true;
       });
   },

@@ -1,9 +1,53 @@
-import {  upperCase } from "lodash";
+import { upperCase } from "lodash";
 import {
   apiCancelApproval,
   apiSendForApproval,
 } from "../services/ActionServices";
 import { toast } from "react-toastify";
+
+interface SendApprovalProps {
+  data: {
+    documentNo: string;
+  };
+  documentLines: any[];
+  companyId: string;
+  populateDoc: () => void;
+  link: string;
+}
+interface CancelApprovalProps {
+  data: {
+    documentNo: string;
+  };
+  documentLines?: any[];
+  companyId: string;
+  populateDoc: () => void;
+  action: string;
+}
+type ErrorResponse = {
+  response: {
+    data: {
+      error: {
+        code: string;
+        message: string;
+      };
+    };
+  };
+};
+
+interface AxiosErrorResponse {
+  message?: string;
+  name?: string;
+  code?: string;
+  status?: number;
+  response?: {
+    data?: {
+      error?: {
+        code?: string;
+        message?: string;
+      };
+    };
+  };
+}
 
 export function lowercaseOrganizationEmail(email: string): string {
   const organizationDomains = ["@hrpsolutions.com", "@reachoutmbuya.org"];
@@ -59,34 +103,14 @@ export function decodeValue(encodedValue: string): string {
     .replace(/_x0029_/g, ")"); // Replace encoded )
 }
 
-interface SendApprovalProps {
-  data: {
-    documentNo: string;
-  };
-  documentLines: any[];
-  companyId: string;
-  populateDoc: () => void;
-  link: string;
-}
-interface CancelApprovalProps {
-  data: {
-    documentNo: string;
-  };
-  documentLines?: any[];
-  companyId: string;
-  populateDoc: () => void;
-  action: string;
-}
-type ErrorResponse = {
-  response: {
-    data: {
-      error: {
-        code: string;
-        message: string;
-      };
-    };
-  };
+// Phone number formatting helper
+export const formatPhoneNumber = (value: string) => {
+  const digitsOnly = value.replace(/\D/g, "");
+  return digitsOnly.length <= 10
+    ? digitsOnly.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3")
+    : digitsOnly.slice(0, 10).replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
 };
+
 export const SendApprovalButton = async ({
   data,
   documentLines,
@@ -101,7 +125,7 @@ export const SendApprovalButton = async ({
   const documentData = JSON.stringify(data);
   try {
     const response = await apiSendForApproval(companyId, documentData, link);
-    if (response.status === 204) {
+    if (response.status === 204 || response.status === 200) {
       toast.success(`Document ${data.documentNo} sent for approval`);
       populateDoc();
       return response.data;
@@ -165,29 +189,6 @@ export const formatDateTime = (date) => {
   return [day, time].join(" ");
 };
 
-// export const getErrorMessage = (error:string) => {
-//   return(split(error, 'CorrelationId:')[0]);
-// }
-
-// interface ErrorResponse {
-//   code?: string;
-//   message?: string;
-// }
-interface AxiosErrorResponse {
-  message?: string;
-  name?: string;
-  code?: string;
-  status?: number;
-  response?: {
-    data?: {
-      error?: {
-        code?: string;
-        message?: string;
-      };
-    };
-  };
-}
-
 export const getErrorMessage = (error: any): string => {
   try {
     // If it's an Axios error
@@ -236,13 +237,7 @@ export const getErrorMessage = (error: any): string => {
   }
 };
 
-// Helper function to check if a field is required in the error message
-// const isRequiredFieldError = (message: string): boolean => {
-//   return (
-//     message.toLowerCase().includes("must have a value") ||
-//     message.toLowerCase().includes("cannot be zero or empty")
-//   );
-// };
+
 
 function isErrorResponse(error: unknown): error is ErrorResponse {
   return (
@@ -259,13 +254,13 @@ function isErrorResponse(error: unknown): error is ErrorResponse {
 }
 
 export const formatEmailFirstPart = (email: string) => {
-  const emailString = email.split('@')[0].toUpperCase();
-  const emailDomain = email.split('@')[1];
+  const emailString = email.split("@")[0].toUpperCase();
+  const emailDomain = email.split("@")[1];
   return `${emailString}@${emailDomain}`;
-}
+};
 
 export const formatEmailDomain = (email: string) => {
-  const emailString = email.split('@')[0];
-  const emailDomain = email.split('@')[1].toUpperCase();
+  const emailString = email.split("@")[0];
+  const emailDomain = email.split("@")[1].toUpperCase();
   return `${emailString}@${emailDomain}`;
-}
+};

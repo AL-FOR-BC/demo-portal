@@ -23,7 +23,7 @@ export async function apiGetStoreRequest(
 export async function apiStoreRequestDetail(
   companyId: string,
   id: string,
-  filterQuery: string
+  filterQuery: string,
 ) {
   return BcApiService.fetchData<any>({
     url: `/api/hrpsolutions/procuretopay/v2.0/StoreRequests(${id})?Company=${companyId}&${filterQuery}`,

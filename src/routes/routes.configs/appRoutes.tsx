@@ -108,6 +108,11 @@ const appRoutes: Routes = [
     path: "/store-request-details/:id",
     component: lazy(() => import("../../pages/stores/StoreRequestDetail.tsx")),
   },
+  {
+    key: "approve-store-request",
+    path: "/approve-store-request/:documentNo",
+    component: lazy(() => import("../../pages/stores/ApproveStoreRequest.tsx")),
+  },
 
   // ------------------------- approval ----------------------------------------
   {
@@ -168,7 +173,26 @@ const appRoutes: Routes = [
     key: "add-leave-request",
     path: "/add-leave-request",
     component: lazy(() => import("../../pages/HR/Leave/AddLeaveRequest.tsx")),
-  }
+  },
+  {
+    key: "leave-request-detail",
+    path: "/leave-request-details/:id",
+    component: lazy(
+      () => import("../../pages/HR/Leave/LeaveRequestDetail.tsx")
+    ),
+  },
+  {
+    key: "approve-leave-request",
+    path: "/approve-leave-request/:id",
+    component: lazy(
+      () => import("../../pages/HR/Leave/ApproveLeaveRequest.tsx")
+    ),
+  },
+  {
+    key: "approve-leave-plan",
+    path: "/approve-leave-plan/:documentNo",
+    component: lazy(() => import("../../pages/HR/Leave/ApproveLeavePlan.tsx")),
+  },
   // {
   //     key: 'approved-time-sheets',
   //     path: '/approved-time-sheets',

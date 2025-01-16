@@ -2,6 +2,7 @@ import BcBaseService from './BcBaseService'
 import type { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 
 const BcApiService = {
+    
     fetchData<Response = unknown, Request = Record<string, unknown>>(
         param: AxiosRequestConfig<Request>
     ) {

@@ -649,6 +649,16 @@ function PaymentRequisitionDetail() {
           },
         },
         {
+          dataField: "ShortcutDimCode1",
+          text: "Project Code",
+          sort: true,
+        },
+        {
+          dataField: "ShortcutDimCode2",
+          text: "Donor Code",
+          sort: true,
+        },
+        {
           dataField: "action",
           isDummyField: true,
           text: "Action",
@@ -710,6 +720,16 @@ function PaymentRequisitionDetail() {
           formatter: (cell) => {
             return parseInt(cell).toLocaleString()
           },
+        },
+        {
+          dataField: "ShortcutDimCode1",
+          text: "Project Code",
+          sort: true,
+        },
+        {
+          dataField: "ShortcutDimCode2",
+          text: "Donor Code",
+          sort: true,
         },
       ]
   const modalFields = [[

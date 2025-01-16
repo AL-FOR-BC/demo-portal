@@ -31,13 +31,13 @@ function TimeSheets() {
             dataField: 'startingDate',
             text: 'Starting Date',
             sort: true,
-            formatter: (cell: string) => new Date(cell).toLocaleDateString()
+            // formatter: (cell: string) => new Date(cell).toLocaleDateString()
         },
         {
             dataField: 'endingDate',
             text: 'Ending Date',
             sort: true,
-            formatter: (cell: string) => new Date(cell).toLocaleDateString()
+            // formatter: (cell: string) => new Date(cell).toLocaleDateString()
         },
         {
             dataField: 'ResourceNo',

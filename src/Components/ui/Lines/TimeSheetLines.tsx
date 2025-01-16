@@ -380,6 +380,37 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
     return total;
   };
 
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    lineId: string,
+    currentDate: Date,
+    dateRange: Date[]
+  ) => {
+    const currentIndex = dateRange.findIndex(
+      (date) => format(date, "yyyy-MM-dd") === format(currentDate, "yyyy-MM-dd")
+    );
+
+    if (e.key === "ArrowRight" || e.key === "Tab") {
+      e.preventDefault();
+      const nextInput = document.querySelector(
+        `input[data-line="${lineId}"][data-date="${format(
+          dateRange[currentIndex + 1] || currentDate,
+          "yyyy-MM-dd"
+        )}"]`
+      ) as HTMLInputElement;
+      nextInput?.focus();
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      const prevInput = document.querySelector(
+        `input[data-line="${lineId}"][data-date="${format(
+          dateRange[currentIndex - 1] || currentDate,
+          "yyyy-MM-dd"
+        )}"]`
+      ) as HTMLInputElement;
+      prevInput?.focus();
+    }
+  };
+
   return (
     <div className="accordion-item">
       <h2 className="accordion-header" id="headingLines">
@@ -507,8 +538,38 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
               )}
             </div>
           </div>
-          <div className="table-responsive">
-            <table className="table table-bordered mb-0">
+          <div
+            className="table-responsive"
+            style={{ position: "relative", overflowX: "auto" }}
+          >
+            <style>
+              {`
+                .sticky-columns th:nth-child(-n+3),
+                .sticky-columns td:nth-child(-n+3) {
+                  position: sticky;
+                  background: white;
+                  z-index: 1;
+                }
+                .sticky-columns th:nth-child(1),
+                .sticky-columns td:nth-child(1) {
+                  left: 0;
+                }
+                .sticky-columns th:nth-child(2),
+                .sticky-columns td:nth-child(2) {
+                  left: 65px;
+                }
+                .sticky-columns th:nth-child(3),
+                .sticky-columns td:nth-child(3) {
+                left: 250px;
+                }
+                /* Add shadow to create separation */
+                .sticky-columns td:nth-child(3),
+                .sticky-columns th:nth-child(3) {
+                  box-shadow: 6px 0 8px -5px rgba(0,0,0,0.2);
+                }
+              `}
+            </style>
+            <table className="table table-bordered mb-0 sticky-columns">
               <thead>
                 <tr>
                   <th>Status</th>
@@ -633,13 +694,9 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                           type="number"
                           className="form-control form-control-sm text-center number-input"
                           value={line[`day${format(date, "d")}`]?.value}
+                          data-line={line.id}
+                          data-date={format(date, "yyyy-MM-dd")}
                           onChange={(e) => {
-                            // if (!lineValidation(`day${format(date, "d")}`, Number(e.target.value))) {
-                            //   toast.error("Total hours cannot be greater than 8");
-                            //   handleLocalHoursChange(line.id, date, Number(''));
-                            //   return;
-                            // }
-                            // project is empty then show error
                             if (line.project === "") {
                               toast.error("Please first select a project");
                               return;
@@ -647,7 +704,6 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                             handleLocalHoursChange(
                               line.id,
                               date,
-                              // i want to prevent having 03 i want it to be 3
                               Number(e.target.value.replace(/^0+/, ""))
                             );
                           }}
@@ -658,19 +714,16 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                               Number(e.target.value.replace(/^0+/, ""))
                             )
                           }
+                          onKeyDown={(e) => handleKeyDown(e, line.id, date, dateRange)}
                           disabled={!isEditable(line, date)}
                           min="0"
                           max="8"
                           step="1"
                           style={{
                             width: "60px",
-                            // style to remove the arrows?
-                            // Remove spinner for Firefox
                             MozAppearance: "textfield",
-                            // Remove spinner for Safari and Chrome
                             WebkitAppearance: "none",
-                            margin: "0", // Need this for Safari
-                            // Remove spinner for modern browsers
+                            margin: "0",
                             appearance: "none",
                           }}
                         />

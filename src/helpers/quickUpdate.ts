@@ -11,7 +11,7 @@ interface QuickUpdateParams {
   id: string;
   apiService: (
     companyId: string,
-    method: "GET" | "PATCH" | "DELETE",
+    method: "PATCH" ,
     data: any,
     id: string,
     etag: string

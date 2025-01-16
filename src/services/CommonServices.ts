@@ -19,6 +19,8 @@ import {
   UnitOfMeasureResponse,
 } from "../@types/employee.dto.ts";
 import { CompanyResponse } from "../@types/company.dto.ts";
+import { BaseApiService } from "./base/BaseApiService.ts";
+import { EmployeeRequestValue } from "../@types/documents/employee.types.ts";
 
 interface currencyResponse {
   "@odata.context": string;
@@ -72,6 +74,21 @@ interface vendorResponse {
   "@odata.etag": string;
   value: vendorTypes[];
 }
+
+class CommonServices extends BaseApiService {
+  protected module = "hrpsolutions/hrmis";
+  protected version = "v2.0";
+  protected endpoint = "";
+
+  async getEmployeeList(companyId: string, filterQuery?: string) {
+    return this.get<EmployeeRequestValue>({
+      companyId,
+      filterQuery,
+      customEndpoint: "employees",
+    });
+  }
+}
+export const commonService = new CommonServices();
 
 export async function apiCurrencyCodes(
   companyId: string,
@@ -250,7 +267,7 @@ export async function apiCompanies() {
 // -------------------------------------- End of Companies --------------------------------------
 
 // -------------------------------------- Comments --------------------------------------
-  
+
 export const apiApprovalComments = async (company: string, filter: string) => {
   return BcApiService.fetchData<any>({
     url: `/api/hrpsolutions/procuretopay/v2.0/approvalComments?Company=${company}&${filter}`,

@@ -14,9 +14,6 @@ export interface validationOptions {
 
 export class FormValidator {
   private static ValidateSingleField(field: any) {
-    console.log("--------------------------------");
-    console.log(field.value);
-    console.log("--------------------------------");
     if (!field.required) return true;
 
     if (Array.isArray(field.value)) {
@@ -40,9 +37,6 @@ export class FormValidator {
     const flatFields = Array.isArray(fields[0])
       ? (fields as BaseField[][]).flat()
       : (fields as BaseField[]);
-    console.log("--------------------------------");
-    console.log(flatFields);
-    console.log("--------------------------------");
     const missingFields = flatFields.filter((field) => !validateSingle(field));
 
     if (missingFields.length > 0) {

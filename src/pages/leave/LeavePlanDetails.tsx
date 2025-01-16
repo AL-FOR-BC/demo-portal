@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import {
   apiLeavePlanDetail,
   apiLeavePlanLines,
+  leaveService,
 } from "../../services/LeaveServices";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { formatDate, getErrorMessage } from "../../utils/common";
@@ -34,7 +35,7 @@ export default function LeavePlanDetails() {
   const [postingDate, setPostingDate] = useState<Date>();
   const [leavePlanLines, setLeavePlanLines] = useState<any[]>([]);
   const { companyId } = useAppSelector((state) => state.auth.session);
-  const { employeeNo, employeeName } = useAppSelector(
+  const { employeeNo, employeeName, email } = useAppSelector(
     (state) => state.auth.user
   );
   const [leavePlanNo, setLeavePlanNo] = useState("");
@@ -82,7 +83,8 @@ export default function LeavePlanDetails() {
       text: "Quantity",
       sort: true,
     },
-    {
+
+    (status === "Open" ? true : false) && {
       dataField: "action",
       text: "Action",
       sort: true,
@@ -186,6 +188,7 @@ export default function LeavePlanDetails() {
         type: "select",
         value: selectedDelegatee,
         options: employeeOptions,
+        disabled: status === "Open" ? false : true,
         onChange: async (e: options) => {
           const quickUpdateResponse = await handleQuickUpdate({
             delegate: e.value,
@@ -366,11 +369,58 @@ export default function LeavePlanDetails() {
       subtitle="Leave Plan Details"
       breadcrumbItem="Leave Plan Details"
       documentType="Leave Plan"
+      requestNo={leavePlanNo}
+      companyId={companyId}
       fields={fields}
       isLoading={isLoading}
       handleBack={() => navigate("/leave-plans")}
       pageType="detail"
       status={status}
+      handleSendApprovalRequest={async () => {
+        try {
+          setIsLoading(true);
+          const response = await leaveService.sendLeavePlanForApproval(
+            companyId,
+            {
+              no: leavePlanNo,
+              senderEmailAddress: email,
+            }
+          );
+          if (response) {
+            populateData();
+            toast.success(`Leave plan ${leavePlanNo} sent for approval`);
+          }
+        } catch (error) {
+          toast.error(
+            `Error sending leave plan for approval: ${getErrorMessage(error)}`
+          );
+        } finally {
+          setIsLoading(false);
+        }
+      }}
+      handleCancelApprovalRequest={async () => {
+        try {
+          setIsLoading(true);
+          const response = await leaveService.cancelLeavePlanRequest(
+            companyId,
+            {
+              no: leavePlanNo,
+            }
+          );
+          if (response) {
+            populateData();
+            toast.success(`Leave plan ${leavePlanNo} cancelled`);
+          }
+        } catch (error) {
+          toast.error(
+            `Error cancelling leave plan for approval: ${getErrorMessage(
+              error
+            )}`
+          );
+        } finally {
+          setIsLoading(false);
+        }
+      }}
       // rowLines={leavePlanLines}
       handleSubmitLines={handleSubmitLines}
       lines={

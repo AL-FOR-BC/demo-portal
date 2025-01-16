@@ -1,3 +1,5 @@
+import { ODataEntity } from "./documents/base.types";
+
 export interface LeavePlanLine {
   "@odata.etag": string;
   SystemId: string;
@@ -61,15 +63,9 @@ export interface LeavePlanResponseSingle {
   leavePlanLines: LeavePlanLine[];
 }
 
-
 // --------------------------------- leave request ---------------------------------
 
 export interface LeaveRequest {
-  "@odata.context": string;
-  value: LeaveRequestValue[];
-}
-
-export interface LeaveRequestValue {
   "@odata.etag": string;
   systemId: string;
   documentNo: string;
@@ -107,4 +103,3 @@ export interface LeaveRequestValue {
   documentDate: string;
   delegate: string;
 }
-

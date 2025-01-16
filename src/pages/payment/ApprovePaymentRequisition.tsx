@@ -93,7 +93,17 @@ function ApprovePaymentRequisition() {
             text: 'Amount',
             sort: true,
             formatter: numberFormatter
-        }
+        },
+        {
+            dataField: "ShortcutDimCode1",
+            text: "Project Code",
+            sort: true,
+        },
+        {
+        dataField: "ShortcutDimCode2",
+        text: "Donor Code",
+        sort: true,
+        },
     ];
 
     const populateData = async () => {

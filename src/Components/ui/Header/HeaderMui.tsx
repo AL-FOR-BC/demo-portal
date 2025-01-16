@@ -21,6 +21,7 @@ import Attachments from "../../common/Attachment";
 import ApprovalEntries from "../../common/ApprovalEntry";
 import ApprovalAction from "../../common/ApprovalAction";
 import ApprovalComments from "../../common/ApprovalComments";
+import Swal from "sweetalert2";
 
 interface HeaderMuiProps {
     title: string;
@@ -58,6 +59,7 @@ interface HeaderMuiProps {
     tableId?: number
     createNewLine?: (lineNo: number) => void
     handleReopen?: () => void
+    handleDelete?: () => void
 }
 
 const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
@@ -76,6 +78,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
         handleBack,
         handleSubmit,
         pageType,
+        handleDelete,
         handleSendApprovalRequest,
         handleDeletePurchaseRequisition,
         handleCancelApprovalRequest,
@@ -146,7 +149,23 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                             docType={documentType || ''}
                                             docNo={requestNo || ''}
                                         />
-                                        <Button color="danger" className="btn btn-label" onClick={handleDeletePurchaseRequisition}>
+                                        <Button color="danger" className="btn btn-label" onClick={handleDeletePurchaseRequisition ? handleDeletePurchaseRequisition : () => {
+                                            if (handleDelete) {
+                                                Swal.fire({
+                                                    title: 'Are you sure?',
+                                                    text: "You won't be able to revert this!",
+                                                    icon: 'warning',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#3085d6',
+                                                    cancelButtonColor: '#d33',
+                                                    confirmButtonText: 'Yes, delete it!'
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        handleDelete()
+                                                    }
+                                                })
+                                            }
+                                        }}>
                                             <DeleteIcon className="label-icon" style={{ padding: "8px" }} />
                                             Delete Request
                                         </Button>
@@ -354,7 +373,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                                 <Row>
                                                     {fields.map((field, index) => (
                                                         <Row className='mb-2' key={index}>
-                                                            {field.map(({ label, type, value, disabled, onChange, options, id, rows, onBlur }, idx) => (
+                                                            {field.map(({ label, type, value, disabled, onChange, options, id, rows, onBlur, placeholder }, idx) => (
                                                                 <Col sm={3} key={idx}>
                                                                     <Label htmlFor={id}>{label}</Label>
                                                                     {type === 'select' ? (
@@ -452,6 +471,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                                                             value={value}
                                                                             disabled={disabled}
                                                                             onChange={onChange}
+                                                                            placeholder={placeholder}
                                                                             rows={rows}
                                                                             id={id}
                                                                             onBlur={onBlur}

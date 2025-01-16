@@ -31,6 +31,7 @@ import {
   modelLoadingRequisition,
 } from "../../store/slices/Requisitions";
 import { FormValidator } from "../../utils/hooks/validation";
+import { useLineOperations } from "../../utils/hooks/useLineOperations";
 
 function StoreRequestDetail() {
   const navigate = useNavigate();
@@ -109,26 +110,15 @@ function StoreRequestDetail() {
         id: "projectCode",
         options: dimensionValues,
         onChange: async (e: options) => {
-          if (storeRequestLines.length > 0) {
-            Swal.fire({
-              title: "Are you sure?",
-              text: "Changing the project code will delete all existing lines. This action cannot be undone!",
-              icon: "warning",
-              showCancelButton: true,
-              confirmButtonColor: "#3085d6",
-              cancelButtonColor: "#d33",
-              confirmButtonText: "Yes, delete all lines!",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                // deleteAllLines();
-                quickUpdate({ globalDimension1Code: e.value });
-                setSelectedDimension([{ label: e.label, value: e.value }]);
-              }
-            });
-          } else {
+          const onSuccess = () => {
             quickUpdate({ globalDimension1Code: e.value });
             setSelectedDimension([{ label: e.label, value: e.value }]);
-          }
+          };
+          await confirmAndDeleteAllLines(
+            storeRequestLines,
+            onSuccess,
+            "Changing the project code will delete all existing lines. This action cannot be undone!"
+          );
         },
         required: true,
       },
@@ -228,7 +218,6 @@ function StoreRequestDetail() {
 
   const handleValidateHeaderFields = () => {
     const result = FormValidator.validateFields(fields);
-    console.log(result);
     return result.isValid;
   };
 
@@ -260,12 +249,13 @@ function StoreRequestDetail() {
           data.status
             ? data.status.includes("_x0020_")
               ? data.status.replace("_x0020_", " ")
+              : data.status === "Released"
+              ? "Approved"
               : data.status
             : ""
         );
         setPurpose(data.purpose || "");
         setTransitCode(data.transitCode || "");
-        console.log(data.storeRequestline);
 
         // Set requisition type
         if (data.storeReqType) {
@@ -356,6 +346,11 @@ function StoreRequestDetail() {
       setIsLoading(false);
     }
   };
+  const { confirmAndDeleteAllLines } = useLineOperations({
+    companyId,
+    deleteLineApi: apiDeleteStoreRequestLine,
+    populateData,
+  });
 
   useEffect(() => {
     populateData();
@@ -604,13 +599,14 @@ function StoreRequestDetail() {
         title="Store Requisition Detail"
         subtitle="Store Requisition Detail"
         breadcrumbItem="Store Requisition Detail"
+        tableId={50134}
         fields={fields}
         isLoading={isLoading}
         handleBack={() => navigate("/stores-requests")}
         pageType="detail"
         status={status}
         companyId={companyId}
-        documentType="Store Requisition"
+        documentType="Stores Requisition"
         requestNo={requestNo}
         handleSendApprovalRequest={async () => {
           const documentNo = requestNo;
