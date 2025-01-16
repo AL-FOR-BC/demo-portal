@@ -1,18 +1,14 @@
 import { useEffect } from "react";
-import { useLeaveDocument } from "@/hooks/documents/useLeaveDocument";
-import HeaderMui from "../../Components/ui/Header/HeaderMui";
+// import { useLeaveDocument } from "@/hooks/documents/useLeaveDocument";
+// import HeaderMui from "../../Components/ui/Header/HeaderMui";
 
 export const LeaveDocument = () => {
-  const { state, populateDocument } = useLeaveDocument();
+  // const { state, populateDocument } = useLeaveDocument();
 
   useEffect(() => {
-    populateDocument();
+    // populateDocument();
   }, []);
 
-  return <HeaderMui title="Leave Document"
-  
-    ,
-  
-  
-  />;
+  // return <HeaderMui title="Leave Document" />;
+  return <div>Leave Document</div>;
 };

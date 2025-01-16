@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import HeaderMui from "../../Components/ui/Header/HeaderMui";
 import Lines from "../../Components/ui/Lines/Lines";
 import { apiLocation, apiDimensionValue } from "../../services/CommonServices";
-import { apiGetStoreRequest, apiStoreRequestDetail } from "../../services/StoreRequestServices";
+import { apiGetStoreRequest } from "../../services/StoreRequestServices";
 import { getErrorMessage } from "../../utils/common";
 
 function ApproveStoreRequest() {

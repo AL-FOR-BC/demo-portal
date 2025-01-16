@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import { useAppSelector } from "../../../store/hook";
 import { options } from "../../../@types/common.dto";
 import {
-  apiLeavePlanDetail,
   apiLeavePlans,
 } from "../../../services/LeaveServices";
 import { formatDate, getErrorMessage } from "../../../utils/common";

@@ -46,6 +46,7 @@ export interface LeavePlanResponse {
     postingDate: string;
     status: string;
     delegate: string;
+    leavePlanLines: LeavePlanLine[];
   }>;
 }
 export interface LeavePlanResponseSingle {

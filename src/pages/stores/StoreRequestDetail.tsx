@@ -21,7 +21,6 @@ import {
   apiUpdateStoreRequestLine,
   apiStoreRequestLines,
 } from "../../services/StoreRequestServices";
-import Swal from "sweetalert2";
 import Lines from "../../Components/ui/Lines/Lines";
 import { openModalRequisition } from "../../store/slices/Requisitions/purchaseRequisitionSlice";
 import { useDispatch } from "react-redux";

@@ -1,7 +1,6 @@
 import {
   LeaveFormData,
   LeaveFormUpdate,
-  LeaveRequestResponse,
   LeaveRequestValue,
 } from "../@types/documents/leave.types";
 import {
