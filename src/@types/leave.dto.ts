@@ -1,4 +1,3 @@
-import { ODataEntity } from "./documents/base.types";
 
 export interface LeavePlanLine {
   "@odata.etag": string;

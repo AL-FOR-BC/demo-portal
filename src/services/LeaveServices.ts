@@ -42,6 +42,7 @@ class LeaveService extends BaseApiService {
     systemId: string,
     etag: string
   ) {
+    console.log(method);
     return this.update<LeaveRequestValue>({ companyId, data, systemId, etag });
   }
 
