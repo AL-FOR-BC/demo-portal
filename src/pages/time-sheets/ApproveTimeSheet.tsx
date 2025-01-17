@@ -23,7 +23,7 @@ function ApprovalTimeSheet() {
   const [resourceName, setResourceName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [projects, setProjects] = useState([]);
-  const [timeSheetLines, setTimeSheetLines] = useState<Array<any>>([]);
+  const [ timeSheetLines, setTimeSheetLines] = useState<Array<any>>([]);
   const [viewStats, setViewStats] = useState<any>({
     quantityOpen: 0,
     quantityApproved: 0,
@@ -161,6 +161,7 @@ function ApprovalTimeSheet() {
               description: line.description,
               project: line.jobNo,
               causeOfAbsenceCode: line.type,
+              loe: parseFloat(line.loe).toFixed(2),
               editable: false, // Force all lines to be non-editable
               ...daysObject,
             };
