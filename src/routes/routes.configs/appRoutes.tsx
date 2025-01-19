@@ -193,6 +193,12 @@ const appRoutes: Routes = [
     path: "/approve-leave-plan/:documentNo",
     component: lazy(() => import("../../pages/HR/Leave/ApproveLeavePlan.tsx")),
   },
+
+  {
+    key: "leave-calendar",
+    path: "/leave-calendar",
+    component: lazy(() => import("../../pages/HR/Leave/LeaveCalendarView.tsx")),
+  },
   // {
   //     key: 'approved-time-sheets',
   //     path: '/approved-time-sheets',

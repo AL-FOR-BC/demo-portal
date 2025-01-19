@@ -1,0 +1,191 @@
+// Variables
+$color-annual: #28a745;
+$color-sick: #ffc107;
+$color-maternity: #17a2b8;
+$color-other: #6c757d;
+
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$border-radius: 8px;
+
+// Mixins
+@mixin leave-indicator($color) {
+  background-color: rgba($color, 0.2) !important;
+  border: 2px solid $color;
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+}
+
+// Calendar Header Styles
+.calendar-header-card {
+  background: #fff;
+  border: none;
+  box-shadow: $shadow-sm;
+
+  .leave-type-indicators {
+    font-size: 0.875rem;
+    @include flex-center;
+    gap: 1.5rem;
+
+    .indicator-wrapper {
+      @include flex-center;
+
+      .indicator-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+
+        &.annual { background-color: $color-annual; }
+        &.sick { background-color: $color-sick; }
+        &.maternity { background-color: $color-maternity; }
+        &.other { background-color: $color-other; }
+      }
+
+      span {
+        font-weight: 500;
+      }
+    }
+
+    @media (max-width: 768px) {
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+  }
+}
+
+// Calendar Card Styles
+.calendar-card {
+  background: #fff;
+  border: none;
+  box-shadow: $shadow-md;
+
+  .calendar {
+    border-radius: $border-radius;
+    padding: 15px;
+
+    .month-container {
+      background-color: #fff;
+      border-radius: $border-radius;
+      padding: 10px;
+      margin: 5px;
+      box-shadow: $shadow-sm;
+
+      @media (max-width: 768px) {
+        margin: 2px;
+        padding: 5px;
+      }
+    }
+
+    table.month {
+      border-collapse: separate;
+      border-spacing: 2px;
+
+      th {
+        padding: 10px;
+        font-weight: 600;
+        color: #495057;
+      }
+
+      td {
+        padding: 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background-color: #f8f9fa;
+          cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+          padding: 5px;
+        }
+      }
+    }
+
+    .calendar-header {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: $border-radius;
+      margin-bottom: 20px;
+
+      .year-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #343a40;
+      }
+    }
+
+    // Leave type styles
+    .annual-leave {
+      @include leave-indicator($color-annual);
+    }
+
+    .sick-leave {
+      @include leave-indicator($color-sick);
+    }
+
+    .maternity-leave {
+      @include leave-indicator($color-maternity);
+    }
+
+    .other-leave {
+      @include leave-indicator($color-other);
+    }
+  }
+}
+
+// Custom Calendar Navigation
+.calendar-navigation {
+  @include flex-center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: $border-radius;
+
+  .nav-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: $shadow-sm;
+
+    &:hover {
+      background-color: darken(#fff, 5%);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
+  .current-period {
+    font-weight: 600;
+    color: #495057;
+  }
+}
+
+// Today highlight
+.calendar-today {
+  background-color: #e9ecef !important;
+  font-weight: bold;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: #495057;
+  }
+}

@@ -21,6 +21,7 @@ import {
 } from "../../store/slices/Requisitions";
 import { ActionFormatterLines } from "../../Components/ui/Table/TableUtils";
 import { quickUpdate } from "../../helpers/quickUpdate";
+import { useLeavePlanDocument } from "../../hooks/documents/useLeavePlanDocument";
 export default function LeavePlanDetails() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -48,6 +49,8 @@ export default function LeavePlanDetails() {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [description, setDescription] = useState("");
+
+  const { deleteLeavePlan } = useLeavePlanDocument();
 
   const columns = [
     {
@@ -356,6 +359,12 @@ export default function LeavePlanDetails() {
     }
   };
 
+  const handleDeleteLeavePlan = async () => {
+    if (id) {
+      await deleteLeavePlan(id);
+    }
+  };
+
   const handleDeleteLine = async (row: any) => {
     console.log(row);
   };
@@ -376,6 +385,12 @@ export default function LeavePlanDetails() {
       handleBack={() => navigate("/leave-plans")}
       pageType="detail"
       status={status}
+      tableId={50350}
+      handleDelete={async () => {
+        if (id) {
+          await deleteLeavePlan(id);
+        }
+      }}
       handleSendApprovalRequest={async () => {
         try {
           setIsLoading(true);

@@ -58,6 +58,21 @@ class LeaveService extends BaseApiService {
     });
   }
 
+  async cancelLeaveRequest(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_CancelLeaveApprovalRequest",
+    });
+  }
+
+  async deleteLeaveRequest(companyId: string, systemId: string) {
+    return this.delete({ companyId, systemId });
+  }
+
+  // --------------------------------- leave plan ---------------------------------
+
   async sendLeavePlanForApproval(
     companyId: string,
     data: { no: string; senderEmailAddress: string }
@@ -79,17 +94,10 @@ class LeaveService extends BaseApiService {
     });
   }
 
-  async cancelLeaveRequest(companyId: string, data: { no: string }) {
-    return this.create<{ no: string }>({
-      companyId,
-      data,
-      type: "approval",
-      customEndpoint: "HRMISActions_CancelLeaveApprovalRequest",
-    });
-  }
-
-  async deleteLeaveRequest(companyId: string, systemId: string) {
-    return this.delete({ companyId, systemId });
+  async deleteLeavePlan(companyId: string, systemId: string) {
+    return this.delete({ companyId, systemId,
+      customEndpoint: "leavePlans"
+     });
   }
 }
 

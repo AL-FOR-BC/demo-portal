@@ -289,7 +289,7 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
     return publicHolidays.some((holiday) => holiday.date === dateStr);
   };
 
-  const isEditable = (line: any, date: Date) => {
+  const isEditable = (line: any, date?: Date) => {
     if (isApprovalMode) return false;
 
     // if (!line || !line.id) return false;
@@ -298,19 +298,23 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
       typeof line.id === "string" && line.id.startsWith("holiday-");
     const isSubmitted = line.status === "Submitted";
     const isApproved = line.status === "Approved";
-    const isWeekendDay = isWeekend(date);
-    const isHolidayDate = publicHolidays.some(
-      (holiday) => holiday.date === format(date, "yyyy-MM-dd")
-    );
+    if (date) {
+      const isWeekendDay = isWeekend(date);
+      const isHolidayDate = publicHolidays.some(
+        (holiday) => holiday.date === format(date, "yyyy-MM-dd")
+      );
+      return (
+        !isHolidayLine &&
+        !isSubmitted &&
+        !isApproved &&
+        !isWeekendDay &&
+        !isHolidayDate
+      );
+    }
 
-    return (
-      !isHolidayLine &&
-      !isSubmitted &&
-      !isApproved &&
-      !isWeekendDay &&
-      !isHolidayDate
-    );
+    return !isHolidayLine && !isSubmitted && !isApproved;
   };
+
   // if contain any submitted line user should not be able to add new line
   const canAddLine = !localLines.some(
     (line) => line.status === "Submitted" || line.status === "Approved"
@@ -594,7 +598,7 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                         onBlur={(e) =>
                           handleInputChange(line.id, "project", e.target.value)
                         }
-                        disabled={!isEditable(line, new Date())}
+                        disabled={!isEditable(line)}
                       >
                         <option value="">Select Project</option>
                         {projects.map((project, index) => (
@@ -630,7 +634,7 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                             e.target.value
                           )
                         }
-                        disabled={!isEditable(line, new Date())}
+                        disabled={!isEditable(line)}
                       />
                     </td>
                     {dateRange.map((date, index) => (
@@ -714,7 +718,7 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
                       {line?.loe ? line.loe : 0}
                     </td>
                     <td>
-                      {isEditable(line, new Date()) && (
+                      {isEditable(line) && (
                         <button
                           className="btn btn-sm btn-danger"
                           onClick={() => handleDelete(line)}
