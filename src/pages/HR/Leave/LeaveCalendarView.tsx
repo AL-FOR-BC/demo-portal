@@ -1,5 +1,4 @@
 import React from "react";
-import { Row, Col, CardBody, CardTitle } from "reactstrap";
 import { Card, CardContent, Typography } from "@mui/material";
 import Calendar from "rc-year-calendar";
 import BreadCrumbs from "../../../Components/BreadCrumbs";
@@ -61,6 +60,7 @@ const LeaveCalendarView: React.FC = () => {
             alwaysHalfDay={true}
             onDayClick={(e) => {
               // toggleModal();
+              console.log("e", e);
               // setLvDetails(e.events);
             }}
           />

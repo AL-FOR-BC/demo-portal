@@ -359,11 +359,11 @@ export default function LeavePlanDetails() {
     }
   };
 
-  const handleDeleteLeavePlan = async () => {
-    if (id) {
-      await deleteLeavePlan(id);
-    }
-  };
+  // const handleDeleteLeavePlan = async () => {
+  //   if (id) {
+  //     await deleteLeavePlan(id);
+  //   }
+  // };
 
   const handleDeleteLine = async (row: any) => {
     console.log(row);
