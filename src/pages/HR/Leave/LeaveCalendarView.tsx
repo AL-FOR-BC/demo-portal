@@ -45,7 +45,7 @@ const LeaveCalendarView: React.FC = () => {
       <Card
         sx={{
           mx: 3,
-          mb: 3,
+          mb: 10,
           bgcolor: "white",
           boxShadow: "0 0 10px rgba(0,0,0,0.1)",
         }}

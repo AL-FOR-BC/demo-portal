@@ -12,9 +12,8 @@ interface userCard{
     abbrev: string,
     role: string
     pendingApprovals: number
-    leaveRequests:number
     leavePlans:number
-
+    storeRequests:number
 
 }
 function UserCard(props:userCard) {
@@ -76,12 +75,12 @@ function UserCard(props:userCard) {
                                                 </Link>
                                             </Col>
                                             <Col xs="4">
-                                                <Link to="/leave-requests">
+                                                <Link to="/stores-requests">
                                                     <div>
                                                         <p className="text-truncate mb-2">
-                                                            Your Leave Requests
+                                                            Your Store Requests
                                                         </p>
-                                                        <h6 className="mb-0">{props.leaveRequests}</h6>
+                                                        <h6 className="mb-0">{props.storeRequests}</h6>
                                                     </div>
                                                 </Link>
                                             </Col>

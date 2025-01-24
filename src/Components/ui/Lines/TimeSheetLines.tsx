@@ -60,8 +60,18 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
         const updatedLine = { ...line, [field]: value };
         if (typeof value === "object" && value?.systemId) {
           setSavingStatus(true);
-
+          let loe = 0;
           onLineHoursUpdate(lineId, value.date, value.value, value.systemId)
+            .then((result) => {
+              loe = result.lines.filter((line) => line.lineNo === lineId).map((line)=>{
+                loe = line.loe.toFixed(2);
+                setLocalLines((prevLines) =>
+                  prevLines.map((l) => (l.id === lineId ? { ...l, loe: loe } : l))
+                );
+              })
+              viewStats.quantity = result.totalHours.toFixed(2);
+            
+            })
             .catch((error) => {
               // Revert to the previous value stored in value.previousValue
               toast.error(`Failed to update hours: ${getErrorMessage(error)}`);
@@ -127,8 +137,6 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
           const newLine = {
             jobNo: updatedLine.project,
             timeSheetNo: updatedLine.timeSheetNo,
-            // type: 'project',
-            // jobTaskNo: updatedLine.jobTaskNo,
             description: updatedLine.description,
             // status: 'Open'
           };
@@ -351,24 +359,23 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
       parseInt(columnTotal) + parseInt(value.toString())
     );
 
-    // third if the sum is greater than 8 then don't allow to save.
-    if (parseInt(columnTotal) + parseInt(value.toString()) > 8) {
-      toast.error("Total hours cannot be greater than 8");
-      //revert the value to the previous value
-      await handleInputChange(lineId, dayKey, {
-        value: previousValue,
-        date: format(date, "yyyy-MM-dd"),
-        systemId:
-          localLines.find((l) => l.id === lineId)?.[dayKey]?.systemId || "",
-      });
-      return;
-    }
+    // // third if the sum is greater than 8 then don't allow to save.
+    // if (parseInt(columnTotal) + parseInt(value.toString()) > 8) {
+    //   // toast.error("Total hours cannot be greater than 8");
+    //   //revert the value to the previous value
+    // await handleInputChange(lineId, dayKey, {
+    //   value: previousValue,
+    //   date: format(date, "yyyy-MM-dd"),
+    //   systemId:
+    //     localLines.find((l) => l.id === lineId)?.[dayKey]?.systemId || "",
+    // });
+    //   return;
+    // }
 
     handleLocalChange(lineId, dayKey, {
       value,
       date: format(date, "yyyy-MM-dd"),
       systemId: currentLine?.[dayKey]?.systemId || "",
-      previousValue, // This value will now be used in the revert logic
     });
   };
 

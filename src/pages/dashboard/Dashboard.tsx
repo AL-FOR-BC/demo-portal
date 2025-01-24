@@ -6,7 +6,7 @@ import CardWelcome from './components/CardWelcome.tsx';
 // import { DocumentCountSummaryTypes } from '../../@types/dashboard.dto.ts';
 import MiniWidget from './components/MiniWidget.tsx';
 import { BageAccountHorizontalIcon, BagSuitCaseIcon, BusIcon, CartIcon, ReceiptIcon, TeachIcon } from '../../Components/common/icons/icons.tsx';
-import { fetchEmployeeData, fetchPaymentRequests, fetchPurchaseRequests, fetchRequestToApprove, fetchTimeSheetApproval, fetchTravelRequests, fetchLeaveRequests } from '../../store/slices/dashboard/dashBoardSlice.ts';
+import { fetchEmployeeData, fetchPaymentRequests, fetchPurchaseRequests, fetchRequestToApprove, fetchTimeSheetApproval, fetchTravelRequests, fetchLeaveRequests, fetchStoreRequests, fetchLeavePlans } from '../../store/slices/dashboard/dashBoardSlice.ts';
 import LeaveDetails from './components/LeaveDetails.tsx';
 import Reports from './components/Reports.tsx';
 import Notifications from './components/Notification.tsx';
@@ -32,6 +32,8 @@ function Dashboard() {
             dispatch(fetchTimeSheetApproval({ companyId, email }))
             dispatch(fetchEmployeeData({ companyId }))
             dispatch(fetchLeaveRequests({ companyId, employeeNo }))
+            dispatch(fetchStoreRequests({ companyId, employeeNo }))
+            dispatch(fetchLeavePlans({ companyId, employeeNo }))
         }
     }, [dispatch, employeeNo, companyId]);
 
@@ -85,8 +87,9 @@ function Dashboard() {
                         role={userProfile.jobTitle ?? ''}
                         abbrev={userProfile.nameAbbrev ?? ''}
                         pendingApprovals={pendingApprovals}
-                        leavePlans={0}
-                        leaveRequests={0}
+                        leavePlans={dashBoardData.leavePlans}
+                        // leaveRequests={dashBoardData.leaveRequests}
+                        storeRequests={dashBoardData.storeRequests}
 
                     />
                     <Row>

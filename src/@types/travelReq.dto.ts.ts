@@ -1,6 +1,7 @@
 export interface TravelRequest {
   "@odata.etag"?: string;
   id?: string;
+  systemId?: string;
   requisitionedBy?: string;
   paymentCategory?: string;
   paySubcategory?: string;

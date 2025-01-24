@@ -3,6 +3,7 @@ import { apiTravelRequests } from "../../../services/TravelRequestsService";
 import {
   apiPaymentRequisition,
   apiPurchaseRequisition,
+  apiStoreRequisition,
 } from "../../../services/RequisitionServices";
 import {
   apiApprovalToRequest,
@@ -15,7 +16,7 @@ import {
 } from "../../../utils/common";
 import { Employee } from "../../../@types/employee.dto";
 import { TimeSheetsService } from "../../../services/TimeSheetsService";
-import { leaveService } from "../../../services/LeaveServices";
+import { apiLeavePlans, leaveService } from "../../../services/LeaveServices";
 const SLICE_NAME = "userDashBoardData";
 // const employeeGender= useAppSelector(state=> state.auth.user.employeeGender)
 export type userDashBoardState = {
@@ -27,6 +28,7 @@ export type userDashBoardState = {
   pruchaseRequests: number;
   trainingRequests: number;
   appraisals: number;
+  storeRequests: number;
 };
 export type LevaeDashBoarState = {
   leaveType: string;
@@ -56,6 +58,7 @@ const initialState: dashBoardState = {
     pruchaseRequests: 0,
     trainingRequests: 0,
     appraisals: 0,
+    storeRequests: 0,
   },
   leavalDashoardData: [
     {
@@ -219,26 +222,59 @@ export const fetchTimeSheetApproval = createAsyncThunk(
   }
 );
 
+export const fetchStoreRequests = createAsyncThunk(
+  `${SLICE_NAME}/fetchStoreRequests`,
+  async ({
+    companyId,
+    employeeNo,
+  }: {
+    companyId: string;
+    employeeNo: string;
+  }) => {
+    const filterQuery = `$filter=requestorNo eq '${employeeNo}'`;
+    const response = await apiStoreRequisition(companyId, "GET", filterQuery);
+    console.log(response);
+    return response.data.value.length;
+  }
+);
+
 export const fetchLeaveRequests = createAsyncThunk(
   `${SLICE_NAME}/fetchLeaveRequests`,
-  async({companyId,employeeNo}:{companyId:string,employeeNo:string})=>{
-    const filterQuery = `$filter=employeeNo eq '${employeeNo}'`
-    const response = await leaveService.getLeaveRequests(companyId,filterQuery)
-    return response.length
+  async ({
+    companyId,
+    employeeNo,
+  }: {
+    companyId: string;
+    employeeNo: string;
+  }) => {
+    const filterQuery = `$filter=employeeNo eq '${employeeNo}'`;
+    const response = await leaveService.getLeaveRequests(
+      companyId,
+      filterQuery
+    );
+    return response.length;
   }
-)
+);
+
+export const fetchLeavePlans = createAsyncThunk(
+  `${SLICE_NAME}/fetchLeavePlans`,
+  async ({
+    companyId,
+    employeeNo,
+  }: {
+    companyId: string;
+    employeeNo: string;
+  }) => {
+    const filterQuery = `$filter=employeeNo eq '${employeeNo}'`;
+    const response = await apiLeavePlans(companyId, "GET", filterQuery);
+    return response.data.value.length;
+  }
+);
 const dashBoardSlice = createSlice({
   name: `${SLICE_NAME}/dashboard`,
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    // builder.addCase(fetchLeaveRequests.fulfilled, (state, action) => {
-    //         state.userDashBoardData = action.payload
-    //         state.loading = false
-    //     })
-    //     .addCase(getSalesDashboardData.pending, (state) => {
-    //         state.loading = true
-    //     })
     builder
       .addCase(fetchTravelRequests.fulfilled, (state, action) => {
         state.userDashBoardData.travelRequests = action.payload;
@@ -301,6 +337,24 @@ const dashBoardSlice = createSlice({
         state.userDashBoardData.leaveRequests = action.payload;
       })
       .addCase(fetchLeaveRequests.pending, (state) => {
+        state.loading = true;
+      });
+
+    builder
+      .addCase(fetchStoreRequests.fulfilled, (state, action) => {
+        state.userDashBoardData.storeRequests = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchStoreRequests.pending, (state) => {
+        state.loading = true;
+      });
+
+    builder
+      .addCase(fetchLeavePlans.fulfilled, (state, action) => {
+        state.userDashBoardData.leavePlans = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchLeavePlans.pending, (state) => {
         state.loading = true;
       });
   },

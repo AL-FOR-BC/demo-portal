@@ -43,7 +43,7 @@ export interface TimeSheetLinesProps {
     date: Date,
     value: number,
     systemId: string
-  ) => Promise<void>;
+  ) => Promise<any>;
   onLineHoursSubmit: (data: any) => Promise<any>;
   publicHolidays: { date: string; description: string }[];
   isApprovalMode?: boolean;

@@ -199,6 +199,13 @@ const appRoutes: Routes = [
     path: "/leave-calendar",
     component: lazy(() => import("../../pages/HR/Leave/LeaveCalendarView.tsx")),
   },
+  {
+    key: "approve-travel-request",
+    path: "/approve-travel-request/:documentNo",
+    component: lazy(
+      () => import("../../pages/travel/ApproveTravelRequest.tsx")
+    ),
+  },
   // {
   //     key: 'approved-time-sheets',
   //     path: '/approved-time-sheets',

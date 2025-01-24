@@ -24,13 +24,16 @@ import {
   apiUpdateTravelRequests,
 } from "../../services/TravelRequestsService";
 
-import { cancelApprovalButton, getErrorMessage } from "../../utils/common";
 import {
-  closeModalPurchaseReq,
+  cancelApprovalButton,
+  decodeValue,
+  getErrorMessage,
+} from "../../utils/common";
+import {
+  closeModalRequisition,
   editRequisitionLine,
-  modelLoadingPurchaseReq,
   modelLoadingRequisition,
-  openModalPurchaseReq,
+  openModalRequisition,
 } from "../../store/slices/Requisitions";
 import Swal from "sweetalert2";
 import { ActionFormatterLines } from "../../Components/ui/Table/TableUtils";
@@ -58,6 +61,8 @@ function TravelRequestDetails() {
   >([]);
   const [selectedDimension, setSelectedDimension] = useState<options[]>([]);
   const [selectedSubCategory, setSelectedSubCategory] = useState<options[]>([]);
+  const [lineSystemId, setLineSystemId] = useState<string>("");
+  const [lineEtag, setLineEtag] = useState<string>("");
   // const [selectedBankAccount, setSelectedBankAccount] = useState < options[] > ([]);
   // const [selectedCustomer, setSelectedCustomer] = useState < options[] > ([]);
   const [requestNo, setRequest] = useState<string>("");
@@ -80,6 +85,7 @@ function TravelRequestDetails() {
     { label: string; value: string }[]
   >([]);
   const [description, setDescription] = useState<string>("");
+  const [lineDescription, setLineDescription] = useState<string>("");
   const [expectedReceiptDate, setExpectedReceiptDate] = useState<Date>(
     new Date()
   );
@@ -132,9 +138,15 @@ function TravelRequestDetails() {
       {
         label: "Document Date",
         type: "date",
+        disabled: status === "Open" ? false : true,
         value: expectedReceiptDate,
         onChange: (e: Date) => setExpectedReceiptDate(e),
         id: "documentDate",
+        onBlur: (e: Date) => {
+          quickUpdate({
+            documentDate: e,
+          });
+        },
       },
     ],
 
@@ -142,6 +154,7 @@ function TravelRequestDetails() {
       {
         label: "Project Code",
         type: "select",
+        disabled: status === "Open" ? false : true,
         options: dimensionValues,
         onChange: async (e: options) => {
           if (travelRequisitionLines.length > 0) {
@@ -223,11 +236,17 @@ function TravelRequestDetails() {
         type: "select",
         value: selectedPaymentCategory,
         options: paymentCategoryOptions,
+        disabled: status === "Open" ? false : true,
         onChange: (e: options) => {
           setSelectedPaymentCategory([{ label: e.label, value: e.value }]);
           setSelectedSubCategory([]);
           // setSelectedCustomer([])
           // setSelectedBankAccount([])
+        },
+        onBlur: (e: options) => {
+          quickUpdate({
+            paymentCategory: e.value,
+          });
         },
         id: "paymentCategory",
       },
@@ -235,12 +254,18 @@ function TravelRequestDetails() {
         label: "Payment Subcategory",
         type: "select",
         value: selectedSubCategory,
+        disabled: status === "Open" ? false : true,
         options: paymentSubCategory.filter(
           (sub) => sub.value == selectedPaymentCategory[0]?.value
         ),
         onChange: (e: options) =>
           setSelectedSubCategory([{ label: e.label, value: e.value }]),
         id: "subCategory",
+        onBlur: (e: options) => {
+          quickUpdate({
+            paymentSubCategory: e.value,
+          });
+        },
       },
 
       {
@@ -248,8 +273,13 @@ function TravelRequestDetails() {
         type: "select",
         value: selectedEmployee,
         options: employeeOptions,
-        onChange: (e: options) =>
-          setSelectedEmployee([{ label: e.label, value: e.value }]),
+        disabled: status === "Open" ? false : true,
+        onChange: (e: options) => {
+          setSelectedEmployee([{ label: e.label, value: e.value }]);
+          quickUpdate({
+            payeeNo: e.value,
+          });
+        },
         id: "payee",
       },
     ],
@@ -259,18 +289,27 @@ function TravelRequestDetails() {
         label: "Work Plan",
         type: "select",
         value: selectedWorkPlan,
-        onChange: (e: options) =>
-          setSelectedWorkPlan([{ label: e.label, value: e.value }]),
+        onChange: (e: options) => {
+          setSelectedWorkPlan([{ label: e.label, value: e.value }]);
+
+          quickUpdate({
+            workPlanNo: split(e.value, "::")[0],
+          });
+        },
         options: workPlans.filter(
           (plan) => split(plan.value, "::")[1] == selectedDimension[0]?.value
         ),
+        disabled: status === "Open" ? false : true,
         id: "workPlan",
+        // onBlur: (e: options) => {
+
+        // },
       },
       {
         label: "Budget Code",
         type: "text",
         value: budgetCode,
-        disabled: true,
+        disabled: status === "Open" ? false : true,
         id: "budgetCode",
       },
 
@@ -279,23 +318,59 @@ function TravelRequestDetails() {
         type: "select",
         value: selectedCurrency,
         options: currencyOptions,
-        onChange: (e: options) =>
-          setSelectedCurrency([{ label: e.label, value: e.value }]),
+        onChange: (e: options) => {
+          if (travelRequisitionLines.length > 0) {
+            Swal.fire({
+              title: "Are you sure?",
+              text: "Changing the currency will delete all existing lines. This action cannot be undone!",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#d33",
+              confirmButtonText: "Yes, delete all lines!",
+            }).then(async (result) => {
+              if (result.isConfirmed) {
+                setSelectedCurrency([{ label: e.label, value: e.value }]);
+                quickUpdate({
+                  currencyCode: e.value,
+                });
+              }
+            });
+          } else {
+            setSelectedCurrency([{ label: e.label, value: e.value }]);
+            quickUpdate({
+              currencyCode: e.value,
+            });
+          }
+        },
+        disabled: status === "Open" ? false : true,
         id: "currency",
       },
       {
         label: "Start Date",
         type: "date",
         value: startDate,
+        disabled: status === "Open" ? false : true,
         onChange: (e: string) => setStartDate(e),
         id: "startDate",
+        onBlur: (e: string) => {
+          quickUpdate({
+            travelStartDate: e,
+          });
+        },
       },
       {
         label: "End Date",
         type: "date",
         value: endDate,
+        disabled: status === "Open" ? false : true,
         onChange: (e: string) => setEndDate(e),
         id: "endDate",
+        onBlur: (e: string) => {
+          quickUpdate({
+            travelEndDate: e,
+          });
+        },
       },
       {
         label: "Delegatee",
@@ -305,15 +380,27 @@ function TravelRequestDetails() {
         onChange: (e: options) =>
           setSelectedDelegatee([{ label: e.label, value: e.value }]),
         id: "delegatee",
+        disabled: status === "Open" ? false : true,
+        onBlur: (e: string) => {
+          quickUpdate({
+            delegatee: e,
+          });
+        },
       },
       {
         label: "Purpose",
         type: "textarea",
         value: description,
+        disabled: status === "Open" ? false : true,
         onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
           setDescription(e.target.value),
         id: "purpose",
         rows: 2,
+        onBlur: (e: React.ChangeEvent<HTMLInputElement>) => {
+          quickUpdate({
+            purpose: e.target.value,
+          });
+        },
       },
     ],
   ];
@@ -362,29 +449,37 @@ function TravelRequestDetails() {
               return parseInt(cell).toLocaleString();
             },
           },
+          // {
+          //   dataField: "ShortcutDimCode1",
+          //   text: "Project Code",
+          //   sort: true,
+          // },
+          // {
+          //   dataField: "ShortcutDimCode2",
+          //   text: "Donor Code",
+          //   sort: true,
+          // },
           {
-            dataField: "ShortcutDimCode1",
-            text: "Project Code",
-            sort: true,
-          },
-          {
-            dataField: "ShortcutDimCode2",
-            text: "Donor Code",
+            dataField: "ShortcutDimCode4",
+            text: "Activity Code",
             sort: true,
           },
           {
             dataField: "action",
             isDummyField: true,
             text: "Action",
-            formatter: (row) => (
-              <ActionFormatterLines
-                row={row}
-                companyId={companyId}
-                apiHandler={apiTravelRequestsLines}
-                handleEditLine={handleEditLine}
-                handleDeleteLine={handleDelteLine}
-                populateData={populateData}
-              />
+            formatter: (column, row) => (
+              console.log("column", column),
+              (
+                <ActionFormatterLines
+                  row={row}
+                  companyId={companyId}
+                  apiHandler={apiTravelRequestsLines}
+                  handleEditLine={handleEditLine}
+                  handleDeleteLine={handleDelteLine}
+                  populateData={populateData}
+                />
+              )
             ),
           },
         ]
@@ -430,14 +525,19 @@ function TravelRequestDetails() {
               return parseInt(cell).toLocaleString();
             },
           },
+          // {
+          //   dataField: "ShortcutDimCode1",
+          //   text: "Project Code",
+          //   sort: true,
+          // },
+          // {
+          //   dataField: "ShortcutDimCode2",
+          //   text: "Donor Code",
+          //   sort: true,
+          // },
           {
-            dataField: "ShortcutDimCode1",
-            text: "Project Code",
-            sort: true,
-          },
-          {
-            dataField: "ShortcutDimCode2",
-            text: "Donor Code",
+            dataField: "ShortcutDimCode4",
+            text: "Activity Code",
             sort: true,
           },
         ];
@@ -530,9 +630,9 @@ function TravelRequestDetails() {
         label: "Description",
         type: "textarea",
         rows: 2,
-        value: description,
+        value: lineDescription,
         onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-          setDescription(e.target.value),
+          setLineDescription(e.target.value),
       },
     ],
   ];
@@ -689,7 +789,7 @@ function TravelRequestDetails() {
         );
         if (res.status == 200) {
           toast.success("Travel request updated successfully");
-          // populateData()
+          populateData();
         }
       }
     } catch (error) {
@@ -723,13 +823,6 @@ function TravelRequestDetails() {
   };
 
   const handleSubmitLines = async () => {
-    console.log(
-      selectedAccountNo.length,
-      selectedWorkPlanLine.length,
-      rate,
-      noOfNights,
-      description
-    );
     if (selectedAccountNo.length === 0) {
       toast.error(`Please select an account`);
       return;
@@ -746,7 +839,7 @@ function TravelRequestDetails() {
       toast.error(`Please enter the no of nights`);
       return;
     }
-    if (description == "") {
+    if (lineDescription == "") {
       toast.error(`Please enter a description`);
       return;
     }
@@ -757,7 +850,7 @@ function TravelRequestDetails() {
         accountType: accountType[0].value,
         workPlanEntryNo: split(selectedWorkPlanLine[0].value, "::")[0],
         documentNo: requestNo,
-        description: description,
+        description: lineDescription,
       };
       const res = await apiCreateTravelRequestsLines(companyId, data);
       console.log(res.data);
@@ -768,10 +861,11 @@ function TravelRequestDetails() {
         );
         toast.success("Line added successfully");
         populateData();
-        dispatch(closeModalPurchaseReq());
+        dispatch(closeModalRequisition());
+        clear();
       }
     } catch (error) {
-      toast.error(`Error saving line:${error}`);
+      toast.error(`Error saving line:${getErrorMessage(error)}`);
       console.log(error);
     }
   };
@@ -809,25 +903,58 @@ function TravelRequestDetails() {
     setSelectedWorkPlanLine([]);
     setRate(0);
     setNoOfNights(0);
-    setDescription("");
+    setLineDescription("");
   };
   const handleEditLine = async (row: any) => {
-    dispatch(openModalPurchaseReq());
-    dispatch(modelLoadingPurchaseReq(true));
+    console.log("handleEditLine", row);
+    dispatch(openModalRequisition());
+    dispatch(modelLoadingRequisition(true));
     dispatch(editRequisitionLine(true));
-
     clear();
-
     setAccountType([{ label: row.accountType, value: row.accountType }]);
-    setSelectedAccountNo([{ label: row.accountNo, value: row.accountNo }]);
-    setSelectedWorkPlanLine([
-      { label: row.workPlanEntryNo, value: row.workPlanEntryNo },
-    ]);
+    setLineSystemId(row.systemId);
+    setLineEtag(row["@odata.etag"]);
+
+    const glAccounts = await apiGLAccountsApi(companyId);
+
+    const glAccountsOptions = glAccounts.data.value.map((account) => ({
+      label: `${account.no}::${account.name}`,
+      value: account.no,
+    }));
+    setGlAccounts(glAccountsOptions);
+    const glAccountData = glAccountsOptions.filter(
+      (e) => e.value === row.accountNo
+    );
+    glAccountData.length > 0
+      ? setSelectedAccountNo([
+          { label: glAccountData[0].label, value: glAccountData[0].value },
+        ])
+      : setSelectedAccountNo([{ label: "", value: "" }]);
+
+    const filterQuery = `$filter=workPlanNo eq '${
+      split(selectedWorkPlan[0].value, "::")[0]
+    }' and accountNo eq '${row.accountNo}'`;
+    const workPlanEntryNoRes = await apiWorkPlanLines(companyId, filterQuery);
+
+    const workPlanLines = workPlanEntryNoRes.data.value.map((plan) => ({
+      label: `${plan.entryNo}::${plan.activityDescription}`,
+      value: `${plan.entryNo}`,
+    }));
+    setWorkPlanLines(workPlanLines);
+
+    const workPlanEntryNo = workPlanLines.filter(
+      (e) => e.value === row.workPlanEntryNo.toString()
+    );
+    workPlanEntryNo.length > 0
+      ? setSelectedWorkPlanLine([
+          { label: workPlanEntryNo[0].label, value: workPlanEntryNo[0].value },
+        ])
+      : setSelectedWorkPlanLine([{ label: "", value: "" }]);
     setRate(row.rate);
     setNoOfNights(row.noOfNights);
-    setDescription(row.description);
+    setLineDescription(row.description);
 
-    dispatch(modelLoadingPurchaseReq(false));
+    dispatch(modelLoadingRequisition(false));
   };
 
   const handleSubmitUpdatedLine = async () => {
@@ -858,7 +985,7 @@ function TravelRequestDetails() {
         accountType: accountType[0].value,
         workPlanEntryNo: split(selectedWorkPlanLine[0].value, "::")[0],
         documentNo: requestNo,
-        description: description,
+        description: lineDescription,
         rate: rate,
         noOfNights: noOfNights,
       };
@@ -866,17 +993,17 @@ function TravelRequestDetails() {
         companyId,
         "PATCH",
         data,
-        travelRequisitionLines[0].systemId,
-        travelRequisitionLines[0]["@odata.etag"]
+        lineSystemId,
+        lineEtag
       );
       if (res.status == 200) {
         toast.success("Line updated successfully");
         populateData();
         clear();
-        dispatch(closeModalPurchaseReq());
+        dispatch(closeModalRequisition());
       }
     } catch (error) {
-      toast.error(`Error saving line:${error}`);
+      toast.error(`Error saving line:${getErrorMessage(error)}`);
       console.log(error);
     }
   };
@@ -948,6 +1075,7 @@ function TravelRequestDetails() {
         requestNo={requestNo}
         companyId={companyId}
         fields={fields}
+        tableId={50108}
         isLoading={isLoading}
         handleBack={() => navigate("/travel-requests")}
         status={status}

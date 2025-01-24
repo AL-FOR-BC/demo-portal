@@ -291,7 +291,7 @@ function AddTravelRequest() {
             console.log(res)
             if (res.status === 201) {
                 toast.success('Travel request created successfully')
-                navigate(`/travel-request-details/${res.data.id}`)
+                navigate(`/travel-request-details/${res.data.systemId}`)
             }
         } catch (error) {
             console.log(error)

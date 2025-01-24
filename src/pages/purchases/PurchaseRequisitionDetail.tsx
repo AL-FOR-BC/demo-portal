@@ -492,6 +492,11 @@ function PurchaseRequisitionDetail() {
             sort: true,
           },
           {
+            dataField: "ShortcutDimCode4",
+            text: "Activity Code",
+            sort: true,
+          },
+          {
             dataField: "action",
             isDummyField: true,
             text: "Action",
@@ -560,6 +565,11 @@ function PurchaseRequisitionDetail() {
             text: "Donor Code",
             sort: true,
           },
+          {
+            dataField: "ShortcutDimCode4",
+            text: "Activity Code",
+            sort: true,
+          }
         ];
   const modalFields = [
     [

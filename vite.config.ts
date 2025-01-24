@@ -10,7 +10,6 @@ export default defineConfig({
     "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("ROM"),
     // "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("HRP"),
 
-
     "import.meta.env": JSON.stringify(process.env),
     "import.meta.env.VITE_EHUB_BACKEND_URL": JSON.stringify(
       // PROD
@@ -41,7 +40,6 @@ export default defineConfig({
       "http://51.8.80.47:5001"
     ),
     // ---------------------------------- End of ROM TEST ------------------------------------
-
   },
   build: {
     minify: "terser",

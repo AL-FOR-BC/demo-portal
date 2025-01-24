@@ -91,7 +91,9 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
   };
 
   const toggleModel = () => {
+    console.log("handleValidateHeaderFields", handleValidateHeaderFields());
     if (handleValidateHeaderFields()) {
+      console.log("isModalOpen", isModalRequisition)
       if (isModalRequisition) {
         console.log("isModalOpen", isModalRequisition)
         clearLineFields();

@@ -39,6 +39,7 @@ function TimeSheetDetail() {
     { value: "JOB00010", label: "JOB00010" },
     // Add more projects as needed
   ]);
+  const [documentId, setDocumentId] = useState<string>("");
 
   const fields = [
     [
@@ -180,11 +181,11 @@ function TimeSheetDetail() {
 
         if (dayData) {
           dayUpdates.push({
-            systemId: dayData.systemId,
             timeSheetLineNo: data.lineNo,
+            resourceNo: resourceNo,
+            systemId: dayData.systemId,
             date: dayData.date,
             quantity: dayData.value,
-            resourceNo: resourceNo,
           });
         }
       }
@@ -225,6 +226,7 @@ function TimeSheetDetail() {
     try {
       setIsLoading(true);
       if (!id) return;
+      setDocumentId(id);
       const filterQuery = `$expand=timeSheetLines`;
       const res = await TimeSheetsService.getTimeSheetHeaderById(
         companyId,
@@ -387,12 +389,16 @@ function TimeSheetDetail() {
       );
       if (result.status === 200) {
         // populateData();
-        console.log("resourceNo", resourceNo);
-        // toast.success("Line updated successfully");
+        const filterQuery = `$expand=timeSheetLines`;
+        const res = await TimeSheetsService.getTimeSheetHeaderById(
+          companyId,
+          documentId,
+          filterQuery
+        );
+        return { result, lines: res.data.timeSheetLines, totalHours: res.data.quantity };
       }
-      return result;
     } catch (error) {
-      toast.error(`Failed to update line: ${getErrorMessage(error)}`);
+      // toast.error(`Failed to update line: ${getErrorMessage(error)}`);
       throw error;
     }
   };
@@ -400,8 +406,8 @@ function TimeSheetDetail() {
   const handleSubmitLineHours = async (data) => {
     try {
       const result = await TimeSheetsService.postTimeSheetDetails(companyId, {
-        ...data,
         resourceNo: resourceNo,
+        ...data,
       });
       if (result.status === 201) {
         // toast.success("Line updated successfully");
@@ -445,17 +451,18 @@ function TimeSheetDetail() {
             onLineHoursSubmit={handleSubmitLineHours}
             onLineHoursUpdate={async (lineId, date, value, systemId) => {
               try {
-                const result = await handleEditLineOnHoursUpdate(
+                const response = await handleEditLineOnHoursUpdate(
                   lineId,
                   date,
                   value,
                   systemId
                 );
-                if (result.status === 200) {
-                  // toast.success('Line updated successfully');
+                if (response?.result?.status === 200) {
+                  ///
+                  return response;
                 }
               } catch (error) {
-                toast.error(`Failed to update line: ${getErrorMessage(error)}`);
+                // toast.error(`Failed to update line: ${getErrorMessage(error)}`);
                 throw error;
               }
             }}

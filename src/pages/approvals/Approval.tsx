@@ -62,6 +62,9 @@ function Approvals() {
       case "payment requisition":
         return `/approve-payment-requisition/${documentNo}`;
 
+      case "travel requests":
+        return `/approve-travel-request/${documentNo}`;
+
       case "time sheets":
         return `/approved-time-sheets/${documentNo}`;
       case "stores requisition":

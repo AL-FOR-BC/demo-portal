@@ -45,9 +45,15 @@ export async function apiCreateTravelRequests(
 
 export async function apiTravelRequestDetail(
   companyId: string,
-  systemId: string,
-  filterQuery?: string
+  systemId?: string,
+  filterQuery?: string,
+  documentNo?: string
 ) {
+  if (documentNo) {
+    return BcApiService.fetchData<any>({
+      url: `/api/hrpsolutions/procuretopay/v2.0/travelRequisitionHeaderApi?Company=${companyId}&${filterQuery}`,
+    });
+  }
   return BcApiService.fetchData<TravelRequestSingleResponse>({
     url: `/api/hrpsolutions/procuretopay/v2.0/travelRequisitionHeaderApi(${systemId})?Company=${companyId}&${filterQuery}`,
     method: "GET",

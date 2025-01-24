@@ -659,6 +659,11 @@ function PaymentRequisitionDetail() {
           sort: true,
         },
         {
+          dataField: "ShortcutDimCode4",
+          text: "Activity Code",
+          sort: true,
+        },
+        {
           dataField: "action",
           isDummyField: true,
           text: "Action",
@@ -676,8 +681,6 @@ function PaymentRequisitionDetail() {
             )
           }
         },
-
-
       ]
       : [
         {
@@ -729,6 +732,11 @@ function PaymentRequisitionDetail() {
         {
           dataField: "ShortcutDimCode2",
           text: "Donor Code",
+          sort: true,
+        },
+        {
+          dataField: "ShortcutDimCode4",
+          text: "Activity Code",
           sort: true,
         },
       ]
