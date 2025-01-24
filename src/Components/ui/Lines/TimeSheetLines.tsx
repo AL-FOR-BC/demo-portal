@@ -343,7 +343,7 @@ const TimeSheetLines: React.FC<TimeSheetLinesProps> = ({
   ) => {
     const dayKey = `day${format(date, "d")}`;
     const currentLine = localLines.find((l) => l.id === lineId);
-    const previousValue = currentLine?.[dayKey]?.value || 0;
+    // const previousValue = currentLine?.[dayKey]?.value || 0;
 
     // first get the date column being edited.
     const columnDate = dayKey;
