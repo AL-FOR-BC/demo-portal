@@ -5,9 +5,10 @@ import { Collapse } from 'reactstrap'
 import { PurchaseRequisitionLineType } from '../../../@types/purchaseReq.dto'
 import { PaymentRequisitionLineType } from '../../../@types/paymentReq.dto'
 import TableLinesMui from '../Table/TableLinesMui'
+import { IPALine } from '../../../@types/ipa.dto'
 
 interface LinesProps {
-    data: PurchaseRequisitionLineType[] | PaymentRequisitionLineType[]
+    data: PurchaseRequisitionLineType[] | PaymentRequisitionLineType[] | IPALine[]
     status: string
     modalFields: any[]
     columns: any[]

@@ -206,6 +206,25 @@ const appRoutes: Routes = [
       () => import("../../pages/travel/ApproveTravelRequest.tsx")
     ),
   },
+
+
+  // ------------------------ IPA ----------------------------------------
+  {
+    key: "ipa",
+    path: "/individual-performance-appraisal",
+    component: lazy(() => import("../../pages/HR/IPA/Ipa.tsx")),
+  },
+  {
+    key: "ipa-details",
+    path: "/ipa-details/:id",
+    component: lazy(() => import("../../pages/HR/IPA/IPADetails.tsx")),
+
+  },
+  {
+    key: "add-ipa",
+    path: "/add-ipa",
+    component: lazy(() => import("../../pages/HR/IPA/AddIPA.tsx")),
+  },
   // {
   //     key: 'approved-time-sheets',
   //     path: '/approved-time-sheets',

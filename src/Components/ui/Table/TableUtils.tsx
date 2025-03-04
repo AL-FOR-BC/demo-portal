@@ -9,13 +9,14 @@ type HttpMethod = "DELETE" | "GET" | "POST" | "PUT" | "PATCH";
 
 interface RowType {
   status: "Open" | "Approved" | "Pending Approval" | string; // Additional statuses can be added as needed
+  Status?: "Open" | "Approved" | "Pending Approval" | string;
 }
 export const statusFormatter = (
   cellContent: ReactNode,
   row: RowType
 ): JSX.Element => {
   console.log("row:", row);
-  if (row.status == "Open") {
+  if (row.status == "Open" || row?.Status == "Open") {
     return (
       <div>
         <Badge className="me-2 bg-danger">{cellContent}</Badge>
@@ -51,7 +52,7 @@ export const statusFormatter = (
 
 interface ActionFormatterProps {
   cellContent: React.ReactNode; // Text or content inside the button
-  row: { systemId: string | number; DocumentNo: string }; // Shape of the row, at least having an id
+  row: { systemId: string | number; DocumentNo: string; SystemId?: string }; // Shape of the row, at least having an id
   buttonText?: string; // Custom button text
   buttonColor?: string; // Custom button color, e.g., "primary", "danger", etc.
   onClick?: (row: { systemId: string | number }) => void; // Custom onClick handler
@@ -89,7 +90,7 @@ export const ActionFormatter: React.FC<ActionFormatterProps> = ({
     if (onClick) {
       onClick(row); // Use the custom onClick handler if provided
     } else if (pageType === "" && navigateTo) {
-      navigate(`${navigateTo}/${row.systemId}`); // Default navigation behavior
+      navigate(row.systemId ? `${navigateTo}/${row.systemId}` : row.SystemId ? `${navigateTo}/${row.SystemId}` : `${navigateTo}`); // Default navigation behavior
     } else if (pageType === "approval" && navigateTo) {
       console.log("navigateTo:", `${navigateTo}/${row.DocumentNo}`);
       navigate(`${navigateTo}`);
@@ -111,7 +112,7 @@ export const ActionFormatter: React.FC<ActionFormatterProps> = ({
     );
   } else {
     return (
-      <Link to={`${navigateTo}/${row.systemId}`}>
+      <Link to={`${navigateTo}/${row.systemId || row.SystemId}`}>
         <Button
           type="button"
           color={buttonColor}

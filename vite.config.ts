@@ -6,8 +6,8 @@ export default defineConfig({
   base: "/rom/",
   plugins: [react()],
   define: {
-    "import.meta.env.ENVIRONMENT": JSON.stringify("production"),
-    "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("ROM"),
+    "import.meta.env.ENVIRONMENT": JSON.stringify("development"),
+    "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("HRP"),
     // "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("HRP"),
 
     "import.meta.env": JSON.stringify(process.env),

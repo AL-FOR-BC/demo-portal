@@ -27,10 +27,10 @@ const initialFormData: LeaveFormData = {
   documentNo: "",
   telephoneNumber: "",
   delegate: { label: "", value: "" },
+  leaveCategoryType: { label: "", value: "" },  
   fromDate: "",
   toDate: "",
   leaveAddress: "",
-  leaveCategoryType: { label: "", value: "" },
 };
 
 export const useLeaveDocument = ({ mode }: { mode: DocumentTypeMode }) => {
@@ -49,21 +49,36 @@ export const useLeaveDocument = ({ mode }: { mode: DocumentTypeMode }) => {
 
   // ------------------------------------- ACTIONS -------------------------------------
   const submitLeaveRequest = async () => {
+    // check for empyt field s
+    if (
+      !formData.leaveCategoryType ||
+      !formData.delegate ||
+      !formData.fromDate ||
+      !formData.toDate
+    ) {
+      toast.error("Please fill all the fields");
+      return;
+    }
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
 
       const payload = {
-        ...formData,
+        documentNo: formData.documentNo || "",
+        employeeNo: employeeNo || "",
         leaveCategoryType:
           typeof formData.leaveCategoryType === "object"
             ? formData.leaveCategoryType.value
             : formData.leaveCategoryType,
+        fromDate: formData.fromDate,
+        toDate: formData.toDate,
         delegate:
           typeof formData.delegate === "object"
             ? formData.delegate.value
             : formData.delegate,
-        employeeNo: employeeNo || "",
+        telephoneNumber: formData.telephoneNumber,
+        leaveAddress: formData.leaveAddress,
       };
+      console.log(payload)
       const response = await leaveService.createLeaveRequest(
         companyId,
         payload
@@ -224,6 +239,9 @@ export const useLeaveDocument = ({ mode }: { mode: DocumentTypeMode }) => {
         });
         setFormData((prev) => ({
           ...prev,
+          employeeNo:response[0].employeeNo,
+          employeeName:response[0].employeeName,
+          employeeTitle: response[0].employeeTitle,
           documentNo: response[0].documentNo,
           telephoneNumber: response[0].telephoneNumber,
           leaveCategoryType: {
@@ -258,10 +276,13 @@ export const useLeaveDocument = ({ mode }: { mode: DocumentTypeMode }) => {
         }
         return true;
       })
-      .map((category) => ({
-        value: category,
-        label: leaveCategoryLabels[category],
-      }));
+      .map((category, count = 1) => {
+        count++;
+        return {
+          value: category,
+          label: leaveCategoryLabels[category],
+        };
+      });
   };
 
   const handleInputChange = (
@@ -279,8 +300,6 @@ export const useLeaveDocument = ({ mode }: { mode: DocumentTypeMode }) => {
     value: string
   ) => {
     if (!docSystemId) return;
-    console.log("============== function runing ===============");
-    console.log(field, value);
     return quickUpdate({
       companyId,
       id: docSystemId,
@@ -314,21 +333,21 @@ export const useLeaveDocument = ({ mode }: { mode: DocumentTypeMode }) => {
       {
         label: "Requestor No",
         type: "text",
-        value: employeeNo,
+        value: mode == 'approve' ? formData.employeeNo :employeeNo,
         disabled: true,
         id: "empNo",
       },
       {
         label: "Requestor Name",
         type: "text",
-        value: employeeName,
+        value: mode == 'approve' ? formData.employeeName: employeeName, 
         disabled: true,
         id: "empName",
       },
       {
         label: "Employment Title",
         type: "text",
-        value: jobTitle,
+        value: mode == 'approve' ? formData.employeeTitle : jobTitle,
         disabled: true,
         id: "empTitle",
       },
