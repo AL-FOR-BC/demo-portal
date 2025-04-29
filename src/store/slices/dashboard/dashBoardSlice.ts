@@ -14,7 +14,11 @@ import {
   formatEmailDomain,
   formatEmailFirstPart,
 } from "../../../utils/common";
-import { Employee } from "../../../@types/employee.dto";
+import {
+  Employee,
+  // EmployeeData,
+  PartialEmployee,
+} from "../../../@types/employee.dto";
 import { TimeSheetsService } from "../../../services/TimeSheetsService";
 import { apiLeavePlans, leaveService } from "../../../services/LeaveServices";
 const SLICE_NAME = "userDashBoardData";
@@ -71,11 +75,6 @@ const initialState: dashBoardState = {
       entitled: 0,
       balance: 0,
     },
-    // {
-    //   leaveType: employeeGender === "MALE" ? "Paternity" : "Maternity",
-    //   entitled: employeeGender === "MALE" ? 0 : 0,
-    //   balance: 0,
-    // },
     {
       leaveType: "Sick",
       entitled: 0,
@@ -83,6 +82,16 @@ const initialState: dashBoardState = {
     },
     {
       leaveType: "Study",
+      entitled: 0,
+      balance: 0,
+    },
+    {
+      leaveType: "Maternity",
+      entitled: 0,
+      balance: 0,
+    },
+    {
+      leaveType: "Paternity",
       entitled: 0,
       balance: 0,
     },
@@ -273,7 +282,44 @@ export const fetchLeavePlans = createAsyncThunk(
 const dashBoardSlice = createSlice({
   name: `${SLICE_NAME}/dashboard`,
   initialState,
-  reducers: {},
+  reducers: {
+    setLeaveBalance(state, action: PayloadAction<PartialEmployee>) {
+      state.leavalDashoardData[0].entitled =
+        action.payload.AnnualLeaveDaysEntitlement;
+      state.leavalDashoardData[0].balance =
+        action.payload.AnnualLeaveDaysEntitlement -
+        action.payload.AnnualLeaveDaysUsed;
+
+      state.leavalDashoardData[1].entitled =
+        action.payload.CompationateLeaveEntitlement;
+      state.leavalDashoardData[1].balance =
+        action.payload.CompationateLeaveEntitlement -
+        action.payload.CompassionateDaysUsed;
+
+      state.leavalDashoardData[2].entitled =
+        action.payload.SickLeaveEntitilement;
+      state.leavalDashoardData[2].balance =
+        action.payload.SickLeaveEntitilement - action.payload.SickLeaveDaysused;
+
+      state.leavalDashoardData[3].entitled =
+        action.payload.StudyLeaveEntitlement;
+      state.leavalDashoardData[3].balance =
+        action.payload.StudyLeaveEntitlement -
+        action.payload.StudyLeaveDaysUsed;
+
+      state.leavalDashoardData[4].entitled =
+        action.payload.MaternityLeaveEntitilement;
+      state.leavalDashoardData[4].balance =
+        action.payload.MaternityLeaveEntitilement -
+        action.payload.MaternityDaysUsed;
+
+      state.leavalDashoardData[5].entitled =
+        action.payload.PaternityLeaveEntitlement;
+      state.leavalDashoardData[5].balance =
+        action.payload.PaternityLeaveEntitlement -
+        action.payload.PaternityDaysUsed;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchTravelRequests.fulfilled, (state, action) => {
@@ -359,5 +405,7 @@ const dashBoardSlice = createSlice({
       });
   },
 });
+
+export const { setLeaveBalance } = dashBoardSlice.actions;
 
 export default dashBoardSlice.reducer;

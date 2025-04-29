@@ -9,20 +9,22 @@ import Swal from "sweetalert2";
 import { fetchCompanies, setBcAdmin, setEmployeeData, setEmployeeNo, signOutSuccess } from "../../../store/slices/auth";
 import { toast } from "react-toastify";
 import { jwtDecode } from 'jwt-decode';
-import UseAuth from '../../../utils/hooks/useAuth.ts';
-import { EmployeeData } from '../../../@types/employee.dto.ts';
+// import UseAuth from '../../../utils/hooks/useAuth.ts';
+import { EmployeeData, PartialEmployee } from '../../../@types/employee.dto.ts';
 import { persistor } from '../../../store/storeSetup.ts';
 import { modelLoadingRequisition } from '../../../store/slices/Requisitions/index.ts';
+import { setLeaveBalance } from '../../../store/slices/dashboard/dashBoardSlice.ts';
 
 function HorizontalLayout() {
     const { token } = useAppSelector((state) => state.auth.session);
     const [employeeList, setEmployeeList] = useState < EmployeeData[] > ([]);
-    const { handleSignOutAzure } = UseAuth();
+    // const { handleSignOutAzure } = UseAuth();
     // const [isMenuOpened, setIsMenuOpened] = useState(false);
     const isMenuOpened = false;
     const { companyId } = useAppSelector((state) => state.auth.session);
     const { email } = useAppSelector((state) => state.auth.user);
     const dispatch = useAppDispatch();
+    
 
 
     // const openMenu = () => {
@@ -51,7 +53,7 @@ function HorizontalLayout() {
                             if (token) {
                                 const azureToken = jwtDecode < { aud: string } > (token);
                                 if (azureToken?.aud === "https://api.businesscentral.dynamics.com") {
-                                    handleSignOutAzure();
+                                    // handleSignOutAzure();
                                     dispatch(signOutSuccess())
                                 }
                             }
@@ -74,6 +76,7 @@ function HorizontalLayout() {
                             nameAbbrev: res.data.value[0].LastName.charAt(0) + res.data.value[0].FirstName.charAt(0)
 
                         }))
+                        dispatch(setLeaveBalance(res.data.value[0] as PartialEmployee))
                         dispatch(setBcAdmin(res.data.value[0].EHubAdministrator))
                     }
                 }

@@ -18,7 +18,7 @@ function Dashboard() {
     const dispatch = useAppDispatch()
     const userProfile = useAppSelector(state => state.auth.user);
     const { companyId } = useAppSelector(state => state.auth.session)
-    const { employeeNo, email } = useAppSelector(state => state.auth.user)
+    const { employeeNo, email, employeeGender } = useAppSelector(state => state.auth.user)
     const dashBoardData = useAppSelector(state => state.dashboard.userDashBoard.userDashBoardData)
     const leavalDashoardData = useAppSelector(state => state.dashboard.userDashBoard.leavalDashoardData)
     const birthdayIndividuals = useAppSelector(state => state.dashboard.userDashBoard.notificationDate.birthdayIndividuals)
@@ -106,7 +106,7 @@ function Dashboard() {
                     </Row>
                     <Row>
                         {/* Leave */}
-                        <LeaveDetails leavalDashoardData={leavalDashoardData} />
+                        <LeaveDetails leavalDashoardData={leavalDashoardData} employeeGender={employeeGender} />
                         <Notifications birthdayIndividuals={birthdayIndividuals} />
                         <Col xl={4}>
                             <Reports />
