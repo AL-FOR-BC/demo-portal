@@ -22,6 +22,7 @@
     "@mui/x-data-grid": "^7.19.0",
     "@mui/x-data-grid-generator": "^7.19.0",
     "@reduxjs/toolkit": "^1.9.3",
+    // "@ronchalant/react-loading-overlay": "^1.1.0",
     "@types/react-bootstrap-table-next": "^4.0.26",
     "@types/reactstrap": "^8.5.1",
     "axios": "^1.3.4",
