@@ -31,7 +31,6 @@ export const usePA = ({
   const { employeeNo, employeeName, jobTitle, email } = useAppSelector(
     (state) => state.auth.user
   );
-  const currentYear = new Date().getFullYear();
   const currentDate = formatDate(new Date().toISOString());
   const dispatch = useAppDispatch();
 
@@ -44,21 +43,22 @@ export const usePA = ({
     status: "Open",
     appraisalPeriod: "",
     appraisalType: "Performance Appraisal",
-    stage: "",
+    stage: "Performance Planning",
     performanceAppraisalState: "",
+    appraisalCycle: "",
+    performanceYear: "",
   };
 
   const initialLineFormData: PALineFormData = {
     lineNo: 0,
     documentNo: "",
-    strategicObjective: "",
-    individualObjective: "",
+    jobObjective: "",
+    keyPerformanceIndicator: "",
     initiative: "",
-    measures: "",
-    targetDate: "",
+    measuresDeliverables: "",
+    byWhichTargetDate: "",
     targetValue: "",
     actualValue: "",
-    rating: 0,
     comments: "",
   };
 
@@ -128,14 +128,14 @@ export const usePA = ({
     dispatch(modelLoadingRequisition(true));
     setLineFormData({
       ...line,
-      strategicObjective: line.strategicObjective,
-      individualObjective: line.individualObjective,
+      jobObjective: line.jobObjective,
+      keyPerformanceIndicator: line.keyPerformanceIndicator,
       initiative: line.initiative,
-      measures: line.measures,
-      targetDate: line.targetDate,
+      measuresDeliverables: line.measuresDeliverables,
+      byWhichTargetDate: line.byWhichTargetDate,
       targetValue: line.targetValue,
       actualValue: line.actualValue,
-      rating: line.rating,
+      appraiseeRating: line.appraiseeRating,
       comments: line.comments,
     });
     setTimeout(() => {
@@ -160,7 +160,7 @@ export const usePA = ({
       (mode === "detail" && formData.status === "Open")
         ? false
         : true;
-
+    console.log(isFieldDisabled);
     const basicFields = [
       {
         label: "PA No",
@@ -310,7 +310,7 @@ export const usePA = ({
           rows: 3,
           value: lineFormData.jobObjective || "",
           id: "jobObjective",
-          disabled: true,
+          disabled: isFieldDisabled,
           onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
             handleLineFieldUpdate("jobObjective", e.target.value);
           },
@@ -322,7 +322,7 @@ export const usePA = ({
           rows: 3,
           value: lineFormData.keyPerformanceIndicator || "",
           id: "keyPerformanceIndicator",
-          disabled: true,
+          disabled: isFieldDisabled,
           onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
             handleLineFieldUpdate("keyPerformanceIndicator", e.target.value);
           },
@@ -334,7 +334,7 @@ export const usePA = ({
           rows: 3,
           value: lineFormData.measuresDeliverables || "",
           id: "measuresDeliverables",
-          disabled: true,
+          disabled: isFieldDisabled,
           onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
             handleLineFieldUpdate("measuresDeliverables", e.target.value);
           },
@@ -345,7 +345,7 @@ export const usePA = ({
           type: "date",
           value: lineFormData.byWhichTargetDate || "",
           id: "byWhichTargetDate",
-          disabled: true,
+          disabled: isFieldDisabled,
           onChange: (date: any) => {
             const formattedDate = formatDate(date[0]);
             handleLineFieldUpdate("byWhichTargetDate", formattedDate);
@@ -392,7 +392,7 @@ export const usePA = ({
           type: "number",
           value: lineFormData.appraiseeScore || 0,
           id: "appraiseeScore",
-          disabled: isFieldDisabled || formData.stage === "Appraisee Rating",
+          disabled: isFieldDisabled,
           onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
             handleLineFieldUpdate(
               "appraiseeScore",
@@ -405,7 +405,7 @@ export const usePA = ({
           type: "number",
           value: lineFormData.appraiserRating || 0,
           id: "appraiserRating",
-          disabled: isFieldDisabled || formData.stage === "Appraisee Rating",
+          disabled: isFieldDisabled,
           onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
             handleLineFieldUpdate(
               "appraiserRating",
@@ -444,10 +444,10 @@ export const usePA = ({
         return;
       }
       const data = {
-        EmployeeNo: employeeNo,
-        PostingDate: formData.postingDate,
-        AppraisalPeriod: formData.performanceYear?.toString(),
-        AppraisalType: formData.appraisalType,
+        employeeNo: employeeNo,
+        postingDate: formData.postingDate,
+        appraisalPeriod: formData.performanceYear?.toString(),
+        appraisalType: formData.appraisalType,
       };
       const response = await paService.createPA(companyId, data);
       toast.success("PA created successfully");
@@ -464,14 +464,14 @@ export const usePA = ({
       const data = {
         ...lineFormData,
         documentNo: formData.no,
-        strategicObjective: lineFormData.strategicObjective,
-        individualObjective: lineFormData.individualObjective,
+        jobObjective: lineFormData.jobObjective,
+        keyPerformanceIndicator: lineFormData.keyPerformanceIndicator,
         initiative: lineFormData.initiative,
-        measures: lineFormData.measures,
-        targetDate: lineFormData.targetDate,
+        measuresDeliverables: lineFormData.measuresDeliverables,
+        byWhichTargetDate: lineFormData.byWhichTargetDate,
         targetValue: lineFormData.targetValue,
         actualValue: lineFormData.actualValue,
-        rating: lineFormData.rating,
+        appraiseeRating: lineFormData.appraiseeRating,
         comments: lineFormData.comments,
       };
       const response = await paService.createPALine(companyId, data);
@@ -497,14 +497,14 @@ export const usePA = ({
       setState((prev) => ({ ...prev, isLoading: true }));
       const data = {
         documentNo: formData.no,
-        strategicObjective: lineFormData.strategicObjective,
-        individualObjective: lineFormData.individualObjective,
+        jobObjective: lineFormData.jobObjective,
+        keyPerformanceIndicator: lineFormData.keyPerformanceIndicator,
         initiative: lineFormData.initiative,
-        measures: lineFormData.measures,
-        targetDate: lineFormData.targetDate,
+        deliverables: lineFormData.measuresDeliverables,
+        byWhichTargetDate: lineFormData.byWhichTargetDate,
         targetValue: lineFormData.targetValue,
         actualValue: lineFormData.actualValue,
-        rating: lineFormData.rating,
+        rating: lineFormData.appraiseeRating,
         comments: lineFormData.comments,
       };
       const response = await apiPALInes(
@@ -586,10 +586,10 @@ export const usePA = ({
       byWhichTargetDate: line.byWhichTargetDate || "",
       limitingFactor: line.limitingFactor || "",
       enhancedPerformance: line.enhancedPerformance || "",
-      appraiseeRating: line.appraiseeRating ?? "",
-      appraiseeScore: line.appraiseeScore ?? "",
-      appraiserRating: line.appraiserRating ?? "",
-      agreedScore: line.agreedScore ?? "",
+      appraiseeRating: line.appraiseeRating ?? undefined,
+      appraiseeScore: line.appraiseeScore ?? undefined,
+      appraiserRating: line.appraiserRating ?? undefined,
+      agreedScore: line.agreedScore ?? undefined,
       agreedActionsInterventions: line.agreedActionsInterventions || "",
     }));
     setLines(mappedLines);

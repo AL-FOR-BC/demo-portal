@@ -30,7 +30,6 @@ import ApprovalEntries from "../../common/ApprovalEntry";
 import ApprovalAction from "../../common/ApprovalAction";
 import ApprovalComments from "../../common/ApprovalComments";
 import Swal from "sweetalert2";
-import { GoArrowSwitch } from "react-icons/go";
 
 interface HeaderMuiProps {
   title: string;

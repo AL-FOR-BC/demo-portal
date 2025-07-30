@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import TableMui from "../../../Components/ui/Table/TableMui";
 import { useIPA } from "./hooks/useIPA";
 import { IPA } from "../../../@types/ipa.dto";
@@ -45,6 +45,7 @@ function Ipa() {
       text: "Converted",
       sort: true,
       formatter: (cell: string, row: any) => {
+        console.log(row);
         return (
           <span
             className={`badge ${cell === "Yes" ? "bg-success" : "bg-danger"}`}

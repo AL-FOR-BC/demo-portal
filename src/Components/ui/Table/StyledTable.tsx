@@ -1,6 +1,5 @@
 import { TableCell, TableRow } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React from "react";
 
 export const StyledTableCell = styled(TableCell)(() => ({
   [`&.MuiTableCell-head`]: {

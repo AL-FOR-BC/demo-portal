@@ -12,7 +12,6 @@ import {
   Grid,
   Card,
   CardContent,
-  TablePagination,
   IconButton,
 } from "@mui/material";
 import {
@@ -68,7 +67,6 @@ interface PerformanceAppraisalLinesProps {
 const PerformanceAppraisalLines: React.FC<PerformanceAppraisalLinesProps> = ({
   lines,
   columns,
-  status,
   mode = "pa",
   expandedRows: externalExpandedRows,
   onToggleExpansion,
@@ -79,17 +77,12 @@ const PerformanceAppraisalLines: React.FC<PerformanceAppraisalLinesProps> = ({
 
   // Use external expanded rows if provided, otherwise use internal state
   const expandedRows = externalExpandedRows || internalExpandedRows;
-  const setExpandedRows = onToggleExpansion
-    ? (newRows: Set<number>) => {} // External control, do nothing
-    : setInternalExpandedRows; // Internal control
-  // Remove searchTerm state and input
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
   const [editRow, setEditRow] = React.useState<any | null>(null);
   const [editData, setEditData] = React.useState<any>({});
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalFields, setModalFields] = React.useState<any[]>([]);
-
+  console.log(editData, editRow);
   const handleRowToggle = (rowIndex: number) => {
     if (onToggleExpansion) {
       // Use external toggle function
@@ -150,11 +143,8 @@ const PerformanceAppraisalLines: React.FC<PerformanceAppraisalLinesProps> = ({
     setEditRow(null);
   };
 
-  // Remove filtering by searchTerm
-  const paginatedData =
-    mode === "questionQ2" || mode === "questionQ1"
-      ? lines.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-      : lines;
+  // No pagination needed since TablePagination was removed
+  const displayData = lines;
 
   const actionColumn = {
     dataField: "action",
@@ -186,10 +176,7 @@ const PerformanceAppraisalLines: React.FC<PerformanceAppraisalLinesProps> = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {(mode === "questionQ2" || mode === "questionQ1"
-            ? paginatedData
-            : lines
-          ).map((row, rowIndex) => {
+          {displayData.map((row, rowIndex) => {
             if (mode === "questionQ2" || mode === "questionQ1") {
               return (
                 <StyledTableRow key={row.systemId || rowIndex}>

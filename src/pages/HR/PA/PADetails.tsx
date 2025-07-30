@@ -132,17 +132,20 @@ function PADetails() {
             dataField: "action",
             isDummyField: true,
             text: "Action",
-            formatter: (cellContent, row) => (
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent row click event
-                  handleEditClick(row, "paLines");
-                }}
-              >
-                <EditIcon fontSize="small" sx={{ color: "#1976d2" }} />
-              </IconButton>
-            ),
+            formatter: (cellContent, row) => {
+              console.log(cellContent);
+              return (
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent row click event
+                    handleEditClick(row, "paLines");
+                  }}
+                >
+                  <EditIcon fontSize="small" sx={{ color: "#1976d2" }} />
+                </IconButton>
+              );
+            },
           },
         ]
       : [
@@ -198,9 +201,7 @@ function PADetails() {
           },
         ];
 
-  const handleDeleteLine = async () => {
-    console.log("Delete Line");
-  };
+ 
 
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalFields, setModalFields] = React.useState<any[]>([]);
@@ -1334,7 +1335,7 @@ function PADetails() {
           break;
         case "skillsWorkCompetencyAreas":
           let skillsWorkCompetencyAreasData;
-
+          console.log(skillsWorkCompetencyAreasData);
           if (formData.stage === "Appraisee Rating") {
             skillsWorkCompetencyAreasData = {
               competencyArea: processedEditData.competencyArea,
@@ -1425,7 +1426,6 @@ function PADetails() {
   const [showAspirations, setShowAspirations] = React.useState(true);
   const {
     data: aspirationsData,
-    loading: loadingAspirations,
     refresh: refreshAspirations,
   } = useAspirations(companyId, formData.no);
   const { data: questionQ1Data, refresh: refreshQuestionQ1 } = useQuestionQ1(
@@ -1597,7 +1597,7 @@ function PADetails() {
                       {
                         dataField: "action",
                         text: "Action",
-                        formatter: (cellContent: any, row: any) => (
+                        formatter: (_: any, row: any) => (
                           <IconButton
                             size="small"
                             onClick={() => handleEditClick(row, "questionQ1")}
@@ -1655,7 +1655,7 @@ function PADetails() {
                       {
                         dataField: "action",
                         text: "Action",
-                        formatter: (cellContent: any, row: any) => (
+                        formatter: (_: any, row: any) => (
                           <IconButton
                             size="small"
                             onClick={() => handleEditClick(row, "questionQ2")}
@@ -1714,7 +1714,7 @@ function PADetails() {
                       {
                         dataField: "action",
                         text: "Action",
-                        formatter: (cellContent: any, row: any) => (
+                        formatter: (_: any, row: any) => (
                           <IconButton
                             size="small"
                             onClick={() => handleEditClick(row, "questionQ3")}
@@ -1776,7 +1776,7 @@ function PADetails() {
                       {
                         dataField: "action",
                         text: "Action",
-                        formatter: (cellContent: any, row: any) => (
+                        formatter: (_: any, row: any) => (
                           <IconButton
                             size="small"
                             onClick={() => handleEditClick(row, "aspirations")}
@@ -1820,7 +1820,7 @@ function PADetails() {
                       {
                         dataField: "action",
                         text: "Action",
-                        formatter: (cellContent: any, row: any) => (
+                        formatter: (_: any, row: any) => (
                           <IconButton
                             size="small"
                             onClick={() =>
@@ -1879,7 +1879,7 @@ function PADetails() {
                       {
                         dataField: "action",
                         text: "Action",
-                        formatter: (cellContent: any, row: any) => (
+                        formatter: (_: any, row: any) => (
                           <IconButton
                             size="small"
                             onClick={() =>
@@ -1938,7 +1938,7 @@ function PADetails() {
                       {
                         dataField: "action",
                         text: "Action",
-                        formatter: (cellContent: any, row: any) => (
+                        formatter: (_: any, row: any) => (
                           <IconButton
                             size="small"
                             onClick={() =>
@@ -2004,7 +2004,7 @@ function PADetails() {
                       {
                         dataField: "action",
                         text: "Action",
-                        formatter: (cellContent: any, row: any) => (
+                        formatter: (_: any, row: any) => (
                           <IconButton
                             size="small"
                             onClick={() =>
@@ -2068,7 +2068,7 @@ function PADetails() {
                       {
                         dataField: "action",
                         text: "Action",
-                        formatter: (cellContent: any, row: any) => (
+                        formatter: (_: any, row: any) => (
                           <IconButton
                             size="small"
                             onClick={() =>

@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import TableMui from "../../../Components/ui/Table/TableMui";
 import { usePA } from "./hooks/usePA";
 import { PA } from "../../../@types/pa.dto";
@@ -58,6 +58,7 @@ function PaReview() {
       text: "Stage",
       sort: true,
       formatter: (cell: string, row: any) => {
+        console.log(row);
         return (
           <>
             {cell === "Appraisee Rating" ? (

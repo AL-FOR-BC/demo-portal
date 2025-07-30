@@ -30,7 +30,7 @@ export const useIPA = ({
   const { employeeNo, employeeName, jobTitle, email } = useAppSelector(
     (state) => state.auth.user
   );
-  const currentYear = new Date().getFullYear();
+  // const currentYear = new Date().getFullYear();
   const currentDate = formatDate(new Date().toISOString());
   const dispatch = useAppDispatch();
 
@@ -46,6 +46,8 @@ export const useIPA = ({
     performanceType: "",
     stage: "",
     performanceAppraisalState: "",
+    appraisalCycle: "",
+    performanceYear: "",
   };
 
   const initialLineFormData: IPALineFormData = {
@@ -487,7 +489,7 @@ export const useIPA = ({
       status: data.status,
       appraisalPeriod: data.appraisalPeriod,
       appraisalCycle: data.appraisalCycle,
-      performanceYear: data.performanceYear,
+      performanceYear: data.performanceYear.toString(),
       convertToAppraisal: data.convertToAppraisal,
       performanceType: data.performanceType,
       stage: data.stage,

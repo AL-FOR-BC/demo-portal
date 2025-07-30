@@ -1,12 +1,10 @@
-import { AxiosResponse } from "axios";
 import {
   PA,
   PALine,
   PartialPALineFormData,
   PartialPAFormData,
-  PAFormData,
 } from "../@types/pa.dto";
-import { ApiRequestConfig, BaseApiService } from "./base/BaseApiService";
+import {  BaseApiService } from "./base/BaseApiService";
 import BcApiService from "./BcApiServices";
 
 class PaService extends BaseApiService {

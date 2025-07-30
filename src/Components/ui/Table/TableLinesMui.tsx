@@ -11,7 +11,6 @@ import {
   TablePagination,
   TextField,
   Collapse,
-  IconButton,
   Box,
   Typography,
   Grid,
@@ -72,6 +71,7 @@ interface TableLinesMuiProps {
   handleSubmitUpdatedLine: () => void;
   handleValidateHeaderFields: () => boolean;
   documentName?: string;
+  multipleLines?: boolean;
 }
 
 // Clean Cell component for displaying text with ellipsis

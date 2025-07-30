@@ -1,12 +1,10 @@
-import { AxiosResponse } from "axios";
 import {
   IPA,
   IPALine,
   PartialIPALineFormData,
   PartialIPAFormData,
-  IPAFormData,
 } from "../@types/ipa.dto";
-import { ApiRequestConfig, BaseApiService } from "./base/BaseApiService";
+import {  BaseApiService } from "./base/BaseApiService";
 import BcApiService from "./BcApiServices";
 
 class IpaService extends BaseApiService {

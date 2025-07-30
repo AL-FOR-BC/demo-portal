@@ -21,7 +21,6 @@ import {
 } from "../../../@types/employee.dto";
 import { TimeSheetsService } from "../../../services/TimeSheetsService";
 import { apiLeavePlans, leaveService } from "../../../services/LeaveServices";
-import { ipaService } from "../../../services/IpaSerivces";
 const SLICE_NAME = "userDashBoardData";
 // const employeeGender= useAppSelector(state=> state.auth.user.employeeGender)
 export type userDashBoardState = {

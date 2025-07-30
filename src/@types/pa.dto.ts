@@ -3,11 +3,11 @@ export interface PALine {
   systemId: string;
   lineNo?: number;
   documentNo?: string;
-  strategicObjective?: string;
-  individualObjective?: string;
+  jobObjective?: string;
+  keyPerformanceIndicator?: string;
   initiative?: string;
-  measures?: string;
-  targetDate?: string;
+  measuresDeliverables?: string;
+  byWhichTargetDate?: string;
   targetValue?: string;
   actualValue?: string;
   rating?: number;
@@ -36,22 +36,22 @@ export interface PA {
   appraisalCycle: string;
   performanceYear: number;
   appraisalType: string;
-  stage: string;
+  stage: "Performance Planning" | "Appraisee Rating" | "Appraiser Rating" | "Closed" | "Cancelled";
   performanceAppraisalState: string;
   paLines: PALine[];
 }
 
 export interface PAFormData {
-  No: string;
-  EmployeeNo: string;
-  Appraiser: string;
-  DepartmentCode: string;
-  PostingDate: string;
-  Status: string;
-  AppraisalPeriod: number;
-  AppraisalType: string;
-  Stage: string;
-  PerformanceAppraisalState: string;
+  no?: string;
+  employeeNo: string;
+  appraiser: string;
+  departmentCode: string;
+  postingDate: string;
+  status: string;
+  appraisalPeriod: string;
+  appraisalType: string;
+  stage: "Performance Planning" | "Appraisee Rating" | "Appraiser Rating" | "Closed" | "Cancelled";
+  performanceAppraisalState: string;
 }
 
 export type PartialPAFormData = Partial<PAFormData>;
@@ -117,14 +117,13 @@ export interface PAFormData {
 
 // Form data interface for PA lines
 export interface PALineFormData {
-  strategicObjective?: string;
-  individualObjective?: string;
+  jobObjective?: string;
+  keyPerformanceIndicator?: string;
   initiative?: string;
-  measures?: string;
-  targetDate?: string;
+  measuresDeliverables?: string;
+  byWhichTargetDate?: string;
   targetValue?: string;
   actualValue?: string;
-  rating?: number;
   comments?: string;
   systemId?: string;
   lineNo?: number;
@@ -160,14 +159,13 @@ export const initialPADocumentState: PADocumentState = {
 export const initialPALineFormData: PALineFormData = {
   lineNo: 0,
   documentNo: "",
-  strategicObjective: "",
-  individualObjective: "",
+  jobObjective: "",
+  keyPerformanceIndicator: "",
   initiative: "",
-  measures: "",
-  targetDate: "",
+  measuresDeliverables: "",
+  byWhichTargetDate: "",
   targetValue: "",
   actualValue: "",
-  rating: 0,
   comments: "",
   systemId: "",
   limitingFactor: "",
