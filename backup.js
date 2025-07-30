@@ -76,3 +76,5 @@
     }
   }
   
+
+  // {"@types/react-bootstrap-table-next": "^4.0.26",
