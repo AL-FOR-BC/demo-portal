@@ -1,8 +1,12 @@
 @import "./icons.scss";
+@import "./css-variables.scss";
 
 // Light Theme
 @import "./bootstrap.scss";
 @import "./app.scss";
+
+// Theme overrides for dynamic colors
+@import "./theme-overrides.scss";
 
 // RTL Mode
 // @import "./rtl/bootstrap-rtl";
@@ -141,7 +145,7 @@ a:hover {
 }
 
 .rangeslider__fill {
-  background-color: $primary !important;
+  background-color: var(--primary-color, #094BAC) !important;
 }
 
 .dropdown-menu-end {
@@ -150,19 +154,19 @@ a:hover {
 }
 
 .flatpickr-months .flatpickr-month {
-  background: $primary !important;
+  background: var(--primary-color, #094BAC) !important;
 }
 
 .flatpickr-weekdays {
-  background: $primary !important;
+  background: var(--primary-color, #094BAC) !important;
 }
 
 span.flatpickr-weekday {
-  background: $primary !important;
+  background: var(--primary-color, #094BAC) !important;
 }
 
 .flatpickr-current-month .flatpickr-monthDropdown-months {
-  background: $primary !important;
+  background: var(--primary-color, #094BAC) !important;
 }
 
 span.flatpickr-weekday {
@@ -170,7 +174,7 @@ span.flatpickr-weekday {
 }
 
 .flatpickr-day.selected {
-  background: $primary !important;
+  background: var(--primary-color, #094BAC) !important;
 }
 
 .bs-select select {
@@ -203,7 +207,7 @@ span.flatpickr-weekday {
   }
 
   .dot {
-    background: #556ee6 !important;
+    background: var(--primary-color, #094BAC) !important;
     width: 9px !important;
     height: 9px !important;
   }
@@ -505,7 +509,8 @@ span.flatpickr-weekday {
 
 // select
 
-.css-1s2u09g-control, .css-1pahdxg-control {
+.css-1s2u09g-control,
+.css-1pahdxg-control {
   background-color: $input-bg !important;
   border-color: $input-border-color !important;
 }
@@ -530,11 +535,11 @@ span.flatpickr-weekday {
 .select2-selection .css-b62m3t-container {
   color: $input-color !important;
 }
-.css-1n7v3ny-option, .css-9gakcf-option {
+.css-1n7v3ny-option,
+.css-9gakcf-option {
   background-color: $primary !important;
   color: $white !important;
 }
-
 
 // rdw-editor
 
@@ -602,66 +607,80 @@ a.ck.ck-button.ck-on {
   background: $input-border-color !important;
 }
 
-.selectall.checkbox-wrapper-mail label:before{
+.selectall.checkbox-wrapper-mail label:before {
   margin-top: 0;
 }
 
 // scroll
-.ps__rail-y, .ps__rail-x{
+.ps__rail-y,
+.ps__rail-x {
   z-index: 999 !important;
 }
 
 /* Change the white to any color */
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
-input:-webkit-autofill:active{
-    -webkit-box-shadow: 0 0 0 30px var(--#{$prefix}custom-white) inset !important;
-    background-color: var(--#{$prefix}custom-white) !important;
-    color: var(--#{$prefix}body-color) !important;
-    -webkit-text-fill-color: var(--#{$prefix}body-color) !important;
-} 
-
-
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--#{$prefix}custom-white) inset !important;
+  background-color: var(--#{$prefix}custom-white) !important;
+  color: var(--#{$prefix}body-color) !important;
+  -webkit-text-fill-color: var(--#{$prefix}body-color) !important;
+}
 
 // Select2
 
-.select2-selection__control, .select__control, .select2-selection .css-13cymwt-control, .css-t3ipsp-control{
+.select2-selection__control,
+.select__control,
+.select2-selection .css-13cymwt-control,
+.css-t3ipsp-control {
   background-color: $input-bg !important;
   border-color: $input-border-color !important;
 }
 
-.select2-selection__menu, .select__menu, .css-1nmdiq5-menu{
+.select2-selection__menu,
+.select__menu,
+.css-1nmdiq5-menu {
   background-color: var(--#{$prefix}card-bg) !important;
-  box-shadow: 0 0 0 1px var(--#{$prefix}border-color) , 0 4px 11px var(--#{$prefix}border-color)  !important;
+  box-shadow: 0 0 0 1px var(--#{$prefix}border-color),
+    0 4px 11px var(--#{$prefix}border-color) !important;
 }
 
-.select2-selection__option--is-focused, .select__option--is-focused,  .css-d7l1ni-option{
+.select2-selection__option--is-focused,
+.select__option--is-focused,
+.css-d7l1ni-option {
   background-color: $primary !important;
   color: $white !important;
 }
 
-.select__multi-value, .select2-selection__multi-value, .css-1p3m7a8-multiValue{
+.select__multi-value,
+.select2-selection__multi-value,
+.css-1p3m7a8-multiValue {
   background-color: var(--#{$prefix}light) !important;
 }
 
-.select__multi-value__label, .select2-selection__multi-value__label, .css-qbdosj-Input, .css-1dimb5e-singleValue, .css-wsp0cs-MultiValueGeneric{
+.select__multi-value__label,
+.select2-selection__multi-value__label,
+.css-qbdosj-Input,
+.css-1dimb5e-singleValue,
+.css-wsp0cs-MultiValueGeneric {
   color: var(--#{$prefix}body-color) !important;
 }
 
-.select__multi-value__remove, .select2-selection__multi-value__remove{
+.select__multi-value__remove,
+.select2-selection__multi-value__remove {
   background-color: var(--#{$prefix}light) !important;
   color: var(--#{$prefix}body-color) !important;
 }
 
 // auth-logo
 
-[data-layout-mode="dark"]{
-  .auth-logo{
-    .auth-logo-light{
+[data-layout-mode="dark"] {
+  .auth-logo {
+    .auth-logo-light {
       display: block;
     }
-    .auth-logo-dark{
+    .auth-logo-dark {
       display: none;
     }
   }

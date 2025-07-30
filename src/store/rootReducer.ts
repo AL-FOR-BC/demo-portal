@@ -4,6 +4,7 @@ import purchaseRequisition, { RequisitionsState } from "./slices/Requisitions";
 import dashboard, { DashBoardState } from "./slices/dashboard";
 import RtkQueryService from "../services/RtkQueryService.ts";
 import layout, { LayoutState } from "./slices/layout/layoutSlice.ts";
+import { UiState } from "./slices/ui/index.ts";
 
 export interface AsyncReducers {
   // eslint-disable-next-line
@@ -23,6 +24,7 @@ export type RootState = CombinedState<{
   layout: LayoutState;
   purchaseRequisition: CombinedState<RequisitionsState>;
   dashboard: CombinedState<DashBoardState>;
+  ui: CombinedState<UiState>;
   [RtkQueryService.reducerPath]: any;
 }>;
 

@@ -1,5 +1,13 @@
-import { IPA, PartialPIPAFormData } from "../@types/ipa.dto";
-import { BaseApiService } from "./base/BaseApiService";
+import { AxiosResponse } from "axios";
+import {
+  IPA,
+  IPALine,
+  PartialIPALineFormData,
+  PartialIPAFormData,
+  IPAFormData,
+} from "../@types/ipa.dto";
+import { ApiRequestConfig, BaseApiService } from "./base/BaseApiService";
+import BcApiService from "./BcApiServices";
 
 class IpaService extends BaseApiService {
   protected endpoint = "ipas";
@@ -22,12 +30,50 @@ class IpaService extends BaseApiService {
     return this.getById<IPA>({ companyId, systemId, filterQuery });
   }
 
-  async createIPA(companyId: string, data: PartialPIPAFormData) {
+  async createIPA(companyId: string, data: PartialIPAFormData) {
     return this.create<IPA>({ companyId, data });
+  }
+
+  async createIPALine(companyId: string, data: PartialIPALineFormData) {
+    return this.create<IPALine>({
+      companyId,
+      data,
+      customEndpoint: "ipaLines",
+    });
+  }
+
+  async updateIPA(companyId: string, data: PartialIPALineFormData, systemId: string, etag: string) {
+    return this.update<IPA>({
+      companyId,
+      data,
+      systemId,
+      etag: etag,
+    });
   }
 
   async deleteIPALine(companyId: string, systemId: string) {
     return this.delete({ companyId, systemId, customEndpoint: "ipaLines" });
+  }
+
+  async sendIPAForApproval(
+    companyId: string,
+    data: { no: string; senderEmailAddress: string }
+  ) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_SendIPAApprovalRequest",
+    });
+  }
+
+  async cancelIPAApprovalRequest(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_CancelIPAApprovalRequest",
+    });
   }
 
   // async getLeaveRequests(companyId: string, filterQuery?: string) {
@@ -106,6 +152,28 @@ class IpaService extends BaseApiService {
   //     customEndpoint: "leavePlans"
   //    });
   // }
+}
+
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+
+export async function apiIPALInes(
+  companyId: string,
+  method: HttpMethod | "DELETE" | "PATCH",
+  data?: any,
+  systemId?: string,
+  etag?: string,
+  filterQuery?: string
+) {
+  if (method === "PATCH" || method === "DELETE") {
+    return BcApiService.fetchData<IPALine>({
+      url: `/api/hrpsolutions/hrmis/v2.0/ipaLines(${systemId})?Company=${companyId}&${filterQuery}`,
+      method,
+      data: data as any,
+      headers: {
+        "If-Match": etag,
+      },
+    });
+  }
 }
 
 export const ipaService = new IpaService();

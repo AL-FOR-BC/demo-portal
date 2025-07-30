@@ -33,6 +33,7 @@ interface TableLinesComponentProps {
     iconClassName: string;
     status: string;
     modelFields: any[];
+    documentName?: string;
     handleSubmitLines: () => void;
     handleDeleteLines: () => void;
     handleSubmitUpdateLines: () => void;
@@ -50,7 +51,8 @@ const TableLinesComponent: React.FC<TableLinesComponentProps> = ({
     // handleDeleteLines,
     clearLineFields,
     handleSubmitUpdatedLine,
-    handleValidateHeaderFields
+    handleValidateHeaderFields,
+    documentName
 }) => {
     // const { SearchBar } = Search;
     // const defaultSorted = [{
@@ -84,7 +86,7 @@ const TableLinesComponent: React.FC<TableLinesComponentProps> = ({
                 isOpen={isModalRequisition}
                 toggleModal={toggleModel}
                 isEdit={isEdit}
-                title="Requisition Line"
+                title={documentName ? `${documentName} Line` : "Requisition Line"}
                 isModalLoading={isModalRequisitionLoading}
                 fields={modelFields}
                 handleSubmit={handleSubmitLines}
@@ -115,7 +117,7 @@ const TableLinesComponent: React.FC<TableLinesComponentProps> = ({
                                             onClick={toggleModel}
                                         >
                                             <PlusIcon className="label-icon" />
-                                            Add Requisition Line
+                                            {documentName ? `Add ${documentName} Line` : "Add Requisition Line"}
                                         </Link>
                                     </div>
                                 )}

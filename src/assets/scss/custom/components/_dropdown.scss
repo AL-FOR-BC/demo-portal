@@ -10,9 +10,23 @@
   margin: 0;
   position: absolute;
   z-index: 1000;
+  background-color: $white !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
 
   &.show {
     top: 100% !important;
+  }
+
+  .dropdown-item {
+    color: $gray-900 !important;
+    background-color: transparent !important;
+
+    &:hover,
+    &:focus,
+    &.active {
+      color: $dark !important;
+      background-color: $gray-100 !important;
+    }
   }
 
   // &[style] {
@@ -20,8 +34,6 @@
   //   left: 0;
   // }
 }
-
-
 
 .dropdown-menu-end[style] {
   left: auto !important;
@@ -89,6 +101,42 @@
   .dropdown-toggle {
     &:before {
       display: none !important;
+    }
+  }
+}
+
+// Specific styling for navigation dropdowns
+.topnav .dropdown-menu {
+  background-color: $white !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+
+  .dropdown-item {
+    color: $gray-900 !important;
+    background-color: transparent !important;
+
+    &:hover,
+    &:focus,
+    &.active {
+      color: $dark !important;
+      background-color: $gray-100 !important;
+    }
+  }
+
+  // Nested dropdown styling
+  .dropdown-menu {
+    background-color: $white !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+
+    .dropdown-item {
+      color: $gray-900 !important;
+
+      &:hover,
+      &:focus,
+      &.active {
+        color: $dark !important;
+        background-color: $gray-100 !important;
+      }
     }
   }
 }

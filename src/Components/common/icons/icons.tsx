@@ -7,6 +7,7 @@ import Icon from '@mdi/react';
 import { mdiBadgeAccountHorizontal, mdiBagSuitcase, mdiCartPlus, mdiFileQuestion, mdiFormatListCheckbox, mdiLoginVariant, mdiMicrosoftAzure, mdiOfficeBuilding, mdiReceipt, mdiTeaOutline } from '@mdi/js';
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { BiUser, BiPhone, BiHome, BiCar, BiHealth, BiSolidBriefcaseAlt2 } from 'react-icons/bi';
+import { GoArrowSwitch } from "react-icons/go";
 
 export const PencilIcon = (props: React.SVGProps<SVGAElement>) => <MdEdit {...props} />;
 export const ReopenIcon = (props: React.SVGProps<SVGAElement>) => <FaEdit {...props} />;
@@ -135,3 +136,7 @@ export const HealthIcon = (props: React.SVGProps<SVGAElement>) => <BiHealth {...
 export const CheckIcon = (props: React.SVGProps<SVGAElement>) => <FaCheckCircle {...props} />;
 
 export const SearchIconV2 = (props: React.SVGProps<SVGAElement>) => <FaSearch  {...props} />;
+
+export const ConvertIcon = (props: React.SVGProps<SVGAElement>) => <GoArrowSwitch {...props} style={{
+    padding: "6px"
+}} />;

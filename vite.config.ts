@@ -6,8 +6,8 @@ export default defineConfig({
   base: "/rom/",
   plugins: [react()],
   define: {
-    "import.meta.env.ENVIRONMENT": JSON.stringify("production"),
-    "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("ROM"),
+    "import.meta.env.ENVIRONMENT": JSON.stringify("development"),
+    "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("ROM_TEST"),
     // "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("HRP"),
 
     "import.meta.env": JSON.stringify(process.env),
@@ -33,11 +33,11 @@ export default defineConfig({
 
     // ---------------------------------- ROM TEST ------------------------------------
     "import.meta.env.VITE_EHUB_BC_URL_ROM": JSON.stringify(
-      "https://api.businesscentral.dynamics.com/v2.0/24528e89-fa53-4fc5-9847-429bb50802ff/ROMCopy/"
+      "https://api.businesscentral.dynamics.com/v2.0/24528e89-fa53-4fc5-9847-429bb50802ff/ROMProductionCopy2/"
       // "https://api.businesscentral.dynamics.com/v2.0/24528e89-fa53-4fc5-9847-429bb50802ff/ROMProduction/"
     ),
     "import.meta.env.VITE_EHUB_BACKEND_URL_ROM": JSON.stringify(
-      "http://51.8.80.47:5001"
+      "http://51.8.80.47:5000"
     ),
     // ---------------------------------- End of ROM TEST ------------------------------------
   },

@@ -1,169 +1,181 @@
-// import HeaderMui from "../../../Components/ui/Header/HeaderMui";
-// // import { useIPA } from "../../../hooks/documents/useIPA";
-// import { useNavigate, useParams } from "react-router-dom";
-// import Lines from "../../../Components/ui/Lines/Lines";
-// import { useEffect } from "react";
-// import { ActionFormatterLines } from "../../../Components/ui/Table/TableUtils";
-// import { apiPaymentRequisitionLines } from "../../../services/RequisitionServices";
-// import { useAppSelector } from "../../../store/hook";
-// import { ipaService } from "../../../services/IpaSerivces";
-// import { toast } from "react-toastify";
+import HeaderMui from "../../../Components/ui/Header/HeaderMui";
+import { useIPA } from "./hooks/useIPA";
+import { useNavigate, useParams } from "react-router-dom";
+import Lines from "../../../Components/ui/Lines/Lines";
+import { useEffect } from "react";
+import { ActionFormatterLines } from "../../../Components/ui/Table/TableUtils";
+import { useAppSelector } from "../../../store/hook";
+import { apiIPALInes } from "../../../services/IpaSerivces";
+import { IPALineFormData } from "../../../@types/ipa.dto";
 
-// function IPADetails() {
-//   const { id } = useParams();
-//   const navigate = useNavigate();
-//   const { companyId } = useAppSelector((state) => state.auth.session);
+function IPADetails() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { companyId } = useAppSelector((state) => state.auth.session);
 
-//   const { getFormFields, getLineFields, populateDocumentDetail, lines } =
-//     // useIPA({ mode: "detail" });
-//   const columns =
-//     "Open" == "Open"
-//       ? [
-//           {
-//             dataField: "Perspective",
-//             text: "Perspective",
-//             sort: true,
-//           },
-//           {
-//             dataField: "strategicObjective",
-//             text: "Strategic Objective",
-//             sort: true,
-//           },
-//           {
-//             dataField: "individualObjective",
-//             text: "Individual Objective",
-//             sort: true,
-//           },
-//           {
-//             dataField: "Initiatives",
-//             text: "Initiatives",
-//             sort: true,
-//           },
-//           {
-//             dataField: "Measures",
-//             text: "Measures",
-//             sort: true,
-//           },
-//           {
-//             dataField: "TargetDate",
-//             text: "Target Date",
-//             sort: true,
-//           },
-//           {
-//             dataField: "Weights",
-//             text: "Weights(%)",
-//             sort: true,
-//           },
-//           {
-//             dataField: "action",
-//             isDummyField: true,
-//             text: "Action",
-//             formatter: (cellContent, row) => {
-//               console.log("Cell Content:", cellContent);
-//               return (
-//                 <ActionFormatterLines
-//                   row={row}
-//                   companyId={companyId}
-//                   apiHandler={apiPaymentRequisitionLines}
-//                   handleEditLine={handleEditLine}
-//                   handleDeleteLine={handleDeleteLine}
-//                   populateData={populateData}
-//                 />
-//               );
-//             },
-//           },
-//         ]
-//       : [
-//           {
-//             dataField: "Perspective",
-//             text: "Perspective",
-//             sort: true,
-//           },
-//           {
-//             dataField: "strategicObjective",
-//             text: "Strategic Objective",
-//             sort: true,
-//           },
-//           {
-//             dataField: "individualObjective",
-//             text: "Individual Objective",
-//             sort: true,
-//           },
-//           {
-//             dataField: "Initiatives",
-//             text: "Initiatives",
-//             sort: true,
-//           },
-//           {
-//             dataField: "Measures",
-//             text: "Measures",
-//             sort: true,
-//           },
-//           {
-//             dataField: "TargetDate",
-//             text: "Target Date",
-//             sort: true,
-//           },
-//           {
-//             dataField: "Weights",
-//             text: "Weights(%)",
-//             sort: true,
-//           },
-//         ];
+  const {
+    formData,
+    getFormFields,
+    getLineFields,
+    populateDocumentDetail,
+    lines,
+    submitIPALines,
+    clearLineFields,
+    handleEditLine,
+    deleteIPA,
+    updateIPALines,
+    sendIPAForApproval,
+    cancelIPAApprovalRequest,
+  } = useIPA({ mode: "detail" });
 
-//   const handleEditLine = () => {
-//     console.log("Edit Line");
-//   };
-//   const handleDeleteLine = async () => {
-//     if (id) {
-//       const response = await ipaService.deleteIPALine(companyId, id);
-//       if (response.status === 200) {
-//         toast.success("Line deleted successfully");
-//       } else {
-//         toast.error("Failed to delete line");
-//       }
-//     }
-//   };
-//   const populateData = () => {
-//     console.log("Populate Data");
-//   };
-//   useEffect(() => {
-//     if (id) {
-//       populateDocumentDetail(id);
-//     }
-//   }, [id]);
+  const columns =
+    "Open" == "Open"
+      ? [
+          {
+            dataField: "jobObjective",
+            text: "Job Objective",
+            sort: true,
+          },
+          {
+            dataField: "keyPerformanceIndicators",
+            text: "Key Performance Indicator(s)",
+            sort: true,
+          },
+          {
+            dataField: "deliverables",
+            text: "Measures/Deliverables",
+            sort: true,
+          },
+          {
+            dataField: "byWhichTargetDate",
+            text: "By which Target Date?",
+            sort: true,
+          },
+          formData.status === "Open" && {
+            dataField: "action",
+            isDummyField: true,
+            text: "Action",
+            formatter: (cellContent, row) => {
+              console.log("Cell Content:", cellContent);
+              return (
+                <ActionFormatterLines
+                  row={row}
+                  companyId={companyId}
+                  apiHandler={apiIPALInes}
+                  handleEditLine={(row: any) =>
+                    handleEditLine(row as IPALineFormData)
+                  }
+                  handleDeleteLine={handleDeleteLine}
+                  populateData={() => {
+                    if (id) {
+                      populateDocumentDetail(id);
+                    }
+                  }}
+                />
+              );
+            },
+          },
+        ]
+      : [
+          {
+            dataField: "jobObjective",
+            text: "Job Objective",
+            sort: true,
+          },
+          {
+            dataField: "Initiatives",
+            text: "Key Performance Indicator(s)",
+            sort: true,
+          },
+          {
+            dataField: "Measures",
+            text: "Measures/Deliverables",
+            sort: true,
+          },
+          {
+            dataField: "TargetDate",
+            text: "By which Target Date?",
+            sort: true,
+          },
+        ];
 
-//   return (
-//     <HeaderMui
-//       title="IPA Details"
-//       subtitle="Individual Performance Agreement"
-//       breadcrumbItem="IPA"
-//       handleBack={() => navigate("/ipa")}
-//       handleSubmit={() => {}}
-//       isLoading={false}
-//       pageType="details"
-//       fields={getFormFields()}
-//       lines={
-//         <Lines
-//           title="IPA Lines"
-//           subTitle="IPA Lines"
-//           breadcrumbItem="IPA Lines"
-//           addLabel="Add Line"
-//           iconClassName=""
-//           noDataMessage="No lines found"
-//           clearLineFields={() => {}}
-//           handleValidateHeaderFields={() => true}
-//           data={lines as any}
-//           columns={columns}
-//           status={"Open"}
-//           modalFields={getLineFields()}
-//           handleSubmitLines={() => {}}
-//           handleDeleteLines={() => {}}
-//           handleSubmitUpdatedLine={() => {}}
-//         />
-//       }
-//     />
-//   );
-// }
+  const handleDeleteLine = async () => {
+    console.log("Delete Line");
+  };
 
-// export default IPADetails;
+  useEffect(() => {
+    if (id) {
+      populateDocumentDetail(id);
+    }
+  }, [id]);
+
+  return (
+    <HeaderMui
+      title="IPA Details"
+      subtitle="Individual Performance Agreement"
+      breadcrumbItem="Individual Performance Agreement"
+      handleBack={() => navigate("/individual-performance-appraisal")}
+      handleSubmit={() => {}}
+      status={formData.status}
+      stage="Individual Performance Agreement"
+      isLoading={false}
+      tableId={50451}
+      companyId={companyId}
+      requestNo={formData.no || ""}
+      documentType="Performance Management"
+      pageType="detail"
+      fields={getFormFields()}
+      handleDeletePurchaseRequisition={() => {
+        if (id) {
+          deleteIPA(id);
+        }
+      }}
+      handleSendApprovalRequest={() => {
+        if (id) {
+          sendIPAForApproval(id);
+        }
+      }}
+      handleCancelApprovalRequest={() => {
+        if (id) {
+          cancelIPAApprovalRequest(id);
+        }
+      }}
+      lines={
+        <Lines
+          documentName="Individual Performance Appraisal"
+          title="IPA Lines"
+          subTitle="IPA Lines"
+          breadcrumbItem="IPA Lines"
+          addLabel="Add Line"
+          iconClassName=""
+          noDataMessage="No lines found"
+          clearLineFields={() => clearLineFields()}
+          handleValidateHeaderFields={() => true}
+          data={
+            lines.map((line) => ({
+              ...line,
+              documentType: "Individual Performance Appraisal",
+            })) as any
+          }
+          columns={columns}
+          status={formData.status || ""}
+          addLink={"/ipa/add"}
+          modalFields={getLineFields()}
+          handleSubmitLines={() => {
+            if (id) {
+              submitIPALines(id);
+            }
+          }}
+          handleDeleteLines={() => {}}
+          handleSubmitUpdatedLine={() => {
+            if (id) {
+              updateIPALines(id);
+            }
+          }}
+        />
+      }
+    />
+  );
+}
+
+export default IPADetails;

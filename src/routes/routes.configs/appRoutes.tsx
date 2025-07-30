@@ -207,24 +207,54 @@ const appRoutes: Routes = [
     ),
   },
 
-
   // ------------------------ IPA ----------------------------------------
-  // {
-  //   key: "ipa",
-  //   path: "/individual-performance-appraisal",
-  //   component: lazy(() => import("../../pages/HR/IPA/Ipa.tsx")),
-  // },
-  // {
-  //   key: "ipa-details",
-  //   path: "/ipa-details/:id",
-  //   component: lazy(() => import("../../pages/HR/IPA/IPADetails.tsx")),
+  {
+    key: "ipa",
+    path: "/individual-performance-appraisal",
+    component: lazy(() => import("../../pages/HR/IPA/Ipa.tsx")),
+  },
+  {
+    key: "ipa-details",
+    path: "/ipa-details/:id",
+    component: lazy(() => import("../../pages/HR/IPA/IPADetails.tsx")),
+  },
+  {
+    key: "add-ipa",
+    path: "/add-ipa",
+    component: lazy(() => import("../../pages/HR/IPA/AddIPA.tsx")),
+  },
+  {
+    key: "approve-ipa",
+    path: "/approve-ipa/:documentNo",
+    component: lazy(() => import("../../pages/HR/IPA/ApproveIPA.tsx")),
+  },
 
-  // },
-  // {
-  //   key: "add-ipa",
-  //   path: "/add-ipa",
-  //   component: lazy(() => import("../../pages/HR/IPA/AddIPA.tsx")),
-  // },
+  // ------------------------ PA ----------------------------------------
+  {
+    key: "pa",
+    path: "/performance-appraisal",
+    component: lazy(() => import("../../pages/HR/PA/Pa.tsx")),
+  },
+  {
+    key: "pa-review",
+    path: "/performance-appraisal-review",
+    component: lazy(() => import("../../pages/HR/PA/PaReview.tsx")),
+  },
+  {
+    key: "pa-details",
+    path: "/pa-details/:id",
+    component: lazy(() => import("../../pages/HR/PA/PADetails.tsx")),
+  },
+  {
+    key: "add-pa",
+    path: "/add-pa",
+    component: lazy(() => import("../../pages/HR/PA/AddPA.tsx")),
+  },
+  {
+    key: "approve-pa",
+    path: "/approve-pa/:documentNo",
+    component: lazy(() => import("../../pages/HR/PA/ApprovePA.tsx")),
+  },
   // {
   //     key: 'approved-time-sheets',
   //     path: '/approved-time-sheets',

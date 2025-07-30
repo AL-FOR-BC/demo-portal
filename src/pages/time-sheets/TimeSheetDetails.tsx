@@ -5,9 +5,9 @@ import { toast } from "react-toastify";
 import HeaderMui from "../../Components/ui/Header/HeaderMui";
 import { getErrorMessage } from "../../utils/common";
 import { TimeSheetsService } from "../../services/TimeSheetsService";
-// import { TimeSheetLine } from '../../@types/timesheet.dto';
 import TimeSheetLines from "../../Components/ui/Lines/TimeSheetLines";
 import { format } from "date-fns";
+import Swal from "sweetalert2";
 
 function TimeSheetDetail() {
   const navigate = useNavigate();
@@ -153,7 +153,7 @@ function TimeSheetDetail() {
         companyId,
         systemId
       );
-      console.log(res);
+      console.log("delete line", res);
       return true;
     } catch (error) {
       toast.error(`Error deleting line: ${getErrorMessage(error)}`);
@@ -358,15 +358,110 @@ function TimeSheetDetail() {
 
   const handleSubmit = async () => {
     try {
+      // Check for lines with all zero hours
+      // const zeroHourLines = timeSheetLines.filter((line) => {
+      //   const dayValues = Array.from({ length: 31 }, (_, i) => {
+      //     const day = line[`day${i + 1}`];
+      //     return typeof day === "object" ? day?.value || 0 : day || 0;
+      //   });
+      //   return dayValues.every((value) => value === 0);
+      // });
+
+      // if (zeroHourLines.length > 0) {
+      //   Swal.fire({
+      //     title: "Empty TimeSheet Entries Detected",
+      //     html: `
+      //       <div style="text-align: left">
+      //         <p><strong>The following lines have no time recorded:</strong></p>
+      //         <ul style="margin-top: 10px; margin-bottom: 15px; color: #666">
+      //           ${zeroHourLines
+      //             .map(
+      //               (line) =>
+      //                 `<li style="margin-bottom: 5px">• ${
+      //                   line.description || `Line ${line.lineNo}`
+      //                 }</li>`
+      //             )
+      //             .join("")}
+      //         </ul>
+      //         <p style="color: #444; margin-top: 15px">
+      //           Would you like to delete these empty lines?
+      //         </p>
+      //       </div>
+      //     `,
+      //     icon: "warning",
+      //     showCancelButton: true,
+      //     confirmButtonText: "Yes, Delete Empty Lines",
+      //     cancelButtonText: "No, I'll Review Them",
+      //     confirmButtonColor: "#d33",
+      //     cancelButtonColor: "#3085d6",
+      //     reverseButtons: true,
+      //   }).then(async (result) => {
+      //     if (result.isConfirmed) {
+      //       // Show loading state
+      //       Swal.fire({
+      //         title: "Deleting Empty Lines",
+      //         html: "Please wait...",
+      //         allowOutsideClick: false,
+      //         didOpen: () => {
+      //           Swal.showLoading();
+      //         },
+      //       });
+
+      //       // Delete all empty lines
+      //       try {
+      //         const deletePromises = zeroHourLines.map((line) =>
+      //           handleDeleteLine(line.systemId)
+      //         );
+
+      //         const results = await Promise.all(deletePromises);
+
+      //         if (results.every((result) => result === true)) {
+      //           await populateData(); // Refresh the data
+      //           Swal.fire({
+      //             title: "Success",
+      //             text: "Empty lines have been deleted. You can now submit the timesheet.",
+      //             icon: "success",
+      //             confirmButtonColor: "#3085d6",
+      //           });
+      //         } else {
+      //           throw new Error("Some lines could not be deleted");
+      //         }
+      //       } catch (error) {
+      //         Swal.fire({
+      //           title: "Error",
+      //           text: "There was a problem deleting the empty lines. Please try again.",
+      //           icon: "error",
+      //           confirmButtonColor: "#3085d6",
+      //         });
+      //       }
+      //     }
+      //   });
+      //   return;
+      // }
+      console.log(timeSheetLines);
       setIsLoading(true);
-      const res = await TimeSheetsService.submitTimeSheet(companyId, {
-        documentNo: timeSheetNo,
-        senderEmailAddress: email,
+      Swal.fire({
+        title: "Submit Time Sheet",
+        text: "Are you sure you want to submit the time sheet?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, submit",
+        cancelButtonText: "No, I'll Review Them",
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        reverseButtons: true,
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          const res = await TimeSheetsService.submitTimeSheet(companyId, {
+            documentNo: timeSheetNo,
+            senderEmailAddress: email,
+          });
+          if (res.status === 200 || res.status === 204) {
+            populateData();
+            toast.success("Time sheet submitted successfully");
+          }
+        }
       });
-      if (res.status === 200 || res.status === 204) {
-        populateData();
-        toast.success("Time sheet submitted successfully");
-      }
     } catch (error) {
       toast.error(`Error submitting time sheet: ${getErrorMessage(error)}`);
     } finally {
@@ -395,7 +490,11 @@ function TimeSheetDetail() {
           documentId,
           filterQuery
         );
-        return { result, lines: res.data.timeSheetLines, totalHours: res.data.quantity };
+        return {
+          result,
+          lines: res.data.timeSheetLines,
+          totalHours: res.data.quantity,
+        };
       }
     } catch (error) {
       // toast.error(`Failed to update line: ${getErrorMessage(error)}`);

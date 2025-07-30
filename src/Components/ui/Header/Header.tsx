@@ -26,7 +26,7 @@ interface HeaderProps {
     toggleError?: () => void;
     handleBack?: () => void;
     handleSubmit?: () => void;
-
+    
     handleSendApprovalRequest?: () => void;
     handleDeletePurchaseRequisition?: () => void;
     handleCancelApprovalRequest?: () => void;

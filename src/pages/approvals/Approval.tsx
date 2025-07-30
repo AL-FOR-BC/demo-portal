@@ -73,6 +73,8 @@ function Approvals() {
         return `/approve-leave-request/${documentNo}`;
       case "leave plan":
         return `/approve-leave-plan/${documentNo}`;
+      case "performance management":
+        return `/approve-ipa/${documentNo}`;
       default:
         return "#";
     }

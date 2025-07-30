@@ -1,0 +1,40 @@
+// CSS Custom Properties for Dynamic Theme Colors
+:root {
+  // Primary theme colors - these can be changed dynamically
+  --primary-color: #094bac;
+  --primary-color-rgb: 9, 75, 172;
+
+  // Derived colors based on primary
+  --primary-light: #{lighten(#094bac, 10%)};
+  --primary-dark: #{darken(#094bac, 10%)};
+  --primary-lighter: #{lighten(#094bac, 20%)};
+  --primary-darker: #{darken(#094bac, 20%)};
+
+  // Fallback colors for older browsers
+  --primary-color-fallback: #094bac;
+}
+
+// Function to generate CSS custom properties from a color
+@function generate-css-variables($color) {
+  $light: lighten($color, 10%);
+  $dark: darken($color, 10%);
+  $lighter: lighten($color, 20%);
+  $darker: darken($color, 20%);
+
+  @return (
+    --primary-color: #{$color},
+    --primary-light: #{$light},
+    --primary-dark: #{$dark},
+    --primary-lighter: #{$lighter},
+    --primary-darker: #{$darker}
+  );
+}
+
+// Mixin to apply theme colors
+@mixin apply-theme-color($color) {
+  $variables: generate-css-variables($color);
+
+  @each $property, $value in $variables {
+    #{$property}: $value;
+  }
+}

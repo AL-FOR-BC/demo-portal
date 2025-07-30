@@ -12,6 +12,7 @@ interface LinesProps {
     status: string
     modalFields: any[]
     columns: any[]
+    documentName?: string
     title: string
     subTitle: string
     breadcrumbItem: string
@@ -24,24 +25,22 @@ interface LinesProps {
     clearLineFields: () => void
     handleValidateHeaderFields: () => boolean
     handleDeleteLines?: (row: any) => void
+    collapsibleName?: string
+    multipleLines?: boolean
 }
 
 function Lines({
+    collapsibleName,
+    documentName,
     data,
     columns,
-    // title,
-    // subTitle,
-    // breadcrumbItem,
-    // addLink,
-    // addLabel,
-    // noDataMessage,
-    // iconClassName,
     status,
     modalFields,
     handleSubmitLines,
     handleSubmitUpdatedLine,
     clearLineFields,
-    handleValidateHeaderFields
+    handleValidateHeaderFields,
+    multipleLines
 }: LinesProps) {
     const [lineTab, setLineTab] = React.useState(true)
     const toggleLines = () => {
@@ -61,7 +60,7 @@ function Lines({
                         onClick={toggleLines}
                         style={{ cursor: "pointer" }}
                     >
-                        Lines
+                        {collapsibleName ? collapsibleName : "Lines"}m
                     </button>
                 </h2>
                 <Collapse
@@ -72,7 +71,7 @@ function Lines({
                         <TableLinesMui
                             handleValidateHeaderFields={handleValidateHeaderFields}
                             handleSubmitUpdatedLine={handleSubmitUpdatedLine}
-                            
+                            documentName={documentName}
                             data={data}
                             columns={columns}
                             // title={title}
@@ -88,6 +87,7 @@ function Lines({
                             // handleDeleteLines={handleSubmitLines}
                             // handleSubmitUpdateLines={handleSubmitUpdatedLine}
                             clearLineFields={clearLineFields}
+                            multipleLines={multipleLines}
 
                         />
                     </div>

@@ -1,12 +1,21 @@
-// 
+//
 // backgrounds.scss
 //
 
-
 @each $color, $value in $theme-colors {
-    .bg-#{$color} {
-        &.bg-soft{
-            background-color: rgba(($value), 0.25) !important;
-        }
+  .bg-#{$color} {
+    &.bg-soft {
+      background-color: rgba(($value), 0.25) !important;
     }
+  }
+}
+
+// Override for primary color to use CSS custom properties
+.bg-primary {
+  &.bg-soft {
+    background-color: rgba(
+      var(--primary-color-rgb, 13, 110, 253),
+      0.25
+    ) !important;
+  }
 }

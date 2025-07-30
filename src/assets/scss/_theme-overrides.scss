@@ -1,0 +1,670 @@
+// Theme overrides to use CSS custom properties for dynamic colors
+
+// Override Bootstrap primary color classes
+.btn-primary {
+  background-color: var(--primary-color, #094bac) !important;
+  border-color: var(--primary-color, #094bac) !important;
+  color: white !important;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: var(--primary-dark, #073a8a) !important;
+    border-color: var(--primary-dark, #073a8a) !important;
+    color: white !important;
+  }
+}
+
+.btn-outline-primary {
+  color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+  }
+}
+
+// Text colors
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+// Background colors
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.bg-primary-light {
+  background-color: var(--primary-light) !important;
+}
+
+.bg-primary-dark {
+  background-color: var(--primary-dark) !important;
+}
+
+// Border colors
+.border-primary {
+  border-color: var(--primary-color) !important;
+}
+
+// Form controls
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb), 0.25) !important;
+}
+
+// Custom switch
+.custom-switch {
+  .form-check-input:checked {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+  }
+}
+
+// Material-UI components
+.MuiSwitch-root {
+  .MuiSwitch-switchBase.Mui-checked {
+    color: var(--primary-color) !important;
+  }
+
+  .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
+    background-color: var(--primary-color) !important;
+  }
+}
+
+.MuiButton-containedPrimary {
+  background-color: var(--primary-color) !important;
+
+  &:hover {
+    background-color: var(--primary-dark) !important;
+  }
+}
+
+.MuiButton-outlinedPrimary {
+  color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+
+  &:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.04) !important;
+  }
+}
+
+.MuiTextField-root {
+  .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: var(--primary-color) !important;
+  }
+}
+
+// Navigation and header elements
+.navbar-custom {
+  .navbar-nav {
+    .nav-link {
+      &:hover,
+      &.active {
+        color: var(--primary-color) !important;
+      }
+    }
+  }
+}
+
+// Horizontal navigation bar
+.navbar-expand-lg {
+  background-color: var(--primary-color, #094bac) !important;
+
+  .navbar-nav {
+    .nav-link {
+      color: rgba(255, 255, 255, 0.8) !important;
+
+      &:hover,
+      &.active {
+        color: #ffffff !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+  }
+}
+
+// Header elements - Always white
+.navbar-header {
+  background-color: #ffffff !important;
+}
+
+// Card headers and backgrounds
+.card {
+  &.bg-primary {
+    background-color: var(--primary-color, #094bac) !important;
+  }
+
+  .card-header {
+    &.bg-primary {
+      background-color: var(--primary-color, #094bac) !important;
+    }
+  }
+}
+
+// Sidebar and navigation menus
+#sidebar-menu {
+  ul {
+    li {
+      a {
+        &:hover,
+        &.active {
+          color: var(--primary-color, #094bac) !important;
+        }
+      }
+    }
+  }
+}
+
+// Horizontal layout specific
+.horizontal-layout {
+  .topbar {
+    background-color: var(--primary-color, #094bac) !important;
+  }
+
+  .navbar-custom {
+    background-color: var(--primary-color, #094bac) !important;
+  }
+}
+
+// Top navigation bar
+.topnav {
+  background-color: var(--primary-color, #094bac) !important;
+
+  .navbar-nav {
+    .nav-link {
+      color: rgba(255, 255, 255, 0.8) !important;
+
+      &:hover,
+      &.active {
+        color: #ffffff !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+
+    // Dropdown menu styling for horizontal navigation
+    .dropdown-menu {
+      background-color: $white !important;
+      border: 1px solid rgba(0, 0, 0, 0.15) !important;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+
+      .dropdown-item {
+        color: $gray-900 !important;
+        background-color: transparent !important;
+        transition: all 0.2s ease-in-out !important;
+
+        &:hover,
+        &:focus,
+        &.active {
+          color: var(--primary-color, #094bac) !important;
+          background-color: rgba(
+            var(--primary-color-rgb, 9, 75, 172),
+            0.1
+          ) !important;
+        }
+      }
+
+      // Nested dropdown styling
+      .dropdown-menu {
+        background-color: $white !important;
+        border: 1px solid rgba(0, 0, 0, 0.15) !important;
+
+        .dropdown-item {
+          color: $gray-900 !important;
+          transition: all 0.2s ease-in-out !important;
+
+          &:hover,
+          &:focus,
+          &.active {
+            color: var(--primary-color, #094bac) !important;
+            background-color: rgba(
+              var(--primary-color-rgb, 9, 75, 172),
+              0.1
+            ) !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Override Bootstrap default dropdown styles with higher specificity
+body .topnav .navbar-nav .dropdown .dropdown-menu,
+body .topnav .navbar-nav .dropdown .dropdown-menu .dropdown .dropdown-menu {
+  background-color: $white !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+// Additional dropdown hover effects for better user experience
+.dropdown-item {
+  &:hover,
+  &:focus {
+    color: var(--primary-color, #094bac) !important;
+    background-color: rgba(
+      var(--primary-color-rgb, 9, 75, 172),
+      0.1
+    ) !important;
+    transition: all 0.2s ease-in-out !important;
+  }
+}
+
+// Ensure all dropdown menus have consistent styling
+.dropdown-menu {
+  .dropdown-item {
+    transition: all 0.2s ease-in-out !important;
+
+    &:hover,
+    &:focus,
+    &.active {
+      color: var(--primary-color, #094bac) !important;
+      background-color: rgba(
+        var(--primary-color-rgb, 9, 75, 172),
+        0.1
+      ) !important;
+    }
+  }
+}
+
+body .topnav .navbar-nav .dropdown .dropdown-menu .dropdown-item,
+body
+  .topnav
+  .navbar-nav
+  .dropdown
+  .dropdown-menu
+  .dropdown
+  .dropdown-menu
+  .dropdown-item {
+  color: $gray-900 !important;
+  background-color: transparent !important;
+  transition: all 0.2s ease-in-out !important;
+
+  &:hover,
+  &:focus,
+  &.active {
+    color: var(--primary-color, #094bac) !important;
+    background-color: rgba(
+      var(--primary-color-rgb, 9, 75, 172),
+      0.1
+    ) !important;
+  }
+}
+
+// Page topbar - Always white
+#page-topbar {
+  background-color: #ffffff !important;
+
+  .navbar-header {
+    background-color: #ffffff !important;
+  }
+}
+
+// Navbar brand box - Always white
+.navbar-brand-box {
+  background-color: #ffffff !important;
+}
+
+// Header items - Dark text on white background
+.header-item {
+  color: #495057 !important;
+
+  &:hover {
+    color: var(--primary-color, #094bac) !important;
+  }
+}
+
+// Sidebar
+#sidebar-menu {
+  ul {
+    li {
+      a {
+        &:hover,
+        &.active {
+          color: var(--primary-color) !important;
+        }
+      }
+    }
+  }
+}
+
+// Links
+a {
+  color: var(--primary-color);
+
+  &:hover {
+    color: var(--primary-dark);
+  }
+}
+
+// Progress bars
+.progress-bar {
+  background-color: var(--primary-color) !important;
+}
+
+// Badges
+.badge-primary {
+  background-color: var(--primary-color) !important;
+}
+
+// Alerts
+.alert-primary {
+  background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+  border-color: rgba(var(--primary-color-rgb), 0.2) !important;
+  color: var(--primary-color) !important;
+}
+
+// Pagination
+.page-item.active .page-link {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.page-link {
+  color: var(--primary-color) !important;
+
+  &:hover {
+    color: var(--primary-dark) !important;
+  }
+}
+
+// Dropdown
+.dropdown-item {
+  &:hover,
+  &:focus,
+  &.active {
+    background-color: var(--primary-color) !important;
+  }
+}
+
+// List group
+.list-group-item.active {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+// Custom components
+.card-header {
+  &.bg-primary {
+    background-color: var(--primary-color) !important;
+  }
+}
+
+// Toast notifications
+.Toastify__toast--success {
+  background-color: var(--primary-color) !important;
+}
+
+// Loading spinners
+.spinner-border.text-primary {
+  color: var(--primary-color) !important;
+}
+
+// Custom utility classes
+.primary-color {
+  color: var(--primary-color) !important;
+}
+
+.primary-bg {
+  background-color: var(--primary-color) !important;
+}
+
+.primary-border {
+  border-color: var(--primary-color) !important;
+}
+
+// Additional component overrides for better theme coverage
+.bg-light-primary {
+  background-color: rgba(var(--primary-color-rgb, 9, 75, 172), 0.1) !important;
+}
+
+// Soft background overrides - these are crucial for dashboard cards
+.bg-soft {
+  &.bg-primary {
+    background-color: rgba(
+      var(--primary-color-rgb, 9, 75, 172),
+      0.25
+    ) !important;
+  }
+}
+
+// Avatar and icon backgrounds
+.avatar-title {
+  &.bg-primary {
+    background-color: var(--primary-color, #094bac) !important;
+  }
+
+  &.bg-soft {
+    &.bg-primary {
+      background-color: rgba(
+        var(--primary-color-rgb, 9, 75, 172),
+        0.25
+      ) !important;
+    }
+  }
+}
+
+// Dashboard card specific overrides
+.card {
+  &.bg-primary {
+    background-color: var(--primary-color, #094bac) !important;
+  }
+
+  &.bg-soft {
+    &.bg-primary {
+      background-color: rgba(
+        var(--primary-color-rgb, 9, 75, 172),
+        0.25
+      ) !important;
+    }
+  }
+}
+
+.text-primary-dark {
+  color: var(--primary-dark, #0b5ed7) !important;
+}
+
+// Avatar and user profile elements
+.avatar {
+  &.bg-primary {
+    background-color: var(--primary-color, #094bac) !important;
+  }
+}
+
+// Icon colors
+.icon-primary {
+  color: var(--primary-color, #094bac) !important;
+}
+
+// Progress indicators
+.progress {
+  .progress-bar {
+    &.bg-primary {
+      background-color: var(--primary-color, #094bac) !important;
+    }
+  }
+}
+
+// Badge colors
+.badge {
+  &.bg-primary {
+    background-color: var(--primary-color, #094bac) !important;
+  }
+}
+
+// Alert colors
+.alert {
+  &.alert-primary {
+    background-color: rgba(
+      var(--primary-color-rgb, 9, 75, 172),
+      0.1
+    ) !important;
+    border-color: rgba(var(--primary-color-rgb, 9, 75, 172), 0.2) !important;
+    color: var(--primary-color, #094bac) !important;
+  }
+}
+
+// Dashboard specific overrides
+.dashboard {
+  .card {
+    &.bg-primary {
+      background-color: var(--primary-color, #094bac) !important;
+    }
+  }
+
+  .bg-light-primary {
+    background-color: rgba(
+      var(--primary-color-rgb, 9, 75, 172),
+      0.1
+    ) !important;
+  }
+}
+
+// Any remaining Bootstrap utility classes
+.bg-primary {
+  background-color: var(--primary-color, #094bac) !important;
+}
+
+.text-primary {
+  color: var(--primary-color, #094bac) !important;
+}
+
+.border-primary {
+  border-color: var(--primary-color, #094bac) !important;
+}
+
+// Ensure all primary color references use the dynamic color
+[class*="primary"] {
+  &[class*="bg-"] {
+    background-color: var(--primary-color, #094bac) !important;
+  }
+
+  &[class*="text-"] {
+    color: var(--primary-color, #094bac) !important;
+  }
+
+  &[class*="border-"] {
+    border-color: var(--primary-color, #094bac) !important;
+  }
+}
+
+// Specific dashboard component overrides
+.avatar-sm {
+  .avatar-title {
+    &.bg-primary {
+      background-color: var(--primary-color, #094bac) !important;
+    }
+
+    &.bg-soft {
+      &.bg-primary {
+        background-color: rgba(
+          var(--primary-color-rgb, 9, 75, 172),
+          0.25
+        ) !important;
+      }
+    }
+  }
+}
+
+// Text color overrides for dashboard elements
+.text-primary {
+  color: var(--primary-color, #094bac) !important;
+}
+
+// Icon color overrides
+.font-size-16 {
+  &.text-primary {
+    color: var(--primary-color, #094bac) !important;
+  }
+}
+
+// Link color overrides in cards
+.card {
+  a {
+    &.text-primary {
+      color: var(--primary-color, #094bac) !important;
+    }
+  }
+}
+
+// Login page specific overrides
+.account-pages {
+  .card {
+    .bg-primary {
+      &.bg-soft {
+        background-color: rgba(
+          var(--primary-color-rgb, 9, 75, 172),
+          0.25
+        ) !important;
+      }
+    }
+
+    .text-primary {
+      color: var(--primary-color, #094bac) !important;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color, #094bac) !important;
+      border-color: var(--primary-color, #094bac) !important;
+      color: white !important;
+
+      &:hover,
+      &:focus,
+      &:active {
+        background-color: var(--primary-dark, #0b5ed7) !important;
+        border-color: var(--primary-dark, #0b5ed7) !important;
+        color: white !important;
+      }
+    }
+  }
+
+  // Links in login page
+  a {
+    .text-primary {
+      color: var(--primary-color, #094bac) !important;
+    }
+  }
+}
+
+// Additional login page overrides for comprehensive coverage
+.account-pages {
+  // Ensure all primary elements use the dynamic color
+  [class*="primary"] {
+    color: var(--primary-color, #094bac) !important;
+  }
+
+  // Button overrides
+  .btn-primary {
+    background-color: var(--primary-color, #094bac) !important;
+    border-color: var(--primary-color, #094bac) !important;
+    color: white !important;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background-color: var(--primary-dark, #0b5ed7) !important;
+      border-color: var(--primary-dark, #0b5ed7) !important;
+      color: white !important;
+    }
+  }
+
+  // Background overrides
+  .bg-primary {
+    background-color: var(--primary-color, #094bac) !important;
+
+    &.bg-soft {
+      background-color: rgba(
+        var(--primary-color-rgb, 9, 75, 172),
+        0.25
+      ) !important;
+    }
+  }
+
+  // Text color overrides
+  .text-primary {
+    color: var(--primary-color, #094bac) !important;
+  }
+}

@@ -976,7 +976,9 @@ function PurchaseRequisitionDetail() {
           ? "Quantity"
           : directUnitCost == 0
           ? "Direct Unit Cost"
-          : "Description" || selectedUnitOfMeasure[0]?.value == ""
+          : description == ""
+          ? "Description"
+          : selectedUnitOfMeasure[0]?.value == ""
           ? "Unit of Measure"
           : "";
       toast.error(`Please fill in ${missingField}`);

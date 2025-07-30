@@ -1,0 +1,56 @@
+// Setup page specific styles
+.setup-page {
+  .color-picker-container {
+    input[type="color"] {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-color: transparent;
+      width: 50px;
+      height: 40px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &::-webkit-color-swatch-wrapper {
+        padding: 0;
+      }
+
+      &::-webkit-color-swatch {
+        border: none;
+        border-radius: 4px;
+      }
+
+      &::-moz-color-swatch {
+        border: none;
+        border-radius: 4px;
+      }
+    }
+  }
+
+  .logo-upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: #556ee6;
+    }
+
+    &.has-logo {
+      border: 1px solid #dee2e6;
+    }
+  }
+
+  .logo-preview {
+    img {
+      max-width: 100px;
+      max-height: 60px;
+      object-fit: contain;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 4px;
+      background-color: #fff;
+    }
+  }
+}
