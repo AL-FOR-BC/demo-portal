@@ -80,5 +80,22 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"
+  },
+  "overrides": {
+    "react-bootstrap-table-next": {
+      "react": "^18.3.1"
+    },
+    "react-bootstrap-table2-editor": {
+      "react": "^18.3.1"
+    },
+    "react-bootstrap-table2-filter": {
+      "react": "^18.3.1"
+    },
+    "react-bootstrap-table2-paginator": {
+      "react": "^18.3.1"
+    },
+    "react-bootstrap-table2-toolkit": {
+      "react": "^18.3.1"
+    }
   }
 }
