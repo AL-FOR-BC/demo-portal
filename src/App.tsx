@@ -81,7 +81,7 @@ function App() {
   return (
     <Provider store={store}>
       <MsalProvider instance={pca}>
-        <BrowserRouter basename="/rom">
+        <BrowserRouter basename="/">
           <IdleTimerContainer />
           <ToastContainer theme="colored" />
           <Layout />
