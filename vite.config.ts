@@ -7,8 +7,8 @@ export default defineConfig({
   plugins: [react()],
   define: {
     "import.meta.env.ENVIRONMENT": JSON.stringify("development"),
-    "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("ROM_TEST"),
-    // "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("HRP"),
+    // "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("ROM_TEST"),
+    "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("HRP"),
 
     "import.meta.env": JSON.stringify(process.env),
     "import.meta.env.VITE_EHUB_BACKEND_URL": JSON.stringify(
@@ -23,10 +23,10 @@ export default defineConfig({
     // ---------------------------------- HRP ----------------------------------
 
     "import.meta.env.VITE_EHUB_BACKEND_URL_HRP": JSON.stringify(
-      "http://51.8.80.47:5001"
+      "http://localhost:5001"
     ),
     "import.meta.env.VITE_EHUB_BC_URL_HRP": JSON.stringify(
-      "https://api.businesscentral.dynamics.com/v2.0/df78e20f-3ca1-4018-9157-8bedb2673da2/HRPSandbox4Developments/"
+      "https://api.businesscentral.dynamics.com/v2.0/df78e20f-3ca1-4018-9157-8bedb2673da2/HRPSandbox4Demos/"
     ),
 
     // ---------------------------------- End of HRP ----------------------------------
@@ -37,7 +37,7 @@ export default defineConfig({
       // "https://api.businesscentral.dynamics.com/v2.0/24528e89-fa53-4fc5-9847-429bb50802ff/ROMProduction/"
     ),
     "import.meta.env.VITE_EHUB_BACKEND_URL_ROM": JSON.stringify(
-      "http://51.8.80.47:5000"
+      "http://51.8.80.47:5001"
     ),
     // ---------------------------------- End of ROM TEST ------------------------------------
   },

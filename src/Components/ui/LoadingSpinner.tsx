@@ -1,6 +1,7 @@
 import React from "react";
 
 const LoadingSpinner: React.FC = () => {
+
   return (
     <React.Fragment>
       <div id="preloader">

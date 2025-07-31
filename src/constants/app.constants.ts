@@ -7,4 +7,3 @@ export const  COMPANY_EMAIL = "username@rom.co.ug"
 export const  COMPANY_LOGO  = romLogo
 export const  COMPANY_LOGO2 = romLogo2
 
-

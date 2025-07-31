@@ -28,31 +28,31 @@ import { styled } from "@mui/material/styles";
 // Styled components for Material UI
 const StyledTableCell = styled(TableCell)(() => ({
   [`&.MuiTableCell-head`]: {
-    backgroundColor: '#f8f9fa',
-    color: '#495057',
+    backgroundColor: "#f8f9fa",
+    color: "#495057",
     fontWeight: 600,
-    padding: '8px 16px',
-    borderSpacing: '8px',
-    fontFamily: 'inherit',
-    fontSize: '0.875rem',
+    padding: "8px 16px",
+    borderSpacing: "8px",
+    fontFamily: "inherit",
+    fontSize: "0.875rem",
   },
   [`&.MuiTableCell-body`]: {
-    padding: '8px 16px',
-    fontFamily: 'inherit',
-    fontSize: '0.875rem',
-    color: '#495057',
-  }
+    padding: "8px 16px",
+    fontFamily: "inherit",
+    fontSize: "0.875rem",
+    color: "#495057",
+  },
 }));
 
 const StyledTableRow = styled(TableRow)(() => ({
   "&:nth-of-type(odd)": {
-    backgroundColor: '#fbfbfd',
+    backgroundColor: "#fbfbfd",
   },
   "&:last-child td, &:last-child th": {
     border: 0,
   },
   "&:hover": {
-    backgroundColor: '#f3f3f9',
+    backgroundColor: "#f3f3f9",
   },
 }));
 
@@ -78,7 +78,9 @@ const TableMui: React.FC<TableComponentProps> = ({
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
@@ -109,19 +111,19 @@ const TableMui: React.FC<TableComponentProps> = ({
         onRowsPerPageChange={handleChangeRowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
         sx={{
-          '.MuiTablePagination-toolbar': {
+          ".MuiTablePagination-toolbar": {
             padding: 0,
           },
-          '.MuiTablePagination-selectLabel': {
+          ".MuiTablePagination-selectLabel": {
             marginBottom: 0,
           },
-          '.MuiTablePagination-displayedRows': {
+          ".MuiTablePagination-displayedRows": {
             marginBottom: 0,
           },
-          '.MuiTablePagination-select': {
+          ".MuiTablePagination-select": {
             paddingTop: 0,
             paddingBottom: 0,
-          }
+          },
         }}
       />
     </div>
@@ -157,24 +159,25 @@ const TableMui: React.FC<TableComponentProps> = ({
                                   startAdornment: (
                                     <SearchIcon
                                       style={{
-                                        marginRight: '8px',
-                                        color: '#6c757d',
-                                        width: '16px',
-                                        height: '16px'
+                                        marginRight: "8px",
+                                        color: "#6c757d",
+                                        width: "16px",
+                                        height: "16px",
                                       }}
                                     />
                                   ),
                                   sx: {
-                                    height: '36px',
-                                    fontSize: '0.875rem',
-                                    fontFamily: 'inherit',
-                                    '& .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: '#ced4da'
+                                    height: "36px",
+                                    fontSize: "0.875rem",
+                                    fontFamily: "inherit",
+                                    "& .MuiOutlinedInput-notchedOutline": {
+                                      borderColor: "#ced4da",
                                     },
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                      borderColor: '#ced4da'
-                                    }
-                                  }
+                                    "&:hover .MuiOutlinedInput-notchedOutline":
+                                      {
+                                        borderColor: "#ced4da",
+                                      },
+                                  },
                                 }}
                               />
                             </div>
@@ -182,7 +185,6 @@ const TableMui: React.FC<TableComponentProps> = ({
                         </Col>
                         {title !== "Time Sheets" && (
                           <Col sm="8">
-
                             <div className="text-sm-end">
                               <Link
                                 className="btn btn-primary btn-label"
@@ -192,23 +194,22 @@ const TableMui: React.FC<TableComponentProps> = ({
                                 {addLabel}
                               </Link>
                             </div>
-
                           </Col>
                         )}
                       </Row>
                       <TableContainer
                         component={Paper}
                         sx={{
-                          boxShadow: 'none',
-                          border: 'none'
+                          boxShadow: "none",
+                          border: "none",
                         }}
                       >
                         <Table
                           sx={{
                             minWidth: 650,
-                            borderCollapse: 'separate',
-                            borderSpacing: '0 8px',
-                            fontFamily: 'inherit',
+                            borderCollapse: "separate",
+                            borderSpacing: "0 8px",
+                            fontFamily: "inherit",
                           }}
                           size="small"
                         >
@@ -227,7 +228,10 @@ const TableMui: React.FC<TableComponentProps> = ({
                                 {columns.map((column, colIndex) => (
                                   <StyledTableCell key={colIndex}>
                                     {column.formatter
-                                      ? column.formatter(row[column.dataField], row)
+                                      ? column.formatter(
+                                          row[column.dataField],
+                                          row
+                                        )
                                       : row[column.dataField]}
                                   </StyledTableCell>
                                 ))}

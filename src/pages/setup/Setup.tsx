@@ -23,6 +23,7 @@ import { setAllowCompanyChange } from "../../store/slices/auth/sessionSlice";
 import LoadingSpinner from "../../Components/ui/LoadingSpinner";
 import { ArrowBackIcon, SaveIcon } from "../../Components/common/icons/icons";
 import Swal from "sweetalert2";
+import { useSettings } from "../../contexts/SettingsContext";
 import "../../scss/setup.scss";
 import {
   applyThemeColors,
@@ -34,6 +35,7 @@ function Setup() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isBcAdmin } = useAppSelector((state) => state.auth.user);
+  const { refreshSettings } = useSettings();
   const [isLoading, setIsLoading] = useState(false);
   const [settings, setSettings] = useState({
     allowCompanyChange: false,
@@ -69,6 +71,18 @@ function Setup() {
       setIsLoading(true);
       const response = await getSetupSettings();
       const savedThemeColor = loadThemeColor();
+
+      console.log("Settings response:", response.data);
+      console.log("Company logo data:", response.data.companyLogo);
+      console.log("Logo data length:", response.data.companyLogo?.length);
+      console.log(
+        "Logo data starts with:",
+        response.data.companyLogo?.substring(0, 50)
+      );
+      console.log(
+        "Logo data ends with:",
+        response.data.companyLogo?.substring(-50)
+      );
 
       const settingsData = {
         ...response.data,
@@ -142,6 +156,8 @@ function Setup() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
+        console.log("Uploaded logo data length:", result.length);
+        console.log("Uploaded logo starts with:", result.substring(0, 50));
         setSettings((prev) => ({
           ...prev,
           companyLogo: result,
@@ -176,6 +192,10 @@ function Setup() {
 
       setInitialSettings(settings);
       toast.success("Settings updated successfully");
+
+      // Refresh global settings context
+      await refreshSettings();
+
       navigate("/");
     } catch (error) {
       console.error("Settings update error:", error);
@@ -393,9 +413,81 @@ function Setup() {
                   </div>
 
                   <div className="mb-3">
-                    {settings.companyLogo ? (
+                    {settings.companyLogo &&
+                    settings.companyLogo.length > 1000 ? (
                       <div className="d-flex align-items-center gap-3 mb-3 logo-preview">
-                        <img src={settings.companyLogo} alt="Company Logo" />
+                        <div className="d-flex flex-column align-items-start">
+                          <img
+                            src={settings.companyLogo}
+                            alt="Company Logo"
+                            style={{
+                              maxWidth: "200px",
+                              maxHeight: "100px",
+                              objectFit: "contain",
+                              border: "1px solid #ddd",
+                              borderRadius: "4px",
+                              padding: "8px",
+                              backgroundColor: "#fff",
+                            }}
+                            onError={(e) => {
+                              console.error("Failed to load logo image");
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                          <small className="text-muted mt-1">
+                            Logo data length:{" "}
+                            {settings.companyLogo?.length || 0} characters
+                          </small>
+                        </div>
+                        <Button
+                          color="danger"
+                          size="sm"
+                          onClick={handleRemoveImage}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : settings.companyLogo &&
+                      settings.companyLogo.length <= 1000 ? (
+                      <div className="d-flex align-items-center gap-3 mb-3 logo-preview">
+                        <div className="d-flex flex-column align-items-start">
+                          <div
+                            style={{
+                              width: "200px",
+                              height: "100px",
+                              border: "2px dashed #ff6b6b",
+                              borderRadius: "4px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor: "#fff3f3",
+                            }}
+                          >
+                            <div className="text-center">
+                              <p
+                                className="text-danger mb-1"
+                                style={{ fontSize: "12px" }}
+                              >
+                                ⚠️ Logo data corrupted
+                              </p>
+                              <p
+                                className="text-muted mb-0"
+                                style={{ fontSize: "10px" }}
+                              >
+                                Length: {settings.companyLogo?.length || 0}{" "}
+                                chars
+                              </p>
+                            </div>
+                          </div>
+                          <small className="text-muted mt-1">
+                            <span className="text-danger">
+                              ⚠️ Backend truncation detected
+                            </span>
+                            <br />
+                            Logo data is incomplete. Please check backend
+                            configuration.
+                          </small>
+                        </div>
                         <Button
                           color="danger"
                           size="sm"
