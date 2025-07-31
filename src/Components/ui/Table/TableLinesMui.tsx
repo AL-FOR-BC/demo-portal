@@ -30,14 +30,14 @@ import ModelMui from "../ModelMui/ModelMui";
 
 const StyledTableCell = styled(TableCell)(() => ({
   [`&.MuiTableCell-head`]: {
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#ffffff",
     color: "#2c3e50",
     fontWeight: 600,
     padding: "16px 20px",
     borderSpacing: "8px",
     fontFamily: "inherit",
     fontSize: "0.875rem",
-    borderBottom: "2px solid #e3f2fd",
+    borderBottom: "1px solid #e0e0e0",
   },
   [`&.MuiTableCell-body`]: {
     padding: "16px 20px",
@@ -49,9 +49,6 @@ const StyledTableCell = styled(TableCell)(() => ({
 }));
 
 const StyledTableRow = styled(TableRow)(() => ({
-  "&:nth-of-type(odd)": {
-    backgroundColor: "#fafbfc",
-  },
   "&:last-child td, &:last-child th": {
     border: 0,
   },
@@ -552,11 +549,7 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
       </Row>
 
       <TableContainer
-        component={Paper}
         sx={{
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          border: "1px solid #e0e0e0",
-          borderRadius: 2,
           overflow: "hidden",
         }}
       >

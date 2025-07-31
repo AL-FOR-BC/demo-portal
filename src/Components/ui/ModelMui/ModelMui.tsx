@@ -163,9 +163,9 @@ const ModelMui: React.FC<ModelMuiProps> = ({
           ))}
         </LoadingOverlayWrapper>
       </div>
-      {canEdit && (
+      {true && (
         <div className="modal-footer">
-          {true ? (
+          {isEdit ? (
             <ReactstrapButton color="success" onClick={handleUpdateLine}>
               Update
             </ReactstrapButton>
