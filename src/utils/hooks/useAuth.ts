@@ -73,6 +73,7 @@ function UseAuth() {
     try {
       const signInResponse = await apiSignIn(values);
       const { token, email, verified, isAdmin } = signInResponse.data;
+      console.log(signInResponse.data);
       if (token) {
         const bcTokenResponse = await apiBcToken();
         const { access_token } = bcTokenResponse.data;
