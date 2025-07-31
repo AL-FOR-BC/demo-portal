@@ -20,11 +20,7 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
-import {
-  Add as AddIcon,
-  FilterList as FilterIcon,
-  Refresh as RefreshIcon,
-} from "@mui/icons-material";
+import { Add as AddIcon, FilterList as FilterIcon } from "@mui/icons-material";
 import LeaveCalendar from "./LeaveCalendar";
 import { useLeaveCalendar, LeaveDay } from "./hooks/useLeaveCalendar";
 import { format } from "date-fns";
@@ -57,7 +53,7 @@ const LeaveCalendarDemo: React.FC = () => {
   const [showFilterDialog, setShowFilterDialog] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedLeaves, setSelectedLeaves] = useState<LeaveDay[]>([]);
-
+  console.log(selectedLeaves, selectedDate);
   // Sample filters
   const [filters, setFilters] = useState({
     employeeId: "",
@@ -65,15 +61,8 @@ const LeaveCalendarDemo: React.FC = () => {
     status: "",
   });
 
-  const {
-    leaveData,
-    loading,
-    error,
-    statistics,
-    addLeave,
-    updateLeave,
-    deleteLeave,
-  } = useLeaveCalendar();
+  const { leaveData, loading, error, statistics, addLeave } =
+    useLeaveCalendar();
 
   // New leave form state
   const [newLeave, setNewLeave] = useState({
@@ -84,7 +73,7 @@ const LeaveCalendarDemo: React.FC = () => {
     notes: "",
   });
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 

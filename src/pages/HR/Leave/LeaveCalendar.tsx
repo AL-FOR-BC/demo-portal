@@ -9,8 +9,6 @@ import {
   IconButton,
   Tooltip,
   Paper,
-  Divider,
-  Badge,
 } from "@mui/material";
 import {
   ChevronLeft,
@@ -121,7 +119,7 @@ const LeaveCalendar: React.FC<LeaveCalendarProps> = ({
 
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
-        {approvedLeaves.slice(0, 2).map((leave, index) => (
+        {approvedLeaves.slice(0, 2).map((leave, _) => (
           <Box
             key={leave.id}
             sx={{

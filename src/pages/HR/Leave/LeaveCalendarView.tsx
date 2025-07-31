@@ -138,7 +138,7 @@ const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({
 
     return (
       <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mt: 0.5 }}>
-        {approvedLeaves.slice(0, 2).map((leave, index) => (
+        {approvedLeaves.slice(0, 2).map((leave, _) => (
           <Box
             key={leave.id}
             sx={{
