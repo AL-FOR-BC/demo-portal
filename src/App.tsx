@@ -35,8 +35,14 @@ const pca = new PublicClientApplication({
         ? "https://login.microsoftonline.com/df78e20f-3ca1-4018-9157-8bedb2673da2"
         : "https://login.microsoftonline.com/24528e89-fa53-4fc5-9847-429bb50802ff",
 
-    redirectUri: window.location.origin + "/rom/",
-    postLogoutRedirectUri: window.location.origin + "/rom/single-sign-on/",
+    redirectUri:
+      environmentType === "HRP"
+        ? window.location.origin + "/"
+        : window.location.origin + "/rom/",
+    postLogoutRedirectUri:
+      environmentType === "HRP"
+        ? window.location.origin + "/single-sign-on/"
+        : window.location.origin + "/rom/single-sign-on/",
     navigateToLoginRequestUrl: true,
   },
   cache: {
