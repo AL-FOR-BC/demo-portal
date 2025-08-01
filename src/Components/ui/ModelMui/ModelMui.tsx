@@ -62,7 +62,7 @@ const ModelMui: React.FC<ModelMuiProps> = ({
   isEdit = false,
   handleSubmit,
   handleUpdateLine,
-  canEdit = false,
+  // canEdit = false,
 }) => {
   const maxWidth = size as Breakpoint;
 
