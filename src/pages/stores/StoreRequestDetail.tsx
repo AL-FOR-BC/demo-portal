@@ -102,7 +102,7 @@ function StoreRequestDetail() {
         id: "empName",
       },
       {
-        label: "Project Code",
+        label: "Department",
         type: "select",
         value: selectedDimension,
         disabled: status === "Open" ? false : true,
@@ -116,7 +116,7 @@ function StoreRequestDetail() {
           await confirmAndDeleteAllLines(
             storeRequestLines,
             onSuccess,
-            "Changing the project code will delete all existing lines. This action cannot be undone!"
+            "Changing the Department will delete all existing lines. This action cannot be undone!"
           );
         },
         required: true,

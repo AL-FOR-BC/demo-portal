@@ -51,7 +51,7 @@ function ApproveStoreRequest() {
         id: "requestorName",
       },
       {
-        label: "Project Code",
+        label: "Department",
         type: "text",
         value: selectedDimension,
         disabled: true,
@@ -134,10 +134,7 @@ function ApproveStoreRequest() {
         // const filter = `$expand=purchaseRequisitionLines&$filter=no eq '${documentNo}'`;
 
         const filter = `$expand=storeRequestline&$filter=no eq '${documentNo}'`;
-        const response = await apiGetStoreRequest(
-          companyId,
-          filter
-        );
+        const response = await apiGetStoreRequest(companyId, filter);
         console.log("response:", response);
         const data = response.data.value[0];
 

@@ -150,7 +150,7 @@ function AddPaymentRequisition() {
         id: "empName",
       },
       {
-        label: "Project Code",
+        label: "Department",
         type: "select",
         value: selectedDimension,
         disabled: false,

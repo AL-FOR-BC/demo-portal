@@ -139,7 +139,7 @@ function PurchaseRequisitionDetail() {
         id: "empName",
       },
       {
-        label: "Project Code",
+        label: "Department",
         type: "select",
         value: selectedDimension,
         disabled: status === "Open" ? false : true,
@@ -483,12 +483,12 @@ function PurchaseRequisitionDetail() {
           },
           {
             dataField: "ShortcutDimCode1",
-            text: "Project Code",
+            text: "Department",
             sort: true,
           },
           {
             dataField: "ShortcutDimCode2",
-            text: "Donor Code",
+            text: "Cost Center",
             sort: true,
           },
           {
@@ -557,19 +557,19 @@ function PurchaseRequisitionDetail() {
           },
           {
             dataField: "ShortcutDimCode1",
-            text: "Project Code",
+            text: "Department",
             sort: true,
           },
           {
             dataField: "ShortcutDimCode2",
-            text: "Donor Code",
+            text: "Cost Center",
             sort: true,
           },
           {
             dataField: "ShortcutDimCode4",
             text: "Activity Code",
             sort: true,
-          }
+          },
         ];
   const modalFields = [
     [

@@ -152,7 +152,7 @@ function TravelRequestDetails() {
 
     [
       {
-        label: "Project Code",
+        label: "Department",
         type: "select",
         disabled: status === "Open" ? false : true,
         options: dimensionValues,
@@ -193,12 +193,12 @@ function TravelRequestDetails() {
           ) {
             Swal.fire({
               title: "Are you sure?",
-              text: "Changing the project code will require you to re-select the work plan",
+              text: "Changing the Department will require you to re-select the work plan",
               icon: "warning",
               showCancelButton: true,
               confirmButtonColor: "#3085d6",
               cancelButtonColor: "#d33",
-              confirmButtonText: "Yes, change project code!",
+              confirmButtonText: "Yes, change Department!",
             }).then(async (result) => {
               if (result.isConfirmed) {
                 quickUpdate({
@@ -451,12 +451,12 @@ function TravelRequestDetails() {
           },
           // {
           //   dataField: "ShortcutDimCode1",
-          //   text: "Project Code",
+          //   text: "Department",
           //   sort: true,
           // },
           // {
           //   dataField: "ShortcutDimCode2",
-          //   text: "Donor Code",
+          //   text: "Cost Center",
           //   sort: true,
           // },
           {
@@ -527,12 +527,12 @@ function TravelRequestDetails() {
           },
           // {
           //   dataField: "ShortcutDimCode1",
-          //   text: "Project Code",
+          //   text: "Department",
           //   sort: true,
           // },
           // {
           //   dataField: "ShortcutDimCode2",
-          //   text: "Donor Code",
+          //   text: "Cost Center",
           //   sort: true,
           // },
           {
@@ -1047,7 +1047,7 @@ function TravelRequestDetails() {
       { value: selectedSubCategory[0]?.value, name: "Payment Sub Category" },
       { value: budgetCode, name: "Budget Code" },
       { value: selectedEmployee[0]?.value, name: "Employee" },
-      { value: selectedDimension[0]?.value, name: "Project Code" },
+      { value: selectedDimension[0]?.value, name: "Department" },
       { value: selectedWorkPlan[0]?.value, name: "Work Plan" },
     ];
 
