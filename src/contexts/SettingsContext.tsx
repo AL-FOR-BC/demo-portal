@@ -28,7 +28,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await getSetupSettings();
       setSettings({
         companyLogo: response.data.companyLogo || null,
-        themeColor: response.data.themeColor || "#556ee6",
+        themeColor: response.data.themeColor || "#0B488B",
         allowCompanyChange: response.data.allowCompanyChange || false,
       });
     } catch (error) {
