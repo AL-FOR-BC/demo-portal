@@ -89,15 +89,23 @@ export const usePA = ({
     field: keyof PAFormData,
     value: string | options
   ) => {
+    console.log("handleInputChange called with:", { field, value, mode });
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
     if (mode === "detail") {
+      console.log("Detail mode - checking systemId:", formData.systemId);
       if (!formData.systemId) {
         toast.error("PA systemId is required");
         return;
       }
+      console.log("Making API call to update PA with:", {
+        field,
+        value,
+        systemId: formData.systemId,
+        etag: formData["@odata.etag"],
+      });
       const response = await paService.updatePA(
         companyId,
         {
@@ -106,9 +114,13 @@ export const usePA = ({
         formData.systemId,
         formData["@odata.etag"]
       );
+      console.log("API response:", response);
       if (response.status === 200) {
         toast.success("PA updated successfully");
         populateDocumentDetail(formData.systemId);
+      } else {
+        console.error("API update failed:", response);
+        toast.error("Failed to update PA");
       }
     }
   };
@@ -284,7 +296,7 @@ export const usePA = ({
         options: [
           { value: "", label: "Select" },
           { value: "Probation Appraisal", label: "Probation Appraisal" },
-          { value: "Full-Year Appraisal", label: "Full Year Appraisal" },
+          { value: "Annual Appraisal", label: "Full Year Appraisal" },
           { value: "Mid-Year Appraisal", label: "Mid-Year Appraisal" },
         ],
       },

@@ -67,6 +67,25 @@ import { peerEvaluationService } from "../../../services/PeerEvaluationService";
 function PADetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // Helper function to check if editing should be disabled
+  const isEditingDisabled = (allowedStage: string, allowedUser?: string) => {
+    if (formData.stage === "Head of Department Review") {
+      // Special case: Head of Department can edit their comments and HR Action Point
+      if (
+        allowedStage === "Head of Department Review" &&
+        formData.headOfDepartment === employeeNo
+      ) {
+        return false; // Allow Head of Department to edit during their review
+      }
+      return true; // Disabled for everyone else during Head of Department Review
+    }
+    if (allowedUser && currentUser !== allowedUser) {
+      return true; // Disabled if user doesn't match
+    }
+    return formData.stage !== allowedStage; // Disabled if stage doesn't match
+  };
+
   const { companyId } = useAppSelector((state) => state.auth.session);
   const { employeeNo: currentUserEmployeeNo } = useAppSelectorAuth(
     (state) => state.auth.user
@@ -152,8 +171,17 @@ function PADetails() {
                     e.stopPropagation(); // Prevent row click event
                     handleEditClick(row, "paLines");
                   }}
+                  disabled={formData.stage === "Head of Department Review"}
                 >
-                  <EditIcon fontSize="small" sx={{ color: "#1976d2" }} />
+                  <EditIcon
+                    fontSize="small"
+                    sx={{
+                      color:
+                        formData.stage === "Head of Department Review"
+                          ? "#ccc"
+                          : "#1976d2",
+                    }}
+                  />
                 </IconButton>
               );
             },
@@ -244,7 +272,7 @@ function PADetails() {
               handleEditChange("description", newValue);
             },
             id: "description",
-            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            disabled: isEditingDisabled("Appraisee Rating"),
             rows: 4,
           },
         ];
@@ -272,7 +300,7 @@ function PADetails() {
               handleEditChange("element", newValue);
             },
             id: "element",
-            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            disabled: isEditingDisabled("Appraisee Rating"),
           },
           {
             label: "What Do You Think Causes The Difficulty",
@@ -283,7 +311,7 @@ function PADetails() {
               handleEditChange("whatDoYouThinkCausesTheDifficulty", newValue);
             },
             id: "whatDoYouThinkCausesTheDifficulty",
-            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            disabled: isEditingDisabled("Appraisee Rating"),
             rows: 3,
           },
         ];
@@ -311,7 +339,7 @@ function PADetails() {
               handleEditChange("description", newValue);
             },
             id: "description",
-            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            disabled: isEditingDisabled("Appraisee Rating"),
             rows: 3,
           },
           {
@@ -323,7 +351,7 @@ function PADetails() {
               handleEditChange("byWhen", newValue);
             },
             id: "byWhen",
-            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            disabled: isEditingDisabled("Appraisee Rating"),
           },
         ];
         break;
@@ -2044,10 +2072,18 @@ function PADetails() {
                           <IconButton
                             size="small"
                             onClick={() => handleEditClick(row, "questionQ1")}
+                            disabled={
+                              formData.stage === "Head of Department Review"
+                            }
                           >
                             <EditIcon
                               fontSize="small"
-                              sx={{ color: "#1976d2" }}
+                              sx={{
+                                color:
+                                  formData.stage === "Head of Department Review"
+                                    ? "#ccc"
+                                    : "#1976d2",
+                              }}
                             />
                           </IconButton>
                         ),
@@ -2069,7 +2105,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section E: Question:Q(2)"
+                title="Section E: Question:Q(2) What elements of your job do you find most difficult?"
                 open={showQuestionQ2}
                 onToggle={() => setShowQuestionQ2((prev) => !prev)}
                 action={
@@ -2106,14 +2142,25 @@ function PADetails() {
                             <IconButton
                               size="small"
                               onClick={() => handleEditClick(row, "questionQ2")}
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
                             >
                               <EditIcon
                                 fontSize="small"
-                                sx={{ color: "#1976d2" }}
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
                               />
                             </IconButton>
                             {currentUser === "Appraisee" &&
-                              formData.stage !== "Appraiser Rating" && (
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
                                 <IconButton
                                   size="small"
                                   onClick={() =>
@@ -2144,7 +2191,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section F: Question:Q(3)"
+                title="Section F: Question:Q(3) What do you consider to be your most important aims and tasks in the next year?"
                 open={showQuestionQ3}
                 onToggle={() => setShowQuestionQ3((prev) => !prev)}
                 action={
@@ -2182,14 +2229,25 @@ function PADetails() {
                             <IconButton
                               size="small"
                               onClick={() => handleEditClick(row, "questionQ3")}
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
                             >
                               <EditIcon
                                 fontSize="small"
-                                sx={{ color: "#1976d2" }}
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
                               />
                             </IconButton>
                             {currentUser === "Appraisee" &&
-                              formData.stage !== "Appraiser Rating" && (
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
                                 <IconButton
                                   size="small"
                                   onClick={() =>
@@ -2263,14 +2321,25 @@ function PADetails() {
                               onClick={() =>
                                 handleEditClick(row, "aspirations")
                               }
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
                             >
                               <EditIcon
                                 fontSize="small"
-                                sx={{ color: "#1976d2" }}
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
                               />
                             </IconButton>
                             {currentUser === "Appraisee" &&
-                              formData.stage !== "Appraiser Rating" && (
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
                                 <IconButton
                                   size="small"
                                   onClick={() =>
@@ -2322,10 +2391,18 @@ function PADetails() {
                             onClick={() =>
                               handleEditClick(row, "mobilityPreference")
                             }
+                            disabled={
+                              formData.stage === "Head of Department Review"
+                            }
                           >
                             <EditIcon
                               fontSize="small"
-                              sx={{ color: "#1976d2" }}
+                              sx={{
+                                color:
+                                  formData.stage === "Head of Department Review"
+                                    ? "#ccc"
+                                    : "#1976d2",
+                              }}
                             />
                           </IconButton>
                         ),
@@ -2385,14 +2462,25 @@ function PADetails() {
                               onClick={() =>
                                 handleEditClick(row, "languageSkills")
                               }
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
                             >
                               <EditIcon
                                 fontSize="small"
-                                sx={{ color: "#1976d2" }}
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
                               />
                             </IconButton>
                             {currentUser === "Appraisee" &&
-                              formData.stage !== "Appraiser Rating" && (
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
                                 <IconButton
                                   size="small"
                                   onClick={() =>
@@ -2461,14 +2549,25 @@ function PADetails() {
                               onClick={() =>
                                 handleEditClick(row, "careerMoveOptions")
                               }
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
                             >
                               <EditIcon
                                 fontSize="small"
-                                sx={{ color: "#1976d2" }}
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
                               />
                             </IconButton>
                             {currentUser === "Appraisee" &&
-                              formData.stage !== "Appraiser Rating" && (
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
                                 <IconButton
                                   size="small"
                                   onClick={() =>
@@ -2540,10 +2639,18 @@ function PADetails() {
                             onClick={() =>
                               handleEditClick(row, "skillsWorkCompetencyAreas")
                             }
+                            disabled={
+                              formData.stage === "Head of Department Review"
+                            }
                           >
                             <EditIcon
                               fontSize="small"
-                              sx={{ color: "#1976d2" }}
+                              sx={{
+                                color:
+                                  formData.stage === "Head of Department Review"
+                                    ? "#ccc"
+                                    : "#1976d2",
+                              }}
                             />
                           </IconButton>
                         ),
@@ -2604,10 +2711,18 @@ function PADetails() {
                             onClick={() =>
                               handleEditClick(row, "behaviorsPersonalStyle")
                             }
+                            disabled={
+                              formData.stage === "Head of Department Review"
+                            }
                           >
                             <EditIcon
                               fontSize="small"
-                              sx={{ color: "#1976d2" }}
+                              sx={{
+                                color:
+                                  formData.stage === "Head of Department Review"
+                                    ? "#ccc"
+                                    : "#1976d2",
+                              }}
                             />
                           </IconButton>
                         ),
@@ -2672,10 +2787,18 @@ function PADetails() {
                             onClick={() =>
                               handleEditClick(row, "subordinatesEvaluation")
                             }
+                            disabled={
+                              formData.stage === "Head of Department Review"
+                            }
                           >
                             <EditIcon
                               fontSize="small"
-                              sx={{ color: "#1976d2" }}
+                              sx={{
+                                color:
+                                  formData.stage === "Head of Department Review"
+                                    ? "#ccc"
+                                    : "#1976d2",
+                              }}
                             />
                           </IconButton>
                         ),
@@ -2740,10 +2863,18 @@ function PADetails() {
                             onClick={() =>
                               handleEditClick(row, "peerEvaluation")
                             }
+                            disabled={
+                              formData.stage === "Head of Department Review"
+                            }
                           >
                             <EditIcon
                               fontSize="small"
-                              sx={{ color: "#1976d2" }}
+                              sx={{
+                                color:
+                                  formData.stage === "Head of Department Review"
+                                    ? "#ccc"
+                                    : "#1976d2",
+                              }}
                             />
                           </IconButton>
                         ),
@@ -2787,7 +2918,7 @@ function PADetails() {
                         onBlur={(e) => {
                           handleInputChange("employeeComments", e.target.value);
                         }}
-                        disabled={formData.stage !== "Appraisee Rating"}
+                        disabled={isEditingDisabled("Appraisee Rating")}
                         id="employeeComments"
                       />
                     </Col>
@@ -2812,10 +2943,10 @@ function PADetails() {
                             e.target.value
                           );
                         }}
-                        disabled={
-                          formData.stage !== "Appraiser Rating" ||
-                          currentUser !== "Appraiser"
-                        }
+                        disabled={isEditingDisabled(
+                          "Appraiser Rating",
+                          "Appraiser"
+                        )}
                         id="lineManagerComments"
                       />
                     </Col>
@@ -2840,14 +2971,16 @@ function PADetails() {
                             e.target.value
                           );
                         }}
-                        disabled={
-                          formData.stage !== "Head of Department Review"
-                        }
+                        disabled={isEditingDisabled(
+                          "Head of Department Review"
+                        )}
                         id="headOfDepartmentComments"
                       />
                     </Col>
                     <Col sm={6}>
-                      <Label htmlFor="hrActionPoint">HR Action Point</Label>
+                      <Label htmlFor="hrActionPoint">
+                        Recommendation to HR
+                      </Label>
                       <Input
                         type="textarea"
                         rows={4}
@@ -2857,11 +2990,22 @@ function PADetails() {
                           handleFieldUpdate("hrActionPoint", e.target.value);
                         }}
                         onBlur={(e) => {
+                          console.log(
+                            "HR Action Point onBlur triggered:",
+                            e.target.value
+                          );
+                          console.log("Current formData:", formData);
+                          console.log("Current stage:", formData.stage);
+                          console.log(
+                            "Is Head of Department:",
+                            formData.headOfDepartment === employeeNo
+                          );
                           handleInputChange("hrActionPoint", e.target.value);
                         }}
                         disabled={
-                          formData.stage !== "Appraiser Rating" ||
-                          currentUser !== "Appraiser"
+                          formData.stage === "Head of Department Review"
+                            ? formData.headOfDepartment !== employeeNo
+                            : isEditingDisabled("Appraiser Rating", "Appraiser")
                         }
                         id="hrActionPoint"
                       />

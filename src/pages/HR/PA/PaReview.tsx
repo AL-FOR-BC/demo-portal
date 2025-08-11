@@ -4,7 +4,6 @@ import { usePA } from "./hooks/usePA";
 import { PA } from "../../../@types/pa.dto";
 import {
   ActionFormatter,
-  statusFormatter,
 } from "../../../Components/ui/Table/TableUtils";
 import { useAppSelector } from "../../../store/hook";
 
@@ -76,12 +75,12 @@ function PaReview() {
         );
       },
     },
-    {
-      dataField: "status",
-      text: "Status",
-      sort: true,
-      formatter: statusFormatter,
-    },
+    // {
+    //   dataField: "status",
+    //   text: "Status",
+    //   sort: true,
+    //   formatter: statusFormatter,
+    // },
     {
       dataField: "action",
       text: "Action",
@@ -105,13 +104,16 @@ function PaReview() {
       try {
         // For review page, we might want to show all PAs or filter differently
         // For now, showing all PAs (you can adjust the filter logic as needed)
-        const filteredResult = result.filter(
-          (item) =>
+        const filteredResult = result.filter((item) => {
+          console.log(item.appraiser, employeeNo, item.stage);
+          return (
             (item.appraiser === employeeNo &&
               item.stage === "Appraiser Rating") ||
             (item.headOfDepartment === employeeNo &&
               item.stage === "Head of Department Review")
-        );
+          );
+        });
+        console.log(employeeNo);
         console.log(filteredResult);
         setData(filteredResult || []);
       } catch (error) {

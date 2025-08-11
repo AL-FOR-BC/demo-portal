@@ -120,7 +120,7 @@ export interface PALineResponse {
 // Enums for fixed values
 export enum AppraisalPeriod {
   MID_YEAR = "Mid-Year Appraisal",
-  FULL_YEAR = "Full-Year Appraisal",
+  FULL_YEAR = "Annual Appraisal",
   PROBATION = "Probation Appraisal",
 }
 

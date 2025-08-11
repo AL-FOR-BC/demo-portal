@@ -285,7 +285,7 @@ export const useIPA = ({
         options: [
           { value: "", label: "Select" },
           { value: "Probation", label: "Probation" },
-          { value: "Full-Year Appraisal", label: "Full Year Appraisal" },
+          { value: "Annual Appraisal", label: "Full Year Appraisal" },
           { value: "Mid-Year Appraisal", label: "Mid-Year Appraisal" },
         ],
       },
@@ -318,7 +318,7 @@ export const useIPA = ({
           },
           required: true,
         },
-        
+
         {
           label: "Measures/Deliverables",
           type: "textarea",
