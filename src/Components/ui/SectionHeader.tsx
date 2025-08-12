@@ -41,9 +41,8 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
         textAlign: "left",
         lineHeight: 1.2,
       }}
-    >
-      {title}
-    </Typography>
+      dangerouslySetInnerHTML={{ __html: title }}
+    />
     <Box display="flex" alignItems="center" gap={1}>
       {action}
       <IconButton onClick={onToggle} size="large">

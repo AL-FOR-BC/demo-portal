@@ -41,7 +41,11 @@ function Pa() {
       text: "Appraiser Name",
       sort: true,
     },
-    
+    {
+      dataField: "headOfDepartmentNames",
+      text: "Head of Department Name",
+      sort: true,
+    },
     {
       dataField: "appraisalPeriod",
       text: "Appraisal Period",

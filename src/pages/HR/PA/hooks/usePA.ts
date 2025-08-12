@@ -48,6 +48,20 @@ export const usePA = ({
     performanceAppraisalState: "",
     appraisalCycle: "",
     performanceYear: "",
+    // Assessment Score Fields
+    selfAssessmentPerformanceScore: 0,
+    selfAssessmentBehaviorScore: 0,
+    peerAssessmentScore: 0,
+    subordinatesAssessmentScore: 0,
+    lineManagerAssessmentScore: 0,
+    // Assessment Actual Fields
+    selfAssessmentPerformanceActual: 0,
+    selfAssessmentBehaviorActual: 0,
+    peerAssessmentActual: 0,
+    subordinatesAssessmentActual: 0,
+    lineManagerAssessmentActual: 0,
+    // Total Score Field
+    totalScore: 0,
   };
 
   const initialLineFormData: PALineFormData = {
@@ -106,13 +120,14 @@ export const usePA = ({
         systemId: formData.systemId,
         etag: formData["@odata.etag"],
       });
+
       const response = await paService.updatePA(
         companyId,
         {
           [field]: value,
         },
         formData.systemId,
-        formData["@odata.etag"]
+        formData["@odata.etag"] || "*"
       );
       console.log("API response:", response);
       if (response.status === 200) {
@@ -296,14 +311,125 @@ export const usePA = ({
         options: [
           { value: "", label: "Select" },
           { value: "Probation Appraisal", label: "Probation Appraisal" },
-          { value: "Annual Appraisal", label: "Full Year Appraisal" },
+          { value: "Annual Appraisal", label: "Annual Appraisal" },
           { value: "Mid-Year Appraisal", label: "Mid-Year Appraisal" },
         ],
       },
       ...detailFields,
     ];
 
-    const fields = [[...basicFields, ...editableFields]];
+    // Assessment Score Fields - Always disabled (read-only)
+    const assessmentScoreFields = [
+      {
+        label: "Self-assessment - Performance Score",
+        type: "number",
+        value: formData.selfAssessmentPerformanceScore || "",
+        id: "selfAssessmentPerformanceScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Self-assessment - Behavior Score",
+        type: "number",
+        value: formData.selfAssessmentBehaviorScore || "",
+        id: "selfAssessmentBehaviorScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Peer Assessment Score",
+        type: "number",
+        value: formData.peerAssessmentScore || "",
+        id: "peerAssessmentScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Subordinates Assessment Score",
+        type: "number",
+        value: formData.subordinatesAssessmentScore || "",
+        id: "subordinatesAssessmentScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Line Manager's Assessment Score",
+        type: "number",
+        value: formData.lineManagerAssessmentScore || "",
+        id: "lineManagerAssessmentScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+    ];
+
+    // Assessment Actual Fields - Always disabled (read-only)
+    const assessmentActualFields = [
+      {
+        label: "Self-assessment - Performance Actual",
+        type: "number",
+        value: formData.selfAssessmentPerformanceActual || "",
+        id: "selfAssessmentPerformanceActual",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Self-assessment - Behavior Actual",
+        type: "number",
+        value: formData.selfAssessmentBehaviorActual || "",
+        id: "selfAssessmentBehaviorActual",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Peer Assessment Actual",
+        type: "number",
+        value: formData.peerAssessmentActual || "",
+        id: "peerAssessmentActual",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Subordinates Assessment Actual",
+        type: "number",
+        value: formData.subordinatesAssessmentActual || "",
+        id: "subordinatesAssessmentActual",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Line Manager's Assessment Actual",
+        type: "number",
+        value: formData.lineManagerAssessmentActual || "",
+        id: "lineManagerAssessmentActual",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Total Score",
+        type: "number",
+        value: formData.totalScore || "",
+        id: "totalScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Overall Rating",
+        type: "text",
+        value: formData.overallRating || "",
+        id: "overallRating",
+        disabled: true,
+        placeholder: "",
+      },
+    ];
+
+    const fields = [
+      [
+        ...basicFields,
+        ...editableFields,
+        ...assessmentScoreFields,
+        ...assessmentActualFields,
+      ],
+    ];
     return fields;
   };
 
@@ -589,6 +715,30 @@ export const usePA = ({
       stage: data.stage,
       performanceAppraisalState: data.performanceAppraisalState,
       systemId: data.systemId,
+      employeeComments: data.employeeComments || "",
+      lineManagerComments: data.lineManagerComments || "",
+      headOfDepartmentComments: data.headOfDepartmentComments || "",
+      hrActionPoint: data.hrActionPoint || "",
+      peerEvaluationGeneralComment: data.peerEvaluationGeneralComment || "",
+      subordinateEvaluationGeneralComment:
+        data.subordinateEvaluationGeneralComment || "",
+      overallRating: data.overallRating || "",
+      "@odata.etag": data["@odata.etag"],
+      // Assessment Score Fields
+      selfAssessmentPerformanceScore: data.selfAssessmentPerformanceScore || 0,
+      selfAssessmentBehaviorScore: data.selfAssessmentBehaviorScore || 0,
+      peerAssessmentScore: data.peerAssessmentScore || 0,
+      subordinatesAssessmentScore: data.subordinatesAssessmentScore || 0,
+      lineManagerAssessmentScore: data.lineManagerAssessmentScore || 0,
+      // Assessment Actual Fields
+      selfAssessmentPerformanceActual:
+        data.selfAssessmentPerformanceActual || 0,
+      selfAssessmentBehaviorActual: data.selfAssessmentBehaviorActual || 0,
+      peerAssessmentActual: data.peerAssessmentActual || 0,
+      subordinatesAssessmentActual: data.subordinatesAssessmentActual || 0,
+      lineManagerAssessmentActual: data.lineManagerAssessmentActual || 0,
+      // Total Score Field
+      totalScore: data.totalScore || 0,
     };
 
     setFormData(mappedFormData);

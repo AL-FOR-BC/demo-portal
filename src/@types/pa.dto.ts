@@ -50,6 +50,10 @@ export interface PA {
   lineManagerComments?: string;
   headOfDepartmentComments?: string;
   hrActionPoint?: string;
+  headOfDepartmentNames?: string;
+  peerEvaluationGeneralComment?: string;
+  subordinateEvaluationGeneralComment?: string;
+  overallRating?: string;
 }
 
 // Form data interface for the PA document
@@ -78,6 +82,24 @@ export interface PAFormData {
   lineManagerComments?: string;
   headOfDepartmentComments?: string;
   hrActionPoint?: string;
+  peerEvaluationGeneralComment?: string;
+  subordinateEvaluationGeneralComment?: string;
+  overallRating?: string;
+  "@odata.etag"?: string;
+  // Assessment Score Fields
+  selfAssessmentPerformanceScore?: number;
+  selfAssessmentBehaviorScore?: number;
+  peerAssessmentScore?: number;
+  subordinatesAssessmentScore?: number;
+  lineManagerAssessmentScore?: number;
+  // Assessment Actual Fields
+  selfAssessmentPerformanceActual?: number;
+  selfAssessmentBehaviorActual?: number;
+  peerAssessmentActual?: number;
+  subordinatesAssessmentActual?: number;
+  lineManagerAssessmentActual?: number;
+  // Total Score Field
+  totalScore?: number;
 }
 
 // Form data interface for PA lines
@@ -100,6 +122,7 @@ export interface PALineFormData {
   appraiserRating?: number;
   agreedScore?: number;
   agreedActionsInterventions?: string;
+  overallRating?: string;
 }
 
 export type PartialPAFormData = Partial<PAFormData>;
@@ -209,4 +232,34 @@ export type PartialPeerEvaluationFormData = Partial<PeerEvaluationFormData>;
 export interface PeerEvaluationResponse {
   "@odata.context": string;
   value: PeerEvaluation[];
+}
+
+// Other Personal Traits types
+export interface OtherPersonalTrait {
+  "@odata.etag": string;
+  systemId: string;
+  documentNo?: string;
+  lineNo?: number;
+  traitCode?: string;
+  traitDescription?: string;
+  description?: string;
+  rating?: number;
+}
+
+export interface OtherPersonalTraitFormData {
+  documentNo?: string;
+  lineNo?: number;
+  traitCode?: string;
+  traitDescription?: string;
+  description?: string;
+  rating?: number;
+}
+
+export type PartialOtherPersonalTraitFormData =
+  Partial<OtherPersonalTraitFormData>;
+
+// Other Personal Traits Response
+export interface OtherPersonalTraitResponse {
+  "@odata.context": string;
+  value: OtherPersonalTrait[];
 }

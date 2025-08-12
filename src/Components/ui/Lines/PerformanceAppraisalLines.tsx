@@ -59,7 +59,12 @@ interface PerformanceAppraisalLinesProps {
     formatter?: (cellContent: any, row: any) => React.ReactElement;
   }[];
   status: string;
-  mode?: "pa" | "questionQ2" | "questionQ1";
+  mode?:
+    | "pa"
+    | "questionQ2"
+    | "questionQ1"
+    | "otherPersonalTraits"
+    | "trainingNeedsIdentified";
   expandedRows?: Set<number>;
   onToggleExpansion?: (rowIndex: number) => void;
 }
@@ -167,7 +172,12 @@ const PerformanceAppraisalLines: React.FC<PerformanceAppraisalLinesProps> = ({
         </TableHead>
         <TableBody>
           {displayData.map((row, rowIndex) => {
-            if (mode === "questionQ2" || mode === "questionQ1") {
+            if (
+              mode === "questionQ2" ||
+              mode === "questionQ1" ||
+              mode === "otherPersonalTraits" ||
+              mode === "trainingNeedsIdentified"
+            ) {
               return (
                 <StyledTableRow key={row.systemId || rowIndex}>
                   {allColumns.map((column, colIndex) => (

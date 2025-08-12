@@ -101,13 +101,14 @@ export interface IPAFormData {
 
 // Form data interface for IPA lines
 export interface IPALineFormData {
+  lineNo?: number;
+  documentNo?: string;
   jobObjective?: string;
   keyPerformanceIndicators?: string;
   deliverables?: string;
   byWhichTargetDate?: string;
+  overallRating?: string;
   systemId?: string;
-  lineNo?: number;
-  documentNo?: string;
 }
 
 // State interface for managing IPA document state

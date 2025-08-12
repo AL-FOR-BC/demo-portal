@@ -70,10 +70,11 @@ interface HeaderMuiProps {
   handleReopen?: () => void;
   handleDelete?: () => void;
   handleSendToAppraiser?: () => void;
-  currentUser?: "Appraisee" | "Appraiser";
+  currentUser?: "Appraisee" | "Appraiser" | "Head of Department";
   handleConvertToPerformanceAppraisal?: () => void;
   handleSendToHeadOfDepartment?: () => void;
   handleSendBackToAppraisee?: () => void;
+  headOfDepartment?: string;
 }
 
 const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
@@ -110,6 +111,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
     handleConvertToPerformanceAppraisal,
     handleSendToHeadOfDepartment,
     handleSendBackToAppraisee,
+    headOfDepartment,
   } = props;
   console.log("currentUser", props.currentUser);
   console.log("stage", props.stage);
@@ -216,6 +218,18 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                         >
                           <SendIcon className="label-icon" />
                           Send Approval Request
+                        </Button>
+                      )}
+                    {documentType === "Performance Management" &&
+                      stage === "Head of Department Review" &&
+                      headOfDepartment === "Head of Department" && (
+                        <Button
+                          color="primary"
+                          className="btn btn-label"
+                          onClick={handleSendApprovalRequest}
+                        >
+                          <SendIcon className="label-icon" />
+                          Submit Performance Appraisal
                         </Button>
                       )}
                     {documentType !== "Performance Management" && (

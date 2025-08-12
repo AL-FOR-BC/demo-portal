@@ -58,6 +58,7 @@ export const useIPA = ({
     keyPerformanceIndicators: "",
     deliverables: "",
     byWhichTargetDate: "",
+    overallRating: "",
   };
 
   const [state, setState] = useState({});
@@ -285,7 +286,7 @@ export const useIPA = ({
         options: [
           { value: "", label: "Select" },
           { value: "Probation", label: "Probation" },
-          { value: "Annual Appraisal", label: "Full Year Appraisal" },
+          { value: "Annual Appraisal", label: "Annual Appraisal" },
           { value: "Mid-Year Appraisal", label: "Mid-Year Appraisal" },
         ],
       },
@@ -345,15 +346,30 @@ export const useIPA = ({
         },
         {
           label: "By which Target Date?",
-          type: "date",
-          value: lineFormData.byWhichTargetDate || "",
+          type: "select",
+          value: lineFormData.byWhichTargetDate
+            ? {
+                value: lineFormData.byWhichTargetDate,
+                label: lineFormData.byWhichTargetDate,
+              }
+            : { value: "", label: "Select target date" },
           id: "byWhichTargetDate",
           disabled: isFieldDisabled,
-          onChange: (date: any) => {
-            const formattedDate = formatDate(date[0]);
-            handleLineFieldUpdate("byWhichTargetDate", formattedDate);
+          onChange: (e: any) => {
+            const newValue = e?.value || e;
+            handleLineFieldUpdate("byWhichTargetDate", newValue);
           },
           required: true,
+          options: [
+            { value: "", label: "Select target date" },
+            { value: "As and When", label: "As and When" },
+            { value: "Yearly", label: "Yearly" },
+            { value: "Bi-Yearly", label: "Bi-Yearly" },
+            { value: "Quarterly", label: "Quarterly" },
+            { value: "Monthly", label: "Monthly" },
+            { value: "Weekly", label: "Weekly" },
+            { value: "Daily", label: "Daily" },
+          ],
         },
       ],
     ];

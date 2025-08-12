@@ -29,6 +29,9 @@ import { useSkillsWorkCompetencyAreas } from "./hooks/useSkillsWorkCompetencyAre
 import { useBehaviorsPersonalStyle } from "./hooks/useBehaviorsPersonalStyle";
 import { useSubordinatesEvaluation } from "./hooks/useSubordinatesEvaluation";
 import { usePeerEvaluation } from "./hooks/usePeerEvaluation";
+import { useSubordinateStrengthsWeaknesses } from "./hooks/useSubordinateStrengthsWeaknesses";
+import { usePeerStrengthsWeaknesses } from "./hooks/usePeerStrengthsWeaknesses";
+import { useTrainingNeedsIdentified } from "./hooks/useTrainingNeedsIdentified";
 import { updateQuestionQ1 } from "../../../services/QuestionQ1Service";
 import {
   updateQuestionQ2,
@@ -63,6 +66,10 @@ import { subordinatesEvaluationService } from "../../../services/SubordinatesEva
 import SectionHeader from "../../../Components/ui/SectionHeader";
 import { getErrorMessage } from "../../../utils/common";
 import { peerEvaluationService } from "../../../services/PeerEvaluationService";
+import { subordinateStrengthsWeaknessesService } from "../../../services/SubordinateStrengthsWeaknessesService";
+import { peerStrengthsWeaknessesService } from "../../../services/PeerStrengthsWeaknessesService";
+import { trainingNeedsIdentifiedService } from "../../../services/TrainingNeedsIdentifiedService";
+import { otherPersonalTraitsService } from "../../../services/OtherPersonalTraitsService";
 
 function PADetails() {
   const { id } = useParams();
@@ -816,6 +823,155 @@ function PADetails() {
           },
         ];
         break;
+      case "subordinateStrengthsWeaknesses":
+        setModalTitle("Edit Subordinate Strengths & Weaknesses");
+        fields = [
+          {
+            label: "Category",
+            type: "select",
+            value: row.category
+              ? { value: row.category, label: row.category }
+              : "",
+            onChange: (e: any) => {
+              const newValue = e?.value || e;
+              handleEditChange("category", newValue);
+            },
+            id: "category",
+            disabled: false,
+            options: [
+              { value: "Strength", label: "Strength" },
+              { value: "Weakness", label: "Weakness" },
+            ],
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: row.description || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "otherPersonalTraits":
+        setModalTitle("Edit Other Personal Traits");
+        fields = [
+          {
+            label: "Trait Description",
+            type: "text",
+            value: row.traitDescription || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("traitDescription", newValue);
+            },
+            id: "traitDescription",
+            disabled: true,
+          },
+
+          {
+            label: "Rating",
+            type: "number",
+            value: row.rating || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("rating", newValue);
+            },
+            id: "rating",
+            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            min: 1,
+            max: 10,
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: row.description || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "trainingNeedsIdentified":
+        setModalTitle("Edit Training Needs Identified");
+        fields = [
+          {
+            label: "Skill Gap Need",
+            type: "text",
+            value: row.skillGapNeed || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("skillGapNeed", newValue);
+            },
+            id: "skillGapNeed",
+            disabled: false,
+          },
+          {
+            label: "Type of Training",
+            type: "text",
+            value: row.typeOfTraining || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("typeOfTraining", newValue);
+            },
+            id: "typeOfTraining",
+            disabled: false,
+          },
+          {
+            label: "Linkage to Performance",
+            type: "textarea",
+            value: row.linkageToPerformance || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("linkageToPerformance", newValue);
+            },
+            id: "linkageToPerformance",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "peerStrengthsWeaknesses":
+        setModalTitle("Edit Peer Strengths & Weaknesses");
+        fields = [
+          {
+            label: "Category",
+            type: "select",
+            value: row.category
+              ? { value: row.category, label: row.category }
+              : "",
+            onChange: (e: any) => {
+              const newValue = e?.value || e;
+              handleEditChange("category", newValue);
+            },
+            id: "category",
+            disabled: false,
+            options: [
+              { value: "Strength", label: "Strength" },
+              { value: "Weakness", label: "Weakness" },
+            ],
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: row.description || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
       case "peerEvaluation":
         setModalTitle("Edit Peer Evaluation");
         fields = [
@@ -968,7 +1124,7 @@ function PADetails() {
             rows: 3,
           },
           {
-            label: "Appraisee Rating",
+            label: "Appraisee Rating (1-4)",
             type: "text",
             inputProps: {
               max: 4,
@@ -990,7 +1146,7 @@ function PADetails() {
                 currentUser === "Appraisee"),
           },
           {
-            label: "Appraiser Rating",
+            label: "Appraiser Rating (1-4)",
             type: "text",
             value: row.appraiserRating || "",
             onChange: (e: any) => {
@@ -1066,6 +1222,35 @@ function PADetails() {
             await deleteCareerMoveOptions(companyId, row.systemId);
             await refreshCareerMoveOptions();
             toast.success("Career move option deleted successfully");
+            break;
+          case "subordinateStrengthsWeaknesses":
+            // Delete subordinate strengths & weaknesses line
+            await subordinateStrengthsWeaknessesService.deleteSubordinateStrengthsWeaknesses(
+              companyId,
+              row.systemId
+            );
+            await refreshSubordinateStrengthsWeaknesses();
+            toast.success(
+              "Subordinate strengths & weaknesses deleted successfully"
+            );
+            break;
+          case "peerStrengthsWeaknesses":
+            // Delete peer strengths & weaknesses line
+            await peerStrengthsWeaknessesService.deletePeerStrengthsWeaknesses(
+              companyId,
+              row.systemId
+            );
+            await refreshPeerStrengthsWeaknesses();
+            toast.success("Peer strengths & weaknesses deleted successfully");
+            break;
+          case "trainingNeedsIdentified":
+            // Delete training needs identified line
+            await trainingNeedsIdentifiedService.deleteTrainingNeedsIdentified(
+              companyId,
+              row.systemId
+            );
+            await refreshTrainingNeedsIdentified();
+            toast.success("Training needs identified deleted successfully");
             break;
           default:
             toast.error("Unknown section type");
@@ -1372,6 +1557,150 @@ function PADetails() {
           },
         ];
         break;
+      case "subordinateStrengthsWeaknesses":
+        setModalTitle("Add New Subordinate Strengths & Weaknesses");
+        fields = [
+          {
+            label: "Category",
+            type: "select",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e?.value || e;
+              handleEditChange("category", newValue);
+            },
+            id: "category",
+            disabled: false,
+            options: [
+              { value: "Strength", label: "Strength" },
+              { value: "Weakness", label: "Weakness" },
+            ],
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "trainingNeedsIdentified":
+        setModalTitle("Add New Training Needs Identified");
+        fields = [
+          {
+            label: "Skill Gap Need",
+            type: "text",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("skillGapNeed", newValue);
+            },
+            id: "skillGapNeed",
+            disabled: false,
+          },
+          {
+            label: "Type of Training",
+            type: "text",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("typeOfTraining", newValue);
+            },
+            id: "typeOfTraining",
+            disabled: false,
+          },
+          {
+            label: "Linkage to Performance",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("linkageToPerformance", newValue);
+            },
+            id: "linkageToPerformance",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "peerStrengthsWeaknesses":
+        setModalTitle("Add New Peer Strengths & Weaknesses");
+        fields = [
+          {
+            label: "Category",
+            type: "select",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e?.value || e;
+              handleEditChange("category", newValue);
+            },
+            id: "category",
+            disabled: false,
+            options: [
+              { value: "Strength", label: "Strength" },
+              { value: "Weakness", label: "Weakness" },
+            ],
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "otherPersonalTraits":
+        setModalTitle("Edit Other Personal Traits");
+        fields = [
+          {
+            label: "Trait Description",
+            type: "text",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("traitDescription", newValue);
+            },
+            id: "traitDescription",
+            disabled: false,
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+          {
+            label: "Rating",
+            type: "number",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("rating", newValue);
+            },
+            id: "rating",
+            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            min: 1,
+            max: 10,
+          },
+        ];
+        break;
       case "subordinatesEvaluation":
         setModalTitle("Add New Subordinates Evaluation");
         fields = [
@@ -1534,6 +1863,15 @@ function PADetails() {
           documentNo: formData.no,
         };
 
+        // For subordinate strengths & weaknesses, automatically set evaluationType to "Subordinate"
+        if (modalMode === "subordinateStrengthsWeaknesses") {
+          dataWithDocumentNo.evaluationType = "Subordinate";
+        }
+        // For peer strengths & weaknesses, automatically set evaluationType to "Peer"
+        if (modalMode === "peerStrengthsWeaknesses") {
+          dataWithDocumentNo.evaluationType = "Peer";
+        }
+
         switch (modalMode) {
           case "questionQ2":
             response = await createQuestionQ2(companyId, dataWithDocumentNo);
@@ -1569,6 +1907,28 @@ function PADetails() {
                 dataWithDocumentNo
               );
             break;
+          case "subordinateStrengthsWeaknesses":
+            response =
+              await subordinateStrengthsWeaknessesService.createSubordinateStrengthsWeaknesses(
+                companyId,
+                dataWithDocumentNo
+              );
+            break;
+          case "peerStrengthsWeaknesses":
+            response =
+              await peerStrengthsWeaknessesService.createPeerStrengthsWeaknesses(
+                companyId,
+                dataWithDocumentNo
+              );
+            break;
+          case "trainingNeedsIdentified":
+            response =
+              await trainingNeedsIdentifiedService.createTrainingNeedsIdentified(
+                companyId,
+                dataWithDocumentNo
+              );
+            break;
+
           default:
             toast.error("Unknown section type for adding");
             return;
@@ -1602,6 +1962,15 @@ function PADetails() {
               break;
             case "subordinatesEvaluation":
               refreshSubordinatesEvaluation();
+              break;
+            case "subordinateStrengthsWeaknesses":
+              refreshSubordinateStrengthsWeaknesses();
+              break;
+            case "peerStrengthsWeaknesses":
+              refreshPeerStrengthsWeaknesses();
+              break;
+            case "trainingNeedsIdentified":
+              refreshTrainingNeedsIdentified();
               break;
           }
           handleModalClose();
@@ -1814,6 +2183,51 @@ function PADetails() {
             editRow["@odata.etag"]
           );
           break;
+        case "subordinateStrengthsWeaknesses":
+          // Automatically set evaluationType to "Subordinate" for updates
+          const updatedData = {
+            ...processedEditData,
+            evaluationType: "Subordinate",
+          };
+          response =
+            await subordinateStrengthsWeaknessesService.updateSubordinateStrengthsWeaknesses(
+              companyId,
+              updatedData,
+              editRow.systemId,
+              editRow["@odata.etag"]
+            );
+          break;
+        case "peerStrengthsWeaknesses":
+          // Automatically set evaluationType to "Peer" for updates
+          const peerUpdatedData = {
+            ...processedEditData,
+            evaluationType: "Peer",
+          };
+          response =
+            await peerStrengthsWeaknessesService.updatePeerStrengthsWeaknesses(
+              companyId,
+              peerUpdatedData,
+              editRow.systemId,
+              editRow["@odata.etag"]
+            );
+          break;
+        case "otherPersonalTraits":
+          response = await otherPersonalTraitsService.updateOtherPersonalTrait(
+            companyId,
+            processedEditData,
+            editRow.systemId,
+            editRow["@odata.etag"]
+          );
+          break;
+        case "trainingNeedsIdentified":
+          response =
+            await trainingNeedsIdentifiedService.updateTrainingNeedsIdentified(
+              companyId,
+              processedEditData,
+              editRow.systemId,
+              editRow["@odata.etag"]
+            );
+          break;
         default:
           toast.error("Unknown section type");
           return;
@@ -1860,6 +2274,18 @@ function PADetails() {
           case "peerEvaluation":
             refreshPeerEvaluation();
             break;
+          case "subordinateStrengthsWeaknesses":
+            refreshSubordinateStrengthsWeaknesses();
+            break;
+          case "peerStrengthsWeaknesses":
+            refreshPeerStrengthsWeaknesses();
+            break;
+          case "otherPersonalTraits":
+            fetchOtherPersonalTraits();
+            break;
+          case "trainingNeedsIdentified":
+            refreshTrainingNeedsIdentified();
+            break;
         }
         handleModalClose();
       } else {
@@ -1902,6 +2328,16 @@ function PADetails() {
   const [showSubordinatesEvaluation, setShowSubordinatesEvaluation] =
     React.useState(true);
   const [showPeerEvaluation, setShowPeerEvaluation] = React.useState(true);
+  const [
+    showSubordinateStrengthsWeaknesses,
+    setShowSubordinateStrengthsWeaknesses,
+  ] = React.useState(true);
+  const [showPeerStrengthsWeaknesses, setShowPeerStrengthsWeaknesses] =
+    React.useState(true);
+  const [showOtherPersonalTraits, setShowOtherPersonalTraits] =
+    React.useState(true);
+  const [showTrainingNeedsIdentified, setShowTrainingNeedsIdentified] =
+    React.useState(true);
   const [showSection3, setShowSection3] = React.useState(true);
 
   const { data: questionQ3Data, refresh: refreshQuestionQ3 } = useQuestionQ3(
@@ -1928,12 +2364,48 @@ function PADetails() {
   } = useSubordinatesEvaluation(companyId, formData.no);
   const { data: peerEvaluationData, refresh: refreshPeerEvaluation } =
     usePeerEvaluation(companyId, formData.no);
+  const {
+    data: subordinateStrengthsWeaknessesData,
+    refresh: refreshSubordinateStrengthsWeaknesses,
+  } = useSubordinateStrengthsWeaknesses(companyId, formData.no);
+  const {
+    data: peerStrengthsWeaknessesData,
+    refresh: refreshPeerStrengthsWeaknesses,
+  } = usePeerStrengthsWeaknesses(companyId, formData.no);
+  const {
+    data: trainingNeedsIdentifiedData,
+    refresh: refreshTrainingNeedsIdentified,
+  } = useTrainingNeedsIdentified(companyId, formData.no);
+  const [otherPersonalTraitsData, setOtherPersonalTraitsData] = React.useState<
+    any[]
+  >([]);
+
+  // Fetch Other Personal Traits data
+  const fetchOtherPersonalTraits = async () => {
+    if (!formData.no) return;
+    try {
+      const filterQuery = `$filter=documentNo eq '${formData.no}'`;
+      const response = await otherPersonalTraitsService.getOtherPersonalTraits(
+        companyId,
+        filterQuery
+      );
+      setOtherPersonalTraitsData(response || []);
+    } catch (error) {
+      console.error("Error fetching other personal traits:", error);
+    }
+  };
 
   useEffect(() => {
     if (id) {
       populateDocumentDetail(id);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (formData.no) {
+      fetchOtherPersonalTraits();
+    }
+  }, [formData.no]);
 
   return (
     <>
@@ -1947,6 +2419,11 @@ function PADetails() {
         stage={formData.stage}
         currentUser={
           formData.appraiser === employeeNo ? "Appraiser" : "Appraisee"
+        }
+        headOfDepartment={
+          formData.headOfDepartment === employeeNo
+            ? "Head of Department"
+            : "Appraisee"
         }
         isLoading={false}
         tableId={50452}
@@ -2011,7 +2488,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section C: Performance Appraisal Lines"
+                title="Section C: Performance Appraisal Lines <i style='font-size: 13px; color: #d32f2f;'>(1= Below average, 2=Fair, 3=Good, 4=Very Good)</i>"
                 open={showPALines}
                 onToggle={() => setShowPALines((prev) => !prev)}
               />
@@ -2598,7 +3075,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section K: Skills & Work Competency Areas"
+                title="Section K: Skills & Work Competency Areas <i style='font-size: 13px; color: #d32f2f;'>(Score yourself out of 10 for each skill and behavior)</i>"
                 open={showSkillsWorkCompetencyAreas}
                 onToggle={() =>
                   setShowSkillsWorkCompetencyAreas((prev) => !prev)
@@ -2672,7 +3149,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section L: Behaviors and Personal Style"
+                title="Section L: Behaviors and Personal Style <i style='font-size: 13px; color: #d32f2f;'>(Score yourself out of 10 for each skill and behavior)</i>"
                 open={showBehaviorsPersonalStyle}
                 onToggle={() => setShowBehaviorsPersonalStyle((prev) => !prev)}
               />
@@ -2820,7 +3297,108 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section I: Peer Evaluation"
+                title="Section I: Subordinate Strengths & Weaknesses"
+                open={showSubordinateStrengthsWeaknesses}
+                onToggle={() =>
+                  setShowSubordinateStrengthsWeaknesses((prev) => !prev)
+                }
+                action={
+                  formData.stage === "Appraisee Rating" &&
+                  currentUser === "Appraisee" ? (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() =>
+                        handleAddNew("subordinateStrengthsWeaknesses")
+                      }
+                      sx={{ mr: 1 }}
+                    >
+                      Add New
+                    </Button>
+                  ) : null
+                }
+              />
+              <Collapse in={showSubordinateStrengthsWeaknesses}>
+                <Box px={0} pb={2}>
+                  <PerformanceAppraisalLines
+                    lines={subordinateStrengthsWeaknessesData || []}
+                    columns={[
+                      {
+                        dataField: "category",
+                        text: "Category",
+                        sort: true,
+                      },
+                      {
+                        dataField: "description",
+                        text: "Description",
+                        sort: true,
+                      },
+                      {
+                        dataField: "action",
+                        text: "Action",
+                        formatter: (_: any, row: any) => (
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleEditClick(
+                                  row,
+                                  "subordinateStrengthsWeaknesses"
+                                )
+                              }
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
+                            >
+                              <EditIcon
+                                fontSize="small"
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
+                              />
+                            </IconButton>
+                            {currentUser === "Appraisee" &&
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleDeleteClick(
+                                      row,
+                                      "subordinateStrengthsWeaknesses"
+                                    )
+                                  }
+                                  sx={{ color: "#d32f2f" }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                          </Box>
+                        ),
+                      },
+                    ]}
+                    status={formData.status || ""}
+                    mode="questionQ2"
+                  />
+                </Box>
+              </Collapse>
+            </Paper>
+            <Paper
+              sx={{
+                background: "transparent",
+                borderRadius: 0,
+                boxShadow: "none",
+                mb: 2,
+                p: 0,
+              }}
+            >
+              <SectionHeader
+                title="Section J: Peer Evaluation"
                 open={showPeerEvaluation}
                 onToggle={() => setShowPeerEvaluation((prev) => !prev)}
               />
@@ -2886,6 +3464,268 @@ function PADetails() {
                 </Box>
               </Collapse>
             </Paper>
+            <Paper
+              sx={{
+                background: "transparent",
+                borderRadius: 0,
+                boxShadow: "none",
+                mb: 2,
+                p: 0,
+              }}
+            >
+              <SectionHeader
+                title="Section K: Peer Strengths & Weaknesses"
+                open={showPeerStrengthsWeaknesses}
+                onToggle={() => setShowPeerStrengthsWeaknesses((prev) => !prev)}
+                action={
+                  formData.stage === "Appraisee Rating" &&
+                  currentUser === "Appraisee" ? (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAddNew("peerStrengthsWeaknesses")}
+                      sx={{ mr: 1 }}
+                    >
+                      Add New
+                    </Button>
+                  ) : null
+                }
+              />
+              <Collapse in={showPeerStrengthsWeaknesses}>
+                <Box px={0} pb={2}>
+                  <PerformanceAppraisalLines
+                    lines={peerStrengthsWeaknessesData || []}
+                    columns={[
+                      {
+                        dataField: "category",
+                        text: "Category",
+                        sort: true,
+                      },
+                      {
+                        dataField: "description",
+                        text: "Description",
+                        sort: true,
+                      },
+                      {
+                        dataField: "action",
+                        text: "Action",
+                        formatter: (_: any, row: any) => (
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleEditClick(row, "peerStrengthsWeaknesses")
+                              }
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
+                            >
+                              <EditIcon
+                                fontSize="small"
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
+                              />
+                            </IconButton>
+                            {currentUser === "Appraisee" &&
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleDeleteClick(
+                                      row,
+                                      "peerStrengthsWeaknesses"
+                                    )
+                                  }
+                                  sx={{ color: "#d32f2f" }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                          </Box>
+                        ),
+                      },
+                    ]}
+                    status={formData.status || ""}
+                    mode="questionQ2"
+                  />
+                </Box>
+              </Collapse>
+            </Paper>
+
+            {/* Section L: Other Personal Traits */}
+            <Paper
+              sx={{
+                background: "transparent",
+                borderRadius: 0,
+                boxShadow: "none",
+                mb: 2,
+                p: 0,
+              }}
+            >
+              <SectionHeader
+                title="Section L: Other Personal Traits"
+                open={showOtherPersonalTraits}
+                onToggle={() => setShowOtherPersonalTraits((prev) => !prev)}
+              />
+              <Box px={0} pb={2}>
+                <PerformanceAppraisalLines
+                  lines={otherPersonalTraitsData || []}
+                  columns={[
+                    {
+                      dataField: "traitDescription",
+                      text: "Trait Description",
+                      sort: true,
+                    },
+                    {
+                      dataField: "description",
+                      text: "Description",
+                      sort: true,
+                    },
+                    {
+                      dataField: "rating",
+                      text: "Rating",
+                      sort: true,
+                    },
+                    {
+                      dataField: "action",
+                      text: "Action",
+                      formatter: (_: any, row: any) => (
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            handleEditClick(row, "otherPersonalTraits")
+                          }
+                          disabled={
+                            formData.stage === "Head of Department Review"
+                          }
+                        >
+                          <EditIcon
+                            fontSize="small"
+                            sx={{
+                              color:
+                                formData.stage === "Head of Department Review"
+                                  ? "#ccc"
+                                  : "#1976d2",
+                            }}
+                          />
+                        </IconButton>
+                      ),
+                    },
+                  ]}
+                  status={formData.status || ""}
+                  mode="otherPersonalTraits"
+                />
+              </Box>
+            </Paper>
+
+            {/* Section M: Training Needs Identified */}
+            <Paper
+              sx={{
+                background: "transparent",
+                borderRadius: 0,
+                boxShadow: "none",
+                mb: 2,
+                p: 0,
+              }}
+            >
+              <SectionHeader
+                title="Section M: Training Needs Identified"
+                open={showTrainingNeedsIdentified}
+                onToggle={() => setShowTrainingNeedsIdentified((prev) => !prev)}
+                action={
+                  formData.stage === "Appraisee Rating" &&
+                  currentUser === "Appraisee" ? (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAddNew("trainingNeedsIdentified")}
+                      sx={{ mr: 1 }}
+                    >
+                      Add New
+                    </Button>
+                  ) : null
+                }
+              />
+              <Collapse in={showTrainingNeedsIdentified}>
+                <Box px={0} pb={2}>
+                  <PerformanceAppraisalLines
+                    lines={trainingNeedsIdentifiedData || []}
+                    columns={[
+                      {
+                        dataField: "skillGapNeed",
+                        text: "Skill Gap Need",
+                        sort: true,
+                      },
+                      {
+                        dataField: "typeOfTraining",
+                        text: "Type of Training",
+                        sort: true,
+                      },
+                      {
+                        dataField: "linkageToPerformance",
+                        text: "Linkage to Performance",
+                        sort: true,
+                      },
+                      {
+                        dataField: "action",
+                        text: "Action",
+                        formatter: (_: any, row: any) => (
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleEditClick(row, "trainingNeedsIdentified")
+                              }
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
+                            >
+                              <EditIcon
+                                fontSize="small"
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
+                              />
+                            </IconButton>
+                            {currentUser === "Appraisee" &&
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleDeleteClick(
+                                      row,
+                                      "trainingNeedsIdentified"
+                                    )
+                                  }
+                                  sx={{ color: "#d32f2f" }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                          </Box>
+                        ),
+                      },
+                    ]}
+                    status={formData.status || ""}
+                    mode="trainingNeedsIdentified"
+                  />
+                </Box>
+              </Collapse>
+            </Paper>
+
             <Paper
               sx={{
                 background: "transparent",
@@ -3008,6 +3848,64 @@ function PADetails() {
                             : isEditingDisabled("Appraiser Rating", "Appraiser")
                         }
                         id="hrActionPoint"
+                      />
+                    </Col>
+                    <Col sm={6}>
+                      <Label htmlFor="peerEvaluationGeneralComment">
+                        Peer Evaluation General Comment
+                      </Label>
+                      <Input
+                        type="textarea"
+                        rows={4}
+                        value={formData.peerEvaluationGeneralComment || ""}
+                        onChange={(e) => {
+                          // Update local state only
+                          handleFieldUpdate(
+                            "peerEvaluationGeneralComment",
+                            e.target.value
+                          );
+                        }}
+                        onBlur={(e) => {
+                          handleInputChange(
+                            "peerEvaluationGeneralComment",
+                            e.target.value
+                          );
+                        }}
+                        disabled={isEditingDisabled(
+                          "Appraiser Rating",
+                          "Appraiser"
+                        )}
+                        id="peerEvaluationGeneralComment"
+                      />
+                    </Col>
+                    <Col sm={6}>
+                      <Label htmlFor="subordinateEvaluationGeneralComment">
+                        Subordinate Evaluation General Comment
+                      </Label>
+                      <Input
+                        type="textarea"
+                        rows={4}
+                        value={
+                          formData.subordinateEvaluationGeneralComment || ""
+                        }
+                        onChange={(e) => {
+                          // Update local state only
+                          handleFieldUpdate(
+                            "subordinateEvaluationGeneralComment",
+                            e.target.value
+                          );
+                        }}
+                        onBlur={(e) => {
+                          handleInputChange(
+                            "subordinateEvaluationGeneralComment",
+                            e.target.value
+                          );
+                        }}
+                        disabled={isEditingDisabled(
+                          "Appraiser Rating",
+                          "Appraiser"
+                        )}
+                        id="subordinateEvaluationGeneralComment"
                       />
                     </Col>
                   </Row>
