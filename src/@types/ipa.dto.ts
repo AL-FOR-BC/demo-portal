@@ -107,7 +107,6 @@ export interface IPALineFormData {
   keyPerformanceIndicators?: string;
   deliverables?: string;
   byWhichTargetDate?: string;
-  overallRating?: string;
   systemId?: string;
 }
 

@@ -58,7 +58,6 @@ export const useIPA = ({
     keyPerformanceIndicators: "",
     deliverables: "",
     byWhichTargetDate: "",
-    overallRating: "",
   };
 
   const [state, setState] = useState({});
