@@ -214,14 +214,14 @@ const CollapsibleRow = ({
                       Performance Details
                     </Typography>
                     <Grid container spacing={3}>
-                      <Grid item xs={12} sm={6} md={4}>
+                      <Grid item xs={12} sm={6} md={3}>
                         <Typography
                           variant="subtitle2"
                           color="textSecondary"
                           gutterBottom
                           sx={{ fontWeight: 600, color: "#555" }}
                         >
-                          Strategic Objective
+                          Job Objective
                         </Typography>
                         <Box
                           sx={{
@@ -239,14 +239,14 @@ const CollapsibleRow = ({
                           </Typography>
                         </Box>
                       </Grid>
-                      <Grid item xs={12} sm={6} md={4}>
+                      <Grid item xs={12} sm={6} md={3}>
                         <Typography
                           variant="subtitle2"
                           color="textSecondary"
                           gutterBottom
                           sx={{ fontWeight: 600, color: "#555" }}
                         >
-                          Individual Objective
+                          Key Performance Indicator(s)
                         </Typography>
                         <Box
                           sx={{
@@ -264,14 +264,14 @@ const CollapsibleRow = ({
                           </Typography>
                         </Box>
                       </Grid>
-                      <Grid item xs={12} sm={6} md={4}>
+                      <Grid item xs={12} sm={6} md={3}>
                         <Typography
                           variant="subtitle2"
                           color="textSecondary"
                           gutterBottom
                           sx={{ fontWeight: 600, color: "#555" }}
                         >
-                          Initiative
+                          Measures/Deliverables
                         </Typography>
                         <Box
                           sx={{
@@ -289,39 +289,14 @@ const CollapsibleRow = ({
                           </Typography>
                         </Box>
                       </Grid>
-                      <Grid item xs={12} sm={6} md={4}>
+                      <Grid item xs={12} sm={6} md={3}>
                         <Typography
                           variant="subtitle2"
                           color="textSecondary"
                           gutterBottom
                           sx={{ fontWeight: 600, color: "#555" }}
                         >
-                          Measures
-                        </Typography>
-                        <Box
-                          sx={{
-                            backgroundColor: "#f8f9fa",
-                            padding: 2,
-                            borderRadius: 1.5,
-                            minHeight: "60px",
-                            border: "1px solid #e9ecef",
-                            display: "flex",
-                            alignItems: "flex-start",
-                          }}
-                        >
-                          <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
-                            {row.deliverables || "Not specified"}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={4}>
-                        <Typography
-                          variant="subtitle2"
-                          color="textSecondary"
-                          gutterBottom
-                          sx={{ fontWeight: 600, color: "#555" }}
-                        >
-                          Target Date
+                          By which Target Date?
                         </Typography>
                         <Box
                           sx={{

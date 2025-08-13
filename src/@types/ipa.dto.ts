@@ -26,6 +26,8 @@ export interface IPA {
   performanceType: string;
   stage: string;
   performanceAppraisalState: string;
+  timeInPresentPosition: string;
+  lengthOfService: string;
   ipaLines: IPALine[];
 }
 
@@ -96,6 +98,8 @@ export interface IPAFormData {
   performanceType: string;
   stage: string;
   performanceAppraisalState: string;
+  timeInPresentPosition?: string;
+  lengthOfService?: string;
   systemId?: string;
 }
 

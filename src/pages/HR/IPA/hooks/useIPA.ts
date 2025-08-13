@@ -49,6 +49,8 @@ export const useIPA = ({
     performanceAppraisalState: "",
     appraisalCycle: "",
     performanceYear: "",
+    timeInPresentPosition: "",
+    lengthOfService: "",
   };
 
   const initialLineFormData: IPALineFormData = {
@@ -205,7 +207,24 @@ export const useIPA = ({
         disabled: true,
         id: "empTitle",
       },
-
+      {
+        label: "Time in Present Position",
+        type: "text",
+        value: formData.timeInPresentPosition || "",
+        disabled: isFieldDisabled,
+        id: "timeInPresentPosition",
+        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+          handleInputChange("timeInPresentPosition", e.target.value);
+        },
+        required: true,
+      },
+      {
+        label: "Length of Service",
+        type: "text",
+        value: formData.lengthOfService || "",
+        disabled: true,
+        id: "lengthOfService",
+      },
       {
         label: "Status",
         type: "text",
@@ -385,6 +404,9 @@ export const useIPA = ({
       if (!formData.appraisalPeriod) {
         missingFields.push("Appraisal Period");
       }
+      if (!formData.timeInPresentPosition) {
+        missingFields.push("Time in Present Position");
+      }
       console.log("missingFields", missingFields);
       if (missingFields.length > 0) {
         toast.error(`Missing fields: ${missingFields.join(", ")}`);
@@ -395,6 +417,7 @@ export const useIPA = ({
         postingDate: formData.postingDate,
         performanceYear: formData.performanceYear,
         appraisalPeriod: formData.appraisalPeriod,
+        timeInPresentPosition: formData.timeInPresentPosition,
       };
       const response = await ipaService.createIPA(companyId, data);
       toast.success("IPA created successfully");
@@ -511,6 +534,8 @@ export const useIPA = ({
       performanceType: data.performanceType,
       stage: data.stage,
       performanceAppraisalState: data.performanceAppraisalState,
+      timeInPresentPosition: data.timeInPresentPosition,
+      lengthOfService: data.lengthOfService,
       systemId: data.systemId,
     };
 
@@ -527,21 +552,34 @@ export const useIPA = ({
       toast.error("IPA No is required");
       return;
     }
-    setState((prev) => ({ ...prev, isLoading: true }));
-    try {
-      const response = await ipaService.sendIPAForApproval(companyId, {
-        no: formData.no,
-        senderEmailAddress: email,
-      });
-      if (response.status === 200) {
-        toast.success("Approval request sent successfully");
-        populateDocumentDetail(systemId);
+    const response = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, send it!",
+    });
+    if (response.isConfirmed) {
+      setState((prev) => ({ ...prev, isLoading: true }));
+      try {
+        const response = await ipaService.sendIPAForApproval(companyId, {
+          no: formData.no,
+          senderEmailAddress: email,
+        });
+        if (response.status === 200) {
+          toast.success("Approval request sent successfully");
+          populateDocumentDetail(systemId);
+          setState((prev) => ({ ...prev, isLoading: false }));
+        }
+      } catch (error) {
+        toast.error(
+          `Error sending approval request: ${getErrorMessage(error)}`
+        );
+      } finally {
         setState((prev) => ({ ...prev, isLoading: false }));
       }
-    } catch (error) {
-      toast.error(`Error sending approval request: ${getErrorMessage(error)}`);
-    } finally {
-      setState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 

@@ -85,17 +85,17 @@ function IPADetails() {
             sort: true,
           },
           {
-            dataField: "Initiatives",
+            dataField: "keyPerformanceIndicators",
             text: "Key Performance Indicator(s)",
             sort: true,
           },
           {
-            dataField: "Measures",
+            dataField: "deliverables",
             text: "Measures/Deliverables",
             sort: true,
           },
           {
-            dataField: "TargetDate",
+            dataField: "byWhichTargetDate",
             text: "By which Target Date?",
             sort: true,
           },
