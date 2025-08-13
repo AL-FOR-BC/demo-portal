@@ -105,6 +105,15 @@ class PaService extends BaseApiService {
       customEndpoint: "HRMISActions_SendBackToAppraisee",
     });
   }
+
+  async submitPA(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_SubmitPerformanceAppraisal",
+    });
+  }
 }
 
 const paService = new PaService();

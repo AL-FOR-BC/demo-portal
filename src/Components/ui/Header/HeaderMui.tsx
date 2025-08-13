@@ -74,6 +74,7 @@ interface HeaderMuiProps {
   handleConvertToPerformanceAppraisal?: () => void;
   handleSendToHeadOfDepartment?: () => void;
   handleSendBackToAppraisee?: () => void;
+  handleSubmitPA?: () => void;
   headOfDepartment?: string;
 }
 
@@ -111,6 +112,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
     handleConvertToPerformanceAppraisal,
     handleSendToHeadOfDepartment,
     handleSendBackToAppraisee,
+    handleSubmitPA,
     headOfDepartment,
   } = props;
   console.log("currentUser", props.currentUser);
@@ -226,7 +228,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                         <Button
                           color="primary"
                           className="btn btn-label"
-                          onClick={handleSendApprovalRequest}
+                          onClick={handleSubmitPA}
                         >
                           <SendIcon className="label-icon" />
                           Submit Performance Appraisal

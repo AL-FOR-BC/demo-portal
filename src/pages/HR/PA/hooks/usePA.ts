@@ -566,36 +566,36 @@ export const usePA = ({
     ];
   };
 
-  const submitPA = async () => {
-    try {
-      setState((prev) => ({ ...prev, isLoading: true }));
+  // const submitPA = async (systemId: string) => {
+  //   try {
+  //     setState((prev) => ({ ...prev, isLoading: true }));
 
-      const missingFields: string[] = [];
-      if (!formData.performanceYear) {
-        missingFields.push("Performance Year");
-      }
-      if (!formData.appraisalPeriod) {
-        missingFields.push("Appraisal Period");
-      }
-      console.log("missingFields", missingFields);
-      if (missingFields.length > 0) {
-        toast.error(`Missing fields: ${missingFields.join(", ")}`);
-        return;
-      }
-      const data = {
-        employeeNo: employeeNo,
-        postingDate: formData.postingDate,
-        appraisalPeriod: formData.performanceYear?.toString(),
-        appraisalType: formData.appraisalType,
-      };
-      const response = await paService.createPA(companyId, data);
-      toast.success("PA created successfully");
-      navigate(`/pa-details/${response.data.systemId}`);
-      return true;
-    } catch (error) {
-      toast.error(`Error creating PA: ${getErrorMessage(error)}`);
-    }
-  };
+  //     const missingFields: string[] = [];
+  //     if (!formData.performanceYear) {
+  //       missingFields.push("Performance Year");
+  //     }
+  //     if (!formData.appraisalPeriod) {
+  //       missingFields.push("Appraisal Period");
+  //     }
+  //     console.log("missingFields", missingFields);
+  //     if (missingFields.length > 0) {
+  //       toast.error(`Missing fields: ${missingFields.join(", ")}`);
+  //       return;
+  //     }
+  //     const data = {
+  //       employeeNo: employeeNo,
+  //       postingDate: formData.postingDate,
+  //       appraisalPeriod: formData.performanceYear?.toString(),
+  //       appraisalType: formData.appraisalType,
+  //     };
+  //     const response = await paService.createPA(companyId, data);
+  //     toast.success("PA created successfully");
+  //     navigate(`/pa-details/${response.data.systemId}`);
+  //     return true;
+  //   } catch (error) {
+  //     toast.error(`Error creating PA: ${getErrorMessage(error)}`);
+  //   }
+  // };
 
   const submitPALines = async (systemId: string) => {
     try {
@@ -818,9 +818,10 @@ export const usePA = ({
       const response = await paService.sendToAppraiser(companyId, {
         no: formData.no,
       });
-      if (response.status === 200) {
+      if (response.status === 204) {
         toast.success("Appraiser sent successfully");
         populateDocumentDetail(systemId);
+        // navigate("/performance-appraisal");
         setState((prev) => ({ ...prev, isLoading: false }));
       }
     } catch (error) {
@@ -838,7 +839,7 @@ export const usePA = ({
       const response = await paService.sendToHeadOfDepartment(companyId, {
         no: formData.no,
       });
-      if (response.status === 200) {
+      if (response.status === 204) {
         toast.success("Sent to Head of Department successfully");
         populateDocumentDetail(systemId);
         setState((prev) => ({ ...prev, isLoading: false }));
@@ -868,6 +869,28 @@ export const usePA = ({
       }
     } catch (error) {
       toast.error(`Error sending back to Appraisee: ${getErrorMessage(error)}`);
+    }
+  };
+  const submitPA = async (systemId: string) => {
+    try {
+      if (!formData.no) {
+        toast.error("PA No is required");
+        return;
+      }
+      setState((prev) => ({ ...prev, isLoading: true }));
+      const response = await paService.submitPA(companyId, {
+        no: formData.no,
+      });
+      if (response.status === 200) {
+        toast.success("Performance Appraisal has been submitted for approval.");
+        populateDocumentDetail(systemId);
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    } catch (error) {
+      toast.error(
+        `Error submitting Performance Appraisal: ${getErrorMessage(error)}`
+      );
+      setState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 

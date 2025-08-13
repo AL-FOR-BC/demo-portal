@@ -113,6 +113,7 @@ function PADetails() {
     cancelPAApprovalRequest,
     handleInputChange,
     handleFieldUpdate,
+    submitPA,
   } = usePA({ mode: "detail" });
 
   useEffect(() => {
@@ -881,7 +882,7 @@ function PADetails() {
               handleEditChange("rating", newValue);
             },
             id: "rating",
-            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            disabled: formData.stage === "Appraisee Rating" ? true : false,
             min: 1,
             max: 10,
           },
@@ -911,7 +912,10 @@ function PADetails() {
               handleEditChange("skillGapNeed", newValue);
             },
             id: "skillGapNeed",
-            disabled: false,
+            disabled:
+              (currentUser === "Appraiser" ||
+                formData.headOfDepartment === employeeNo) &&
+              formData.stage === "Appraisee Rating",
           },
           {
             label: "Type of Training",
@@ -922,7 +926,10 @@ function PADetails() {
               handleEditChange("typeOfTraining", newValue);
             },
             id: "typeOfTraining",
-            disabled: false,
+            disabled:
+              (currentUser === "Appraiser" ||
+                formData.headOfDepartment === employeeNo) &&
+              formData.stage === "Appraisee Rating",
           },
           {
             label: "Linkage to Performance",
@@ -933,7 +940,10 @@ function PADetails() {
               handleEditChange("linkageToPerformance", newValue);
             },
             id: "linkageToPerformance",
-            disabled: false,
+            disabled:
+              (currentUser === "Appraiser" ||
+                formData.headOfDepartment === employeeNo) &&
+              formData.stage === "Appraisee Rating",
             rows: 3,
           },
         ];
@@ -2462,6 +2472,11 @@ function PADetails() {
             sendBackToAppraisee(id);
           }
         }}
+        handleSubmitPA={() => {
+          if (id) {
+            submitPA(id);
+          }
+        }}
         lines={
           <>
             {/* <Lines
@@ -3211,419 +3226,553 @@ function PADetails() {
                 </Box>
               </Collapse>
             </Paper>
-            <Paper
-              sx={{
-                background: "transparent",
-                borderRadius: 0,
-                boxShadow: "none",
-                mb: 2,
-                p: 0,
-              }}
-            >
-              <SectionHeader
-                title="Section H: Subordinates Evaluation"
-                open={showSubordinatesEvaluation}
-                onToggle={() => setShowSubordinatesEvaluation((prev) => !prev)}
-              />
-              <Collapse in={showSubordinatesEvaluation}>
-                <Box px={0} pb={2}>
-                  <PerformanceAppraisalLines
-                    lines={subordinatesEvaluationData}
-                    columns={[
-                      {
-                        dataField: "attributeCode",
-                        text: "Attribute Code",
-                        sort: true,
-                      },
-                      {
-                        dataField: "keyEnablingAttribute",
-                        text: "Key Enabling Attribute",
-                        sort: true,
-                      },
-                      {
-                        dataField: "rating",
-                        text: "Rating (1-4)",
-                        sort: true,
-                      },
-                      {
-                        dataField: "comment",
-                        text: "Comment",
-                        sort: true,
-                      },
-                      {
-                        dataField: "anySuggestion",
-                        text: "Any Suggestion",
-                        sort: true,
-                      },
-                      {
-                        dataField: "action",
-                        text: "Action",
-                        formatter: (_: any, row: any) => (
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              handleEditClick(row, "subordinatesEvaluation")
-                            }
-                            disabled={
-                              formData.stage === "Head of Department Review"
-                            }
-                          >
-                            <EditIcon
-                              fontSize="small"
-                              sx={{
-                                color:
-                                  formData.stage === "Head of Department Review"
-                                    ? "#ccc"
-                                    : "#1976d2",
-                              }}
-                            />
-                          </IconButton>
-                        ),
-                      },
-                    ]}
-                    status={formData.status || ""}
-                    mode="questionQ2"
+            {/* Show sections H, I, J, K, L only during Appraiser Rating or Head of Department Review stages */}
+            {(currentUser === "Appraiser" ||
+              formData.headOfDepartment === employeeNo) && (
+              <>
+                <Paper
+                  sx={{
+                    background: "transparent",
+                    borderRadius: 0,
+                    boxShadow: "none",
+                    mb: 2,
+                    p: 0,
+                  }}
+                >
+                  <SectionHeader
+                    title="Section H: Subordinates Evaluation"
+                    open={showSubordinatesEvaluation}
+                    onToggle={() =>
+                      setShowSubordinatesEvaluation((prev) => !prev)
+                    }
                   />
-                </Box>
-              </Collapse>
-            </Paper>
-            <Paper
-              sx={{
-                background: "transparent",
-                borderRadius: 0,
-                boxShadow: "none",
-                mb: 2,
-                p: 0,
-              }}
-            >
-              <SectionHeader
-                title="Section I: Subordinate Strengths & Weaknesses"
-                open={showSubordinateStrengthsWeaknesses}
-                onToggle={() =>
-                  setShowSubordinateStrengthsWeaknesses((prev) => !prev)
-                }
-                action={
-                  formData.stage === "Appraisee Rating" &&
-                  currentUser === "Appraisee" ? (
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() =>
-                        handleAddNew("subordinateStrengthsWeaknesses")
-                      }
-                      sx={{ mr: 1 }}
-                    >
-                      Add New
-                    </Button>
-                  ) : null
-                }
-              />
-              <Collapse in={showSubordinateStrengthsWeaknesses}>
-                <Box px={0} pb={2}>
-                  <PerformanceAppraisalLines
-                    lines={subordinateStrengthsWeaknessesData || []}
-                    columns={[
-                      {
-                        dataField: "category",
-                        text: "Category",
-                        sort: true,
-                      },
-                      {
-                        dataField: "description",
-                        text: "Description",
-                        sort: true,
-                      },
-                      {
-                        dataField: "action",
-                        text: "Action",
-                        formatter: (_: any, row: any) => (
-                          <Box sx={{ display: "flex", gap: 1 }}>
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleEditClick(
-                                  row,
-                                  "subordinateStrengthsWeaknesses"
-                                )
-                              }
-                              disabled={
-                                formData.stage === "Head of Department Review"
-                              }
-                            >
-                              <EditIcon
-                                fontSize="small"
-                                sx={{
-                                  color:
-                                    formData.stage ===
-                                    "Head of Department Review"
-                                      ? "#ccc"
-                                      : "#1976d2",
-                                }}
-                              />
-                            </IconButton>
-                            {currentUser === "Appraisee" &&
-                              formData.stage !== "Appraiser Rating" &&
-                              formData.stage !==
-                                "Head of Department Review" && (
+                  <Collapse in={showSubordinatesEvaluation}>
+                    <Box px={0} pb={2}>
+                      <PerformanceAppraisalLines
+                        lines={subordinatesEvaluationData}
+                        columns={[
+                          {
+                            dataField: "attributeCode",
+                            text: "Attribute Code",
+                            sort: true,
+                          },
+                          {
+                            dataField: "keyEnablingAttribute",
+                            text: "Key Enabling Attribute",
+                            sort: true,
+                          },
+                          {
+                            dataField: "rating",
+                            text: "Rating (1-4)",
+                            sort: true,
+                          },
+                          {
+                            dataField: "comment",
+                            text: "Comment",
+                            sort: true,
+                          },
+                          {
+                            dataField: "anySuggestion",
+                            text: "Any Suggestion",
+                            sort: true,
+                          },
+                          {
+                            dataField: "action",
+                            text: "Action",
+                            formatter: (_: any, row: any) => (
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleEditClick(row, "subordinatesEvaluation")
+                                }
+                                disabled={
+                                  formData.stage === "Head of Department Review"
+                                }
+                              >
+                                <EditIcon
+                                  fontSize="small"
+                                  sx={{
+                                    color:
+                                      formData.stage ===
+                                      "Head of Department Review"
+                                        ? "#ccc"
+                                        : "#1976d2",
+                                  }}
+                                />
+                              </IconButton>
+                            ),
+                          },
+                        ]}
+                        status={formData.status || ""}
+                        mode="questionQ2"
+                      />
+                    </Box>
+                  </Collapse>
+                </Paper>
+                <Paper
+                  sx={{
+                    background: "transparent",
+                    borderRadius: 0,
+                    boxShadow: "none",
+                    mb: 2,
+                    p: 0,
+                  }}
+                >
+                  <SectionHeader
+                    title="Section I: Subordinate Strengths & Weaknesses"
+                    open={showSubordinateStrengthsWeaknesses}
+                    onToggle={() =>
+                      setShowSubordinateStrengthsWeaknesses((prev) => !prev)
+                    }
+                    action={
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() =>
+                          handleAddNew("subordinateStrengthsWeaknesses")
+                        }
+                        sx={{ mr: 1 }}
+                      >
+                        Add New
+                      </Button>
+                    }
+                  />
+                  <Collapse in={showSubordinateStrengthsWeaknesses}>
+                    <Box px={0} pb={2}>
+                      <PerformanceAppraisalLines
+                        lines={subordinateStrengthsWeaknessesData || []}
+                        columns={[
+                          {
+                            dataField: "category",
+                            text: "Category",
+                            sort: true,
+                          },
+                          {
+                            dataField: "description",
+                            text: "Description",
+                            sort: true,
+                          },
+                          {
+                            dataField: "action",
+                            text: "Action",
+                            formatter: (_: any, row: any) => (
+                              <Box sx={{ display: "flex", gap: 1 }}>
                                 <IconButton
                                   size="small"
                                   onClick={() =>
-                                    handleDeleteClick(
+                                    handleEditClick(
                                       row,
                                       "subordinateStrengthsWeaknesses"
                                     )
                                   }
-                                  sx={{ color: "#d32f2f" }}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              )}
-                          </Box>
-                        ),
-                      },
-                    ]}
-                    status={formData.status || ""}
-                    mode="questionQ2"
-                  />
-                </Box>
-              </Collapse>
-            </Paper>
-            <Paper
-              sx={{
-                background: "transparent",
-                borderRadius: 0,
-                boxShadow: "none",
-                mb: 2,
-                p: 0,
-              }}
-            >
-              <SectionHeader
-                title="Section J: Peer Evaluation"
-                open={showPeerEvaluation}
-                onToggle={() => setShowPeerEvaluation((prev) => !prev)}
-              />
-              <Collapse in={showPeerEvaluation}>
-                <Box px={0} pb={2}>
-                  <PerformanceAppraisalLines
-                    lines={peerEvaluationData || []}
-                    columns={[
-                      {
-                        dataField: "attributeCode",
-                        text: "Attribute Code",
-                        sort: true,
-                      },
-                      {
-                        dataField: "keyEnablingAttribute",
-                        text: "Key Enabling Attribute",
-                        sort: true,
-                      },
-                      {
-                        dataField: "rating",
-                        text: "Rating (1-4)",
-                        sort: true,
-                      },
-                      {
-                        dataField: "comment",
-                        text: "Comment",
-                        sort: true,
-                      },
-                      {
-                        dataField: "anySuggestion",
-                        text: "Any Suggestion",
-                        sort: true,
-                      },
-                      {
-                        dataField: "action",
-                        text: "Action",
-                        formatter: (_: any, row: any) => (
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              handleEditClick(row, "peerEvaluation")
-                            }
-                            disabled={
-                              formData.stage === "Head of Department Review"
-                            }
-                          >
-                            <EditIcon
-                              fontSize="small"
-                              sx={{
-                                color:
-                                  formData.stage === "Head of Department Review"
-                                    ? "#ccc"
-                                    : "#1976d2",
-                              }}
-                            />
-                          </IconButton>
-                        ),
-                      },
-                    ]}
-                    status={formData.status || ""}
-                    mode="questionQ2"
-                  />
-                </Box>
-              </Collapse>
-            </Paper>
-            <Paper
-              sx={{
-                background: "transparent",
-                borderRadius: 0,
-                boxShadow: "none",
-                mb: 2,
-                p: 0,
-              }}
-            >
-              <SectionHeader
-                title="Section K: Peer Strengths & Weaknesses"
-                open={showPeerStrengthsWeaknesses}
-                onToggle={() => setShowPeerStrengthsWeaknesses((prev) => !prev)}
-                action={
-                  formData.stage === "Appraisee Rating" &&
-                  currentUser === "Appraisee" ? (
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => handleAddNew("peerStrengthsWeaknesses")}
-                      sx={{ mr: 1 }}
-                    >
-                      Add New
-                    </Button>
-                  ) : null
-                }
-              />
-              <Collapse in={showPeerStrengthsWeaknesses}>
-                <Box px={0} pb={2}>
-                  <PerformanceAppraisalLines
-                    lines={peerStrengthsWeaknessesData || []}
-                    columns={[
-                      {
-                        dataField: "category",
-                        text: "Category",
-                        sort: true,
-                      },
-                      {
-                        dataField: "description",
-                        text: "Description",
-                        sort: true,
-                      },
-                      {
-                        dataField: "action",
-                        text: "Action",
-                        formatter: (_: any, row: any) => (
-                          <Box sx={{ display: "flex", gap: 1 }}>
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleEditClick(row, "peerStrengthsWeaknesses")
-                              }
-                              disabled={
-                                formData.stage === "Head of Department Review"
-                              }
-                            >
-                              <EditIcon
-                                fontSize="small"
-                                sx={{
-                                  color:
+                                  disabled={
                                     formData.stage ===
                                     "Head of Department Review"
-                                      ? "#ccc"
-                                      : "#1976d2",
-                                }}
-                              />
-                            </IconButton>
-                            {currentUser === "Appraisee" &&
-                              formData.stage !== "Appraiser Rating" &&
-                              formData.stage !==
-                                "Head of Department Review" && (
+                                  }
+                                >
+                                  <EditIcon
+                                    fontSize="small"
+                                    sx={{
+                                      color:
+                                        formData.stage ===
+                                        "Head of Department Review"
+                                          ? "#ccc"
+                                          : "#1976d2",
+                                    }}
+                                  />
+                                </IconButton>
+                                {currentUser === "Appraisee" &&
+                                  formData.stage !== "Appraiser Rating" &&
+                                  formData.stage !==
+                                    "Head of Department Review" && (
+                                    <IconButton
+                                      size="small"
+                                      onClick={() =>
+                                        handleDeleteClick(
+                                          row,
+                                          "subordinateStrengthsWeaknesses"
+                                        )
+                                      }
+                                      sx={{ color: "#d32f2f" }}
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  )}
+                              </Box>
+                            ),
+                          },
+                        ]}
+                        status={formData.status || ""}
+                        mode="questionQ2"
+                      />
+                    </Box>
+                  </Collapse>
+                </Paper>
+                {/* Section I.1: Subordinate Evaluation General Comment - Only visible to Appraiser or Head of Department */}
+                {(currentUser === "Appraiser" ||
+                  formData.headOfDepartment === employeeNo) && (
+                  <Paper
+                    sx={{
+                      background: "transparent",
+                      borderRadius: 0,
+                      boxShadow: "none",
+                      mb: 2,
+                      p: 0,
+                    }}
+                  >
+                    <SectionHeader
+                      title="Section I.1: Subordinate Evaluation General Comment"
+                      open={true}
+                      onToggle={() => {}}
+                    />
+                    <Collapse in={true}>
+                      <Box px={0} pb={2}>
+                        <Row>
+                          <Col sm={12}>
+                            <Label htmlFor="subordinateEvaluationGeneralComment">
+                              Subordinate Evaluation General Comment
+                            </Label>
+                            <Input
+                              type="textarea"
+                              rows={4}
+                              value={
+                                formData.subordinateEvaluationGeneralComment ||
+                                ""
+                              }
+                              onChange={(e) => {
+                                // Update local state only
+                                handleFieldUpdate(
+                                  "subordinateEvaluationGeneralComment",
+                                  e.target.value
+                                );
+                              }}
+                              onBlur={(e) => {
+                                handleInputChange(
+                                  "subordinateEvaluationGeneralComment",
+                                  e.target.value
+                                );
+                              }}
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                                  ? formData.headOfDepartment !== employeeNo
+                                  : isEditingDisabled(
+                                      "Appraiser Rating",
+                                      "Appraiser"
+                                    )
+                              }
+                              id="subordinateEvaluationGeneralComment"
+                            />
+                          </Col>
+                        </Row>
+                      </Box>
+                    </Collapse>
+                  </Paper>
+                )}
+                <Paper
+                  sx={{
+                    background: "transparent",
+                    borderRadius: 0,
+                    boxShadow: "none",
+                    mb: 2,
+                    p: 0,
+                  }}
+                >
+                  <SectionHeader
+                    title="Section J: Peer Evaluation"
+                    open={showPeerEvaluation}
+                    onToggle={() => setShowPeerEvaluation((prev) => !prev)}
+                  />
+                  <Collapse in={showPeerEvaluation}>
+                    <Box px={0} pb={2}>
+                      <PerformanceAppraisalLines
+                        lines={peerEvaluationData || []}
+                        columns={[
+                          {
+                            dataField: "attributeCode",
+                            text: "Attribute Code",
+                            sort: true,
+                          },
+                          {
+                            dataField: "keyEnablingAttribute",
+                            text: "Key Enabling Attribute",
+                            sort: true,
+                          },
+                          {
+                            dataField: "rating",
+                            text: "Rating (1-4)",
+                            sort: true,
+                          },
+                          {
+                            dataField: "comment",
+                            text: "Comment",
+                            sort: true,
+                          },
+                          {
+                            dataField: "anySuggestion",
+                            text: "Any Suggestion",
+                            sort: true,
+                          },
+                          {
+                            dataField: "action",
+                            text: "Action",
+                            formatter: (_: any, row: any) => (
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleEditClick(row, "peerEvaluation")
+                                }
+                                disabled={
+                                  formData.stage === "Head of Department Review"
+                                }
+                              >
+                                <EditIcon
+                                  fontSize="small"
+                                  sx={{
+                                    color:
+                                      formData.stage ===
+                                      "Head of Department Review"
+                                        ? "#ccc"
+                                        : "#1976d2",
+                                  }}
+                                />
+                              </IconButton>
+                            ),
+                          },
+                        ]}
+                        status={formData.status || ""}
+                        mode="questionQ2"
+                      />
+                    </Box>
+                  </Collapse>
+                </Paper>
+                <Paper
+                  sx={{
+                    background: "transparent",
+                    borderRadius: 0,
+                    boxShadow: "none",
+                    mb: 2,
+                    p: 0,
+                  }}
+                >
+                  <SectionHeader
+                    title="Section K: Peer Strengths & Weaknesses"
+                    open={showPeerStrengthsWeaknesses}
+                    onToggle={() =>
+                      setShowPeerStrengthsWeaknesses((prev) => !prev)
+                    }
+                    action={
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleAddNew("peerStrengthsWeaknesses")}
+                        sx={{ mr: 1 }}
+                      >
+                        Add New
+                      </Button>
+                    }
+                  />
+                  <Collapse in={showPeerStrengthsWeaknesses}>
+                    <Box px={0} pb={2}>
+                      <PerformanceAppraisalLines
+                        lines={peerStrengthsWeaknessesData || []}
+                        columns={[
+                          {
+                            dataField: "category",
+                            text: "Category",
+                            sort: true,
+                          },
+                          {
+                            dataField: "description",
+                            text: "Description",
+                            sort: true,
+                          },
+                          {
+                            dataField: "action",
+                            text: "Action",
+                            formatter: (_: any, row: any) => (
+                              <Box sx={{ display: "flex", gap: 1 }}>
                                 <IconButton
                                   size="small"
                                   onClick={() =>
-                                    handleDeleteClick(
+                                    handleEditClick(
                                       row,
                                       "peerStrengthsWeaknesses"
                                     )
                                   }
-                                  sx={{ color: "#d32f2f" }}
+                                  disabled={
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                  }
                                 >
-                                  <DeleteIcon fontSize="small" />
+                                  <EditIcon
+                                    fontSize="small"
+                                    sx={{
+                                      color:
+                                        formData.stage ===
+                                        "Head of Department Review"
+                                          ? "#ccc"
+                                          : "#1976d2",
+                                    }}
+                                  />
                                 </IconButton>
-                              )}
-                          </Box>
-                        ),
-                      },
-                    ]}
-                    status={formData.status || ""}
-                    mode="questionQ2"
-                  />
-                </Box>
-              </Collapse>
-            </Paper>
+                                {currentUser === "Appraisee" &&
+                                  formData.stage !== "Appraiser Rating" &&
+                                  formData.stage !==
+                                    "Head of Department Review" && (
+                                    <IconButton
+                                      size="small"
+                                      onClick={() =>
+                                        handleDeleteClick(
+                                          row,
+                                          "peerStrengthsWeaknesses"
+                                        )
+                                      }
+                                      sx={{ color: "#d32f2f" }}
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  )}
+                              </Box>
+                            ),
+                          },
+                        ]}
+                        status={formData.status || ""}
+                        mode="questionQ2"
+                      />
+                    </Box>
+                  </Collapse>
+                </Paper>
 
-            {/* Section L: Other Personal Traits */}
-            <Paper
-              sx={{
-                background: "transparent",
-                borderRadius: 0,
-                boxShadow: "none",
-                mb: 2,
-                p: 0,
-              }}
-            >
-              <SectionHeader
-                title="Section L: Other Personal Traits"
-                open={showOtherPersonalTraits}
-                onToggle={() => setShowOtherPersonalTraits((prev) => !prev)}
-              />
-              <Box px={0} pb={2}>
-                <PerformanceAppraisalLines
-                  lines={otherPersonalTraitsData || []}
-                  columns={[
-                    {
-                      dataField: "traitDescription",
-                      text: "Trait Description",
-                      sort: true,
-                    },
-                    {
-                      dataField: "description",
-                      text: "Description",
-                      sort: true,
-                    },
-                    {
-                      dataField: "rating",
-                      text: "Rating",
-                      sort: true,
-                    },
-                    {
-                      dataField: "action",
-                      text: "Action",
-                      formatter: (_: any, row: any) => (
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            handleEditClick(row, "otherPersonalTraits")
-                          }
-                          disabled={
-                            formData.stage === "Head of Department Review"
-                          }
-                        >
-                          <EditIcon
-                            fontSize="small"
-                            sx={{
-                              color:
+                {/* Section K.1: Peer Evaluation General Comment - Only visible to Appraiser or Head of Department */}
+                {(currentUser === "Appraiser" ||
+                  formData.headOfDepartment === employeeNo) && (
+                  <Paper
+                    sx={{
+                      background: "transparent",
+                      borderRadius: 0,
+                      boxShadow: "none",
+                      mb: 2,
+                      p: 0,
+                    }}
+                  >
+                    <SectionHeader
+                      title="Section K.1: Peer Evaluation General Comment"
+                      open={true}
+                      onToggle={() => {}}
+                    />
+                    <Collapse in={true}>
+                      <Box px={0} pb={2}>
+                        <Row>
+                          <Col sm={12}>
+                            <Label htmlFor="peerEvaluationGeneralComment">
+                              Peer Evaluation General Comment
+                            </Label>
+                            <Input
+                              type="textarea"
+                              rows={4}
+                              value={
+                                formData.peerEvaluationGeneralComment || ""
+                              }
+                              onChange={(e) => {
+                                // Update local state only
+                                handleFieldUpdate(
+                                  "peerEvaluationGeneralComment",
+                                  e.target.value
+                                );
+                              }}
+                              onBlur={(e) => {
+                                handleInputChange(
+                                  "peerEvaluationGeneralComment",
+                                  e.target.value
+                                );
+                              }}
+                              disabled={
                                 formData.stage === "Head of Department Review"
-                                  ? "#ccc"
-                                  : "#1976d2",
-                            }}
-                          />
-                        </IconButton>
-                      ),
-                    },
-                  ]}
-                  status={formData.status || ""}
-                  mode="otherPersonalTraits"
-                />
-              </Box>
-            </Paper>
+                                  ? formData.headOfDepartment !== employeeNo
+                                  : isEditingDisabled(
+                                      "Appraiser Rating",
+                                      "Appraiser"
+                                    )
+                              }
+                              id="peerEvaluationGeneralComment"
+                            />
+                          </Col>
+                        </Row>
+                      </Box>
+                    </Collapse>
+                  </Paper>
+                )}
+
+                {/* Section L: Other Personal Traits */}
+                <Paper
+                  sx={{
+                    background: "transparent",
+                    borderRadius: 0,
+                    boxShadow: "none",
+                    mb: 2,
+                    p: 0,
+                  }}
+                >
+                  <SectionHeader
+                    title="Section L: Other Personal Traits"
+                    open={showOtherPersonalTraits}
+                    onToggle={() => setShowOtherPersonalTraits((prev) => !prev)}
+                  />
+                  <Collapse in={showOtherPersonalTraits}>
+                    <Box px={0} pb={2}>
+                      <PerformanceAppraisalLines
+                        lines={otherPersonalTraitsData || []}
+                        columns={[
+                          {
+                            dataField: "traitDescription",
+                            text: "Trait Description",
+                            sort: true,
+                          },
+                          {
+                            dataField: "description",
+                            text: "Description",
+                            sort: true,
+                          },
+                          {
+                            dataField: "rating",
+                            text: "Rating",
+                            sort: true,
+                          },
+                          {
+                            dataField: "action",
+                            text: "Action",
+                            formatter: (_: any, row: any) => (
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleEditClick(row, "otherPersonalTraits")
+                                }
+                                disabled={
+                                  formData.stage === "Head of Department Review"
+                                }
+                              >
+                                <EditIcon
+                                  fontSize="small"
+                                  sx={{
+                                    color:
+                                      formData.stage ===
+                                      "Head of Department Review"
+                                        ? "#ccc"
+                                        : "#1976d2",
+                                  }}
+                                />
+                              </IconButton>
+                            ),
+                          },
+                        ]}
+                        status={formData.status || ""}
+                        mode="otherPersonalTraits"
+                      />
+                    </Box>
+                  </Collapse>
+                </Paper>
+              </>
+            )}
 
             {/* Section M: Training Needs Identified */}
             <Paper
@@ -3848,64 +3997,6 @@ function PADetails() {
                             : isEditingDisabled("Appraiser Rating", "Appraiser")
                         }
                         id="hrActionPoint"
-                      />
-                    </Col>
-                    <Col sm={6}>
-                      <Label htmlFor="peerEvaluationGeneralComment">
-                        Peer Evaluation General Comment
-                      </Label>
-                      <Input
-                        type="textarea"
-                        rows={4}
-                        value={formData.peerEvaluationGeneralComment || ""}
-                        onChange={(e) => {
-                          // Update local state only
-                          handleFieldUpdate(
-                            "peerEvaluationGeneralComment",
-                            e.target.value
-                          );
-                        }}
-                        onBlur={(e) => {
-                          handleInputChange(
-                            "peerEvaluationGeneralComment",
-                            e.target.value
-                          );
-                        }}
-                        disabled={isEditingDisabled(
-                          "Appraiser Rating",
-                          "Appraiser"
-                        )}
-                        id="peerEvaluationGeneralComment"
-                      />
-                    </Col>
-                    <Col sm={6}>
-                      <Label htmlFor="subordinateEvaluationGeneralComment">
-                        Subordinate Evaluation General Comment
-                      </Label>
-                      <Input
-                        type="textarea"
-                        rows={4}
-                        value={
-                          formData.subordinateEvaluationGeneralComment || ""
-                        }
-                        onChange={(e) => {
-                          // Update local state only
-                          handleFieldUpdate(
-                            "subordinateEvaluationGeneralComment",
-                            e.target.value
-                          );
-                        }}
-                        onBlur={(e) => {
-                          handleInputChange(
-                            "subordinateEvaluationGeneralComment",
-                            e.target.value
-                          );
-                        }}
-                        disabled={isEditingDisabled(
-                          "Appraiser Rating",
-                          "Appraiser"
-                        )}
-                        id="subordinateEvaluationGeneralComment"
                       />
                     </Col>
                   </Row>
