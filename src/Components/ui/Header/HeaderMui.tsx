@@ -25,6 +25,7 @@ import {
 } from "../../common/icons/icons";
 import classNames from "classnames";
 import { Button, Row, Col, Collapse, Input, Label } from "reactstrap";
+import { IconButton } from "@mui/material";
 import Attachments from "../../common/Attachment";
 import ApprovalEntries from "../../common/ApprovalEntry";
 import ApprovalAction from "../../common/ApprovalAction";
@@ -76,6 +77,7 @@ interface HeaderMuiProps {
   handleSendBackToAppraisee?: () => void;
   handleSubmitPA?: () => void;
   headOfDepartment?: string;
+  onGradingClick?: () => void;
 }
 
 const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
@@ -173,19 +175,43 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                       </i>
                       Back
                     </Button>
-                    {documentType === "Performance Management" &&
-                      stage === "Appraisee Rating" &&
-                      currentUser === "Appraisee" &&
-                      breadcrumbItem !== "Individual Performance Agreement" && (
+                    {documentType === "Performance Management" && (
+                      <>
                         <Button
-                          color="primary"
+                          color="info"
                           className="btn btn-label"
-                          onClick={handleSendToAppraiser}
+                          onClick={props.onGradingClick}
                         >
-                          <SendIcon className="label-icon" />
-                          Send to Appraiser
+                          <i className="label-icon">
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              style={{ marginRight: 8 }}
+                            >
+                              <path
+                                fill="currentColor"
+                                d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"
+                              />
+                            </svg>
+                          </i>
+                          Grading Scale
                         </Button>
-                      )}
+                        {stage === "Appraisee Rating" &&
+                          currentUser === "Appraisee" &&
+                          breadcrumbItem !==
+                            "Individual Performance Agreement" && (
+                            <Button
+                              color="primary"
+                              className="btn btn-label"
+                              onClick={handleSendToAppraiser}
+                            >
+                              <SendIcon className="label-icon" />
+                              Send to Appraiser
+                            </Button>
+                          )}
+                      </>
+                    )}
 
                     {documentType === "Performance Management" &&
                       stage === "Appraiser Rating" &&

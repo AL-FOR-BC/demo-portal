@@ -10,7 +10,23 @@ import { useAppSelector as useAppSelectorAuth } from "../../../store/hook";
 import { apiPALInes } from "../../../services/PaServices";
 
 import PerformanceAppraisalLines from "../../../Components/ui/Lines/PerformanceAppraisalLines";
-import { Collapse, Paper, Box, IconButton, Button } from "@mui/material";
+import {
+  Collapse,
+  Paper,
+  Box,
+  IconButton,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import InfoIcon from "@mui/icons-material/Info";
 import { Row, Col, Input, Label } from "reactstrap";
 
 import EditIcon from "@mui/icons-material/Edit";
@@ -239,6 +255,7 @@ function PADetails() {
         ];
 
   const [modalOpen, setModalOpen] = React.useState(false);
+  const [gradingDialogOpen, setGradingDialogOpen] = React.useState(false);
   const [modalFields, setModalFields] = React.useState<any[]>([]);
   const [editRow, setEditRow] = React.useState<any | null>(null);
   const [editData, setEditData] = React.useState<any>({});
@@ -2477,6 +2494,7 @@ function PADetails() {
             submitPA(id);
           }
         }}
+        onGradingClick={() => setGradingDialogOpen(true)}
         lines={
           <>
             {/* <Lines
@@ -2502,11 +2520,29 @@ function PADetails() {
                 p: 0,
               }}
             >
-              <SectionHeader
-                title="Section C: Performance Appraisal Lines <i style='font-size: 13px; color: #d32f2f;'>(1= Below average, 2=Fair, 3=Good, 4=Very Good)</i>"
-                open={showPALines}
-                onToggle={() => setShowPALines((prev) => !prev)}
-              />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <SectionHeader
+                  title="Section C: Performance Appraisal Lines <i style='font-size: 13px; color: #d32f2f;'>(1= Below average, 2=Fair, 3=Good, 4=Very Good)</i>"
+                  open={showPALines}
+                  onToggle={() => setShowPALines((prev) => !prev)}
+                />
+                <IconButton
+                  size="small"
+                  onClick={() => setGradingDialogOpen(true)}
+                  sx={{
+                    bgcolor: "#1976d2",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "#1565c0",
+                    },
+                    width: 24,
+                    height: 24,
+                    marginLeft: 1,
+                  }}
+                >
+                  <InfoIcon fontSize="small" />
+                </IconButton>
+              </Box>
               <Collapse in={showPALines}>
                 <Box px={0} pb={2}>
                   <PerformanceAppraisalLines
@@ -4018,6 +4054,168 @@ function PADetails() {
         handleSubmit={handleModalSubmit}
         handleUpdateLine={handleModalSubmit}
       />
+
+      {/* Grading Information Dialog */}
+      <Dialog
+        open={gradingDialogOpen}
+        onClose={() => setGradingDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogContent sx={{ p: 0 }}>
+          <Paper
+            sx={{
+              background: "transparent",
+              borderRadius: 0,
+              boxShadow: "none",
+              mb: 2,
+              p: 0,
+            }}
+          >
+            <Box sx={{ position: "relative" }}>
+              <SectionHeader
+                title="Performance Grading Scale"
+                open={true}
+                onToggle={() => {}}
+              />
+              <IconButton
+                onClick={() => setGradingDialogOpen(false)}
+                sx={{
+                  position: "absolute",
+                  right: 8,
+                  top: 8,
+                  color: "#666",
+                  "&:hover": {
+                    color: "#333",
+                  },
+                }}
+                size="small"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                  />
+                </svg>
+              </IconButton>
+            </Box>
+            <Collapse in={true}>
+              <Box px={2} pb={2} pt={2} sx={{ bgcolor: "white" }}>
+                <Row>
+                  <Col sm={12}>
+                    <div className="table-responsive">
+                      <table className="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th
+                              style={{
+                                backgroundColor: "#f8f9fa",
+                                width: "50%",
+                              }}
+                            >
+                              Overall Rating
+                            </th>
+                            <th
+                              style={{
+                                backgroundColor: "#f8f9fa",
+                                width: "50%",
+                              }}
+                            >
+                              Grade
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr style={{ backgroundColor: "#e8f5e9" }}>
+                            <td
+                              style={{
+                                color: "#2e7d32",
+                                fontWeight: "500",
+                                fontSize: "16px",
+                              }}
+                            >
+                              81 – 100%
+                            </td>
+                            <td
+                              style={{
+                                color: "#2e7d32",
+                                fontWeight: "500",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Excellent Performer
+                            </td>
+                          </tr>
+                          <tr style={{ backgroundColor: "#e3f2fd" }}>
+                            <td
+                              style={{
+                                color: "#1565c0",
+                                fontWeight: "500",
+                                fontSize: "16px",
+                              }}
+                            >
+                              61 - 80%
+                            </td>
+                            <td
+                              style={{
+                                color: "#1565c0",
+                                fontWeight: "500",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Meets Expectations
+                            </td>
+                          </tr>
+                          <tr style={{ backgroundColor: "#fff3e0" }}>
+                            <td
+                              style={{
+                                color: "#ef6c00",
+                                fontWeight: "500",
+                                fontSize: "16px",
+                              }}
+                            >
+                              50% - 60%
+                            </td>
+                            <td
+                              style={{
+                                color: "#ef6c00",
+                                fontWeight: "500",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Averagely meets Expectations
+                            </td>
+                          </tr>
+                          <tr style={{ backgroundColor: "#ffebee" }}>
+                            <td
+                              style={{
+                                color: "#c62828",
+                                fontWeight: "500",
+                                fontSize: "16px",
+                              }}
+                            >
+                              Less than 50%
+                            </td>
+                            <td
+                              style={{
+                                color: "#c62828",
+                                fontWeight: "500",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Below Expectations
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </Col>
+                </Row>
+              </Box>
+            </Collapse>
+          </Paper>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
