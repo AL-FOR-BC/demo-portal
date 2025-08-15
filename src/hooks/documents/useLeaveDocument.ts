@@ -83,6 +83,10 @@ export const useLeaveDocument = ({ mode }: { mode: DocumentTypeMode }) => {
         companyId,
         payload
       );
+      // send patch request to update the leave type
+      await leaveService.updateLeaveRequest(companyId, "PATCH", {
+        leaveCategoryType: typeof formData.leaveCategoryType === "object" ? formData.leaveCategoryType.value : formData.leaveCategoryType,
+      }, response.data.systemId, response.data["@odata.etag"]);
       toast.success("Leave request created successfully");
       navigate(`/leave-request-details/${response.data.systemId}`);
       return true;

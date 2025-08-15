@@ -60,7 +60,7 @@ function Lines({
                         onClick={toggleLines}
                         style={{ cursor: "pointer" }}
                     >
-                        {collapsibleName ? collapsibleName : "Lines"}m
+                        {collapsibleName ? collapsibleName : "Lines"}
                     </button>
                 </h2>
                 <Collapse
