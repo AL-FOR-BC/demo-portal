@@ -77,7 +77,9 @@ export const usePA = ({
     comments: "",
   };
 
-  const [state, setState] = useState({});
+  const [state, setState] = useState<{ isLoading: boolean }>({
+    isLoading: false,
+  });
   const [formData, setFormData] = useState<PAFormData>(initialFormData);
   const [lineFormData, setLineFormData] =
     useState<PALineFormData>(initialLineFormData);
@@ -809,87 +811,180 @@ export const usePA = ({
   };
 
   const sendToAppraiser = async (systemId: string) => {
-    try {
-      if (!formData.no) {
-        toast.error("PA No is required");
-        return;
-      }
-      setState((prev) => ({ ...prev, isLoading: true }));
-      const response = await paService.sendToAppraiser(companyId, {
-        no: formData.no,
-      });
-      if (response.status === 204) {
-        toast.success("Appraiser sent successfully");
-        populateDocumentDetail(systemId);
-        // navigate("/performance-appraisal");
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to send this PA to Appraiser?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+    }).then(async (response) => {
+      try {
+        if (response.isConfirmed) {
+          if (!formData.no) {
+            toast.error("PA No is required");
+            return;
+          }
+          setState((prev) => ({ ...prev, isLoading: true }));
+          const response = await paService.sendToAppraiser(companyId, {
+            no: formData.no,
+          });
+          if (response.status === 204) {
+            toast.success("Appraiser sent successfully");
+            populateDocumentDetail(systemId);
+            // navigate("/performance-appraisal");
+            setState((prev) => ({ ...prev, isLoading: false }));
+          }
+        }
+      } catch (error) {
+        toast.error(`Error sending to appraiser: ${getErrorMessage(error)}`);
+      } finally {
         setState((prev) => ({ ...prev, isLoading: false }));
       }
-    } catch (error) {
-      toast.error(`Error sending to appraiser: ${getErrorMessage(error)}`);
-    }
+    });
   };
 
   const sendToHeadOfDepartment = async (systemId: string) => {
-    try {
-      if (!formData.no) {
-        toast.error("PA No is required");
-        return;
-      }
-      setState((prev) => ({ ...prev, isLoading: true }));
-      const response = await paService.sendToHeadOfDepartment(companyId, {
-        no: formData.no,
-      });
-      if (response.status === 204) {
-        toast.success("Sent to Head of Department successfully");
-        populateDocumentDetail(systemId);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to send this PA to Head of Department?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+    }).then(async (response) => {
+      try {
+        if (response.isConfirmed) {
+          if (!formData.no) {
+            toast.error("PA No is required");
+            return;
+          }
+          setState((prev) => ({ ...prev, isLoading: true }));
+          const response = await paService.sendToHeadOfDepartment(companyId, {
+            no: formData.no,
+          });
+          if (response.status === 204) {
+            toast.success("Sent to Head of Department successfully");
+            navigate("/performance-appraisal-review");
+            populateDocumentDetail(systemId);
+            setState((prev) => ({ ...prev, isLoading: false }));
+          }
+        }
+      } catch (error) {
+        toast.error(
+          `Error sending to Head of Department: ${getErrorMessage(error)}`
+        );
+      } finally {
         setState((prev) => ({ ...prev, isLoading: false }));
       }
-    } catch (error) {
-      toast.error(
-        `Error sending to Head of Department: ${getErrorMessage(error)}`
-      );
-    }
+    });
   };
 
   const sendBackToAppraisee = async (systemId: string) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to send this PA back to Appraisee?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+    }).then(async (response) => {
+      try {
+        if (response.isConfirmed) {
+          if (!formData.no) {
+            toast.error("PA No is required");
+            return;
+          }
+          setState((prev) => ({ ...prev, isLoading: true }));
+          const response = await paService.sendBackToAppraisee(companyId, {
+            no: formData.no,
+          });
+          if (response.status === 204) {
+            toast.success("Sent back to Appraisee successfully");
+            navigate("/performance-appraisal-review");
+            populateDocumentDetail(systemId);
+            setState((prev) => ({ ...prev, isLoading: false }));
+          }
+        }
+      } catch (error) {
+        toast.error(
+          `Error sending back to Appraisee: ${getErrorMessage(error)}`
+        );
+      } finally {
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    });
+  };
+
+  const sendBackToAppraiser = async () => {
+    const swalResponse = await Swal.fire({
+      title: "Are you sure?",
+      text: "You want to send this PA back to Appraiser?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+    });
+
+    if (!swalResponse.isConfirmed) {
+      return;
+    }
+
     try {
       if (!formData.no) {
         toast.error("PA No is required");
         return;
       }
+
       setState((prev) => ({ ...prev, isLoading: true }));
-      const response = await paService.sendBackToAppraisee(companyId, {
+
+      const apiResponse = await paService.sendBackToAppraiser(companyId, {
         no: formData.no,
       });
-      if (response.status === 204) {
-        toast.success("Sent back to Appraisee successfully");
+
+      if (apiResponse.status === 204) {
+        toast.success("Sent back to Appraiser successfully");
+        // populateDocumentDetail(systemId);
         navigate("/performance-appraisal-review");
-        populateDocumentDetail(systemId);
-        setState((prev) => ({ ...prev, isLoading: false }));
       }
     } catch (error) {
-      toast.error(`Error sending back to Appraisee: ${getErrorMessage(error)}`);
+      toast.error(`Error sending back to Appraiser: ${getErrorMessage(error)}`);
+    } finally {
+      setState((prev) => ({ ...prev, isLoading: false }));
     }
   };
+
   const submitPA = async (systemId: string) => {
+    const swalResponse = await Swal.fire({
+      title: "Are you sure?",
+      text: "You want to submit this PA?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+    });
+
+    if (!swalResponse.isConfirmed) {
+      return;
+    }
+
     try {
       if (!formData.no) {
         toast.error("PA No is required");
         return;
       }
+
       setState((prev) => ({ ...prev, isLoading: true }));
-      const response = await paService.submitPA(companyId, {
+
+      const apiResponse = await paService.submitPA(companyId, {
         no: formData.no,
       });
-      if (response.status === 200) {
+
+      if (apiResponse.status === 200) {
         toast.success("Performance Appraisal has been submitted for approval.");
         populateDocumentDetail(systemId);
-        setState((prev) => ({ ...prev, isLoading: false }));
       }
     } catch (error) {
       toast.error(
         `Error submitting Performance Appraisal: ${getErrorMessage(error)}`
       );
+      setState((prev) => ({ ...prev, isLoading: false }));
+    } finally {
       setState((prev) => ({ ...prev, isLoading: false }));
     }
   };
@@ -916,6 +1011,7 @@ export const usePA = ({
     sendToAppraiser,
     sendToHeadOfDepartment,
     sendBackToAppraisee,
+    sendBackToAppraiser,
     handleInputChange,
     handleFieldUpdate,
   };

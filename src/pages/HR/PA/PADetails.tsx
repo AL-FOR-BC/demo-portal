@@ -17,7 +17,7 @@ import {
   IconButton,
   Button,
   Dialog,
-  
+
   // DialogTitle,
   DialogContent,
   // Table,
@@ -130,7 +130,9 @@ function PADetails() {
     cancelPAApprovalRequest,
     handleInputChange,
     handleFieldUpdate,
+    sendBackToAppraiser,
     submitPA,
+    state,
   } = usePA({ mode: "detail" });
 
   useEffect(() => {
@@ -176,6 +178,16 @@ function PADetails() {
           {
             dataField: "appraiseeRating",
             text: "Appraisee Rating",
+            sort: true,
+          },
+          {
+            dataField: "appraiserLimitingFactors",
+            text: "Appraiser Limiting Factors",
+            sort: true,
+          },
+          {
+            dataField: "appraiserSuggestions",
+            text: "Appraiser Suggestions",
             sort: true,
           },
           {
@@ -246,6 +258,16 @@ function PADetails() {
           {
             dataField: "appraiseeRating",
             text: "Appraisee Rating",
+            sort: true,
+          },
+          {
+            dataField: "appraiserLimitingFactors",
+            text: "Appraiser Limiting Factors",
+            sort: true,
+          },
+          {
+            dataField: "appraiserSuggestions",
+            text: "Appraiser Suggestions",
             sort: true,
           },
           {
@@ -795,7 +817,17 @@ function PADetails() {
             value: row.rating || "",
             onChange: (e: any) => {
               const newValue = e.target ? e.target.value : e;
-              if (Number(newValue) > 4 || Number(newValue) < 1) {
+              // Allow empty value for backspace/delete operations
+              if (
+                newValue === "" ||
+                newValue === null ||
+                newValue === undefined
+              ) {
+                handleEditChange("rating", newValue);
+                return;
+              }
+              const numValue = Number(newValue);
+              if (numValue > 4 || numValue < 1) {
                 return;
               }
               handleEditChange("rating", newValue);
@@ -808,6 +840,7 @@ function PADetails() {
             inputProps: {
               max: 4,
               min: 1,
+              step: 0.1,
             },
           },
           {
@@ -1031,7 +1064,17 @@ function PADetails() {
             value: row.rating || "",
             onChange: (e: any) => {
               const newValue = e.target ? e.target.value : e;
-              if (Number(newValue) > 4 || Number(newValue) < 1) {
+              // Allow empty value for backspace/delete operations
+              if (
+                newValue === "" ||
+                newValue === null ||
+                newValue === undefined
+              ) {
+                handleEditChange("rating", newValue);
+                return;
+              }
+              const numValue = Number(newValue);
+              if (numValue > 4 || numValue < 1) {
                 return;
               }
               handleEditChange("rating", newValue);
@@ -1044,6 +1087,7 @@ function PADetails() {
             inputProps: {
               max: 4,
               min: 1,
+              step: 0.1,
             },
           },
           {
@@ -1172,6 +1216,30 @@ function PADetails() {
                 currentUser === "Appraiser") ||
               (formData.stage === "Appraiser Rating" &&
                 currentUser === "Appraisee"),
+          },
+          {
+            label: "Appraiser Limiting Factors",
+            type: "textarea",
+            value: row.appraiserLimitingFactors || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("appraiserLimitingFactors", newValue);
+            },
+            id: "appraiserLimitingFactors",
+            disabled: currentUser === "Appraisee",
+            rows: 3,
+          },
+          {
+            label: "Appraiser Suggestions",
+            type: "textarea",
+            value: row.appraiserSuggestions || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("appraiserSuggestions", newValue);
+            },
+            id: "appraiserSuggestions",
+            disabled: currentUser === "Appraisee",
+            rows: 3,
           },
           {
             label: "Appraiser Rating (1-4)",
@@ -1552,12 +1620,26 @@ function PADetails() {
             value: "",
             onChange: (e: any) => {
               const newValue = e.target ? e.target.value : e;
+              // Allow empty value for backspace/delete operations
+              if (
+                newValue === "" ||
+                newValue === null ||
+                newValue === undefined
+              ) {
+                handleEditChange("rating", newValue);
+                return;
+              }
+              const numValue = Number(newValue);
+              if (numValue > 4 || numValue < 1) {
+                return;
+              }
               handleEditChange("rating", newValue);
             },
             id: "rating",
             disabled: formData.stage === "Appraisee Rating" ? false : true,
             min: 1,
             max: 4,
+            step: 0.1,
           },
           {
             label: "Comment",
@@ -1760,12 +1842,26 @@ function PADetails() {
             value: "",
             onChange: (e: any) => {
               const newValue = e.target ? e.target.value : e;
+              // Allow empty value for backspace/delete operations
+              if (
+                newValue === "" ||
+                newValue === null ||
+                newValue === undefined
+              ) {
+                handleEditChange("rating", newValue);
+                return;
+              }
+              const numValue = Number(newValue);
+              if (numValue > 4 || numValue < 1) {
+                return;
+              }
               handleEditChange("rating", newValue);
             },
             id: "rating",
             disabled: formData.stage === "Appraisee Rating" ? false : true,
             min: 1,
             max: 4,
+            step: 0.1,
           },
           {
             label: "Comment",
@@ -2076,6 +2172,8 @@ function PADetails() {
             // For Appraiser Rating stage, submit only these fields
             paLineData = {
               appraiserRating: Number(editData.appraiserRating),
+              appraiserLimitingFactors: editData.appraiserLimitingFactors,
+              appraiserSuggestions: editData.appraiserSuggestions,
               // agreedScore: editData.agreedScore,
             };
           } else {
@@ -2085,6 +2183,8 @@ function PADetails() {
               limitingFactor: editData.limitingFactor,
               appraiseeRating: editData.appraiseeRating,
               appraiserRating: editData.appraiserRating,
+              appraiserLimitingFactors: editData.appraiserLimitingFactors,
+              appraiserSuggestions: editData.appraiserSuggestions,
               agreedScore: editData.agreedScore,
             };
           }
@@ -2185,7 +2285,10 @@ function PADetails() {
         case "subordinatesEvaluation":
           // Only include editable fields for subordinates evaluation
           const subordinatesEvaluationData = {
-            rating: processedEditData.rating,
+            rating:
+              processedEditData.rating === ""
+                ? undefined
+                : Number(processedEditData.rating),
             comment: processedEditData.comment,
             anySuggestion: processedEditData.anySuggestion,
           };
@@ -2200,7 +2303,10 @@ function PADetails() {
         case "peerEvaluation":
           // Only include editable fields for peer evaluation
           const peerEvaluationData = {
-            rating: processedEditData.rating,
+            rating:
+              processedEditData.rating === ""
+                ? undefined
+                : Number(processedEditData.rating),
             comment: processedEditData.comment,
             anySuggestion: processedEditData.anySuggestion,
           };
@@ -2453,7 +2559,7 @@ function PADetails() {
             ? "Head of Department"
             : "Appraisee"
         }
-        isLoading={false}
+        isLoading={state.isLoading}
         tableId={50452}
         companyId={companyId}
         requestNo={formData.no || ""}
@@ -2488,6 +2594,11 @@ function PADetails() {
         handleSendBackToAppraisee={() => {
           if (id) {
             sendBackToAppraisee(id);
+          }
+        }}
+        handleSendBackToAppraiser={() => {
+          if (id) {
+            sendBackToAppraiser();
           }
         }}
         handleSubmitPA={() => {

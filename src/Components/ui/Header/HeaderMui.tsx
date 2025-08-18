@@ -75,6 +75,7 @@ interface HeaderMuiProps {
   handleConvertToPerformanceAppraisal?: () => void;
   handleSendToHeadOfDepartment?: () => void;
   handleSendBackToAppraisee?: () => void;
+  handleSendBackToAppraiser?: () => void;
   handleSubmitPA?: () => void;
   headOfDepartment?: string;
   onGradingClick?: () => void;
@@ -114,11 +115,13 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
     handleConvertToPerformanceAppraisal,
     handleSendToHeadOfDepartment,
     handleSendBackToAppraisee,
+    handleSendBackToAppraiser,
     handleSubmitPA,
     headOfDepartment,
   } = props;
   console.log("currentUser", props.currentUser);
   console.log("stage", props.stage);
+  console.log("headOfDepartment", headOfDepartment);
   return (
     <LoadingOverlayWrapper
       active={isLoading}
@@ -178,24 +181,153 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                     {documentType === "Performance Management" && (
                       <>
                         <Button
+                          variant="contained"
                           color="info"
                           className="btn btn-label"
                           onClick={props.onGradingClick}
+                          sx={{
+                            background:
+                              "linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FF5722 100%)",
+                            color: "white",
+                            fontWeight: "800",
+                            fontSize: "16px",
+                            padding: "12px 24px",
+                            borderRadius: "16px",
+                            boxShadow:
+                              "0 6px 20px rgba(255, 107, 53, 0.5), 0 3px 6px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)",
+                            textTransform: "none",
+                            border: "2px solid #FF5722",
+                            position: "relative",
+                            overflow: "hidden",
+                            backdropFilter: "blur(10px)",
+                            "&::before": {
+                              content: '""',
+                              position: "absolute",
+                              top: 0,
+                              left: "-100%",
+                              width: "100%",
+                              height: "100%",
+                              background:
+                                "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                              transition: "left 0.6s ease-out",
+                            },
+                            "&::after": {
+                              content: '""',
+                              position: "absolute",
+                              top: "-50%",
+                              left: "-50%",
+                              width: "200%",
+                              height: "200%",
+                              background:
+                                "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)",
+                              animation: "ripple 4s ease-in-out infinite",
+                            },
+                            "&:hover": {
+                              background:
+                                "linear-gradient(135deg, #FF5722 0%, #FF6B35 50%, #F7931E 100%)",
+                              boxShadow:
+                                "0 8px 25px rgba(255, 107, 53, 0.7), 0 5px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)",
+                              transform: "translateY(-3px) scale(1.05)",
+                              "&::before": {
+                                left: "100%",
+                              },
+                            },
+                            "&:active": {
+                              transform: "translateY(-1px) scale(1.02)",
+                              boxShadow: "0 4px 12px rgba(255, 107, 53, 0.6)",
+                            },
+                            animation:
+                              "gradientShift 4s ease-in-out infinite, float 3s ease-in-out infinite, glow 2s ease-in-out infinite alternate",
+                            "@keyframes gradientShift": {
+                              "0%, 100%": {
+                                background:
+                                  "linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FF5722 100%)",
+                              },
+                              "50%": {
+                                background:
+                                  "linear-gradient(135deg, #F7931E 0%, #FF5722 50%, #FF6B35 100%)",
+                              },
+                            },
+                            "@keyframes float": {
+                              "0%, 100%": {
+                                boxShadow:
+                                  "0 6px 20px rgba(255, 107, 53, 0.5), 0 3px 6px rgba(0,0,0,0.15)",
+                              },
+                              "50%": {
+                                boxShadow:
+                                  "0 8px 25px rgba(255, 107, 53, 0.7), 0 5px 10px rgba(0,0,0,0.2)",
+                              },
+                            },
+                            "@keyframes glow": {
+                              "0%": {
+                                boxShadow:
+                                  "0 6px 20px rgba(255, 107, 53, 0.5), 0 3px 6px rgba(0,0,0,0.15), 0 0 0 0 rgba(255, 107, 53, 0.4)",
+                              },
+                              "100%": {
+                                boxShadow:
+                                  "0 6px 20px rgba(255, 107, 53, 0.5), 0 3px 6px rgba(0,0,0,0.15), 0 0 0 8px rgba(255, 107, 53, 0)",
+                              },
+                            },
+                            "@keyframes ripple": {
+                              "0%": {
+                                transform: "rotate(0deg)",
+                              },
+                              "100%": {
+                                transform: "rotate(360deg)",
+                              },
+                            },
+                          }}
                         >
-                          <i className="label-icon">
+                          <i
+                            className="label-icon"
+                            style={{
+                              marginRight: "10px",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
                             <svg
-                              width="14"
-                              height="14"
+                              width="18"
+                              height="18"
                               viewBox="0 0 24 24"
-                              style={{ marginRight: 8 }}
+                              style={{
+                                filter:
+                                  "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+                                animation:
+                                  "iconGlow 2s ease-in-out infinite alternate",
+                              }}
                             >
+                              <defs>
+                                <filter id="glow">
+                                  <feGaussianBlur
+                                    stdDeviation="2"
+                                    result="coloredBlur"
+                                  />
+                                  <feMerge>
+                                    <feMergeNode in="coloredBlur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                  </feMerge>
+                                </filter>
+                              </defs>
                               <path
                                 fill="currentColor"
+                                filter="url(#glow)"
                                 d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"
                               />
                             </svg>
                           </i>
-                          Grading Scale
+                          <span
+                            style={{
+                              textShadow:
+                                "0 2px 4px rgba(0,0,0,0.4), 0 0 8px rgba(255,255,255,0.3)",
+                              letterSpacing: "0.8px",
+                              fontWeight: "800",
+                              fontSize: "16px",
+                              color: "#FFFFFF",
+                            }}
+                          >
+                            ⭐📊 Grading Scale ⭐
+                          </span>
                         </Button>
                         {stage === "Appraisee Rating" &&
                           currentUser === "Appraisee" &&
@@ -251,14 +383,27 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                     {documentType === "Performance Management" &&
                       stage === "Head of Department Review" &&
                       headOfDepartment === "Head of Department" && (
-                        <Button
-                          color="primary"
-                          className="btn btn-label"
-                          onClick={handleSubmitPA}
-                        >
-                          <SendIcon className="label-icon" />
-                          Submit Performance Appraisal
-                        </Button>
+                        <>
+                          <Button
+                            color="warning"
+                            className="btn btn-label"
+                            onClick={handleSendBackToAppraiser}
+                          >
+                            <ArrowBackIcon className="label-icon" />
+                            Send back to Appraiser
+                          </Button>
+
+                        
+
+                          <Button
+                            color="primary"
+                            className="btn btn-label"
+                            onClick={handleSubmitPA}
+                          >
+                            <SendIcon className="label-icon" />
+                            Submit Performance Appraisal
+                          </Button>
+                        </>
                       )}
                     {documentType !== "Performance Management" && (
                       <Button

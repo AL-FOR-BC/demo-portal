@@ -43,6 +43,11 @@ function PaReview() {
       sort: true,
     },
     {
+      dataField: "headOfDepartmentNames",
+      text: "Head of Department Name",
+      sort: true,
+    },
+    {
       dataField: "performanceYear",
       text: "Performance Year",
       sort: true,
