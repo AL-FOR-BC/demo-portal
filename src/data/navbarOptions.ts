@@ -137,12 +137,12 @@ export const navbarOptions: NavigationTree[] = [
         name: "Training",
         path: "/training",
         subOptions: [
-          {
-            id: 23,
-            name: "Training Needs Assessment",
-            path: "/training-needs-assessment",
-            subOptions: [],
-          },
+          // {
+          //   id: 23,
+          //   name: "Training Needs Assessment",
+          //   path: "/training-needs-assessment",
+          //   subOptions: [],
+          // },
           {
             id: 24,
             name: "Training Plans",
@@ -176,32 +176,32 @@ export const navbarOptions: NavigationTree[] = [
         subOptions: [
           {
             id: 29,
-            name: "Exit Interview",
-            path: "/exit-interview",
+            name: "Staff Exit Interview Form",
+            path: "/exit-interviews",
             subOptions: [],
           },
-          {
-            id: 30,
-            name: "Exit Interview List",
-            path: "/exit-interview-list",
-            subOptions: [],
-          },
-          {
-            id: 31,
-            name: "Exit Clearance Form",
-            path: "/exit-clearance-form",
-            subOptions: [],
-          },
+          // {
+          //   id: 30,
+          //   name: "Exit Interview List",
+          //   path: "/exit-interview-list",
+          //   subOptions: [],
+          // },
+          // {
+          //   id: 31,
+          //   name: "Exit Clearance Form",
+          //   path: "/exit-clearance-form",
+          //   subOptions: [],
+          // },
           {
             id: 32,
-            name: "Staff Handover Form",
-            path: "/staff-handover-form",
+            name: "Exit Clearance Form",
+            path: "/exit-clearance-form ",
             subOptions: [],
           },
           {
             id: 33,
-            name: "Staff Handover Form To Clear",
-            path: "/staff-handover-form-to-clear",
+            name: "Exit Clearance Form To Clear",
+            path: "/exit-clearance-form-to-clear",
             subOptions: [],
           },
         ],
@@ -209,37 +209,37 @@ export const navbarOptions: NavigationTree[] = [
     ],
   },
   {
-    id: 34,
+    id: 35,
     name: "Time Sheets",
     path: "/time-sheets",
     icon: "clock",
     subOptions: [
       {
-        id: 35,
+        id: 36,
         name: "Time Sheets",
         path: "/time-sheets",
       },
     ],
   },
   {
-    id: 36,
+    id: 37,
     name: "Requisition",
     path: "/requisition",
     icon: "cart",
     subOptions: [
       {
-        id: 37,
+        id: 38,
         name: "Purchase Requisition",
         path: "/purchase-requisition",
         subOptions: [
           {
-            id: 38,
+            id: 39,
             name: "Purchase Requisitions",
             path: "/purchase-requisitions",
             subOptions: [],
           },
           {
-            id: 39,
+            id: 40,
             name: "Archived Purchase Requisitions",
             path: "/archived-purchase-requisitions",
             subOptions: [],
@@ -247,13 +247,13 @@ export const navbarOptions: NavigationTree[] = [
         ],
       },
       {
-        id: 40,
+        id: 41,
         name: "Payment Requisition",
         path: "/payment-requisitions",
         // subOptions: [],
       },
       {
-        id: 41,
+        id: 42,
         name: "Stores Requests",
         path: "/stores-requests",
         // subOptions: [],
@@ -261,19 +261,19 @@ export const navbarOptions: NavigationTree[] = [
     ],
   },
   {
-    id: 41,
+    id: 43,
     name: "Travel Requests",
     path: "/travel-requests",
     icon: "train",
     subOptions: [
       {
-        id: 42,
+        id: 44,
         name: "Travel Requests",
         path: "/travel-requests",
         // subOptions: []
       },
       {
-        id: 43,
+        id: 45,
         name: "Archived Travel Requests",
         path: "/archived-travel-requests",
         // subOptions: []
@@ -281,19 +281,19 @@ export const navbarOptions: NavigationTree[] = [
     ],
   },
   {
-    id: 44,
+    id: 46,
     name: "Accountability",
     path: "/accountability",
     icon: "accountCheck",
     subOptions: [
       {
-        id: 45,
+        id: 47,
         name: "Imprest Pending Accountability",
         path: "/imprest-pending-accountability",
         subOptions: [],
       },
       {
-        id: 46,
+        id: 48,
         name: "Accountability List",
         path: "/accountability-list",
         subOptions: [],

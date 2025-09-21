@@ -255,6 +255,127 @@ const appRoutes: Routes = [
     path: "/approve-pa/:documentNo",
     component: lazy(() => import("../../pages/HR/PA/ApprovePA.tsx")),
   },
+
+  // ------------------------ Exit Interview ----------------------------------------
+  {
+    key: "exit-interviews",
+    path: "/exit-interviews",
+    component: lazy(() => import("../../pages/HR/Exit/ExitInterviews.tsx")),
+  },
+  {
+    key: "add-exit-interview",
+    path: "/add-exit-interview",
+    component: lazy(() => import("../../pages/HR/Exit/AddExitInterview.tsx")),
+  },
+  {
+    key: "exit-interview-details",
+    path: "/exit-interview-details/:id",
+    component: lazy(
+      () => import("../../pages/HR/Exit/ExitInterviewDetails.tsx")
+    ),
+  },
+  {
+    key: "approve-exit-interview",
+    path: "/approve-exit-interview/:id",
+    component: lazy(
+      () => import("../../pages/HR/Exit/ApproveExitInterview.tsx")
+    ),
+  },
+
+  // ------------------------ Exit Clearance ----------------------------------------
+  {
+    key: "exit-clearances",
+    path: "/exit-clearance-form",
+    component: lazy(
+      () => import("../../pages/HR/ExitClearance/ExitClearance.tsx")
+    ),
+  },
+  {
+    key: "add-exit-clearance",
+    path: "/add-exit-clearance",
+    component: lazy(
+      () => import("../../pages/HR/ExitClearance/AddExitClearance.tsx")
+    ),
+  },
+  {
+    key: "exit-clearance-details",
+    path: "/exit-clearance-details/:id",
+    component: lazy(
+      () => import("../../pages/HR/ExitClearance/ExitClearanceDetails.tsx")
+    ),
+  },
+  // {
+  //   key: "approve-exit-clearance",
+  //   path: "/approve-exit-clearance/:id",
+  //   component: lazy(
+  //     () => import("../../pages/HR/exitClearance/ApproveexitClearance.tsx")
+  //   ),
+  // },
+  {
+    key: "exit-clearance-form-to-clear",
+    path: "/exit-clearance-form-to-clear",
+    component: lazy(
+      () => import("../../pages/HR/ExitClearance/ExitClearanceFormToClear.tsx")
+    ),
+  },
+
+  // ------------------------ Training Requests ----------------------------------------
+  {
+    key: "training-requests",
+    path: "/training-requests",
+    component: lazy(
+      () => import("../../pages/HR/Training/TrainingRequests.tsx")
+    ),
+  },
+  {
+    key: "add-training-request",
+    path: "/add-training-request",
+    component: lazy(
+      () => import("../../pages/HR/Training/TrainingRequestForm.tsx")
+    ),
+  },
+  {
+    key: "training-request-details",
+    path: "/training-request-details/:id",
+    component: lazy(
+      () => import("../../pages/HR/Training/TrainingRequestDetails.tsx")
+    ),
+  },
+  {
+    key: "approve-training-request",
+    path: "/approve-training-request/:id",
+    component: lazy(
+      () => import("../../pages/HR/Training/ApproveTrainingRequest.tsx")
+    ),
+  },
+
+  // ------------------------ Training Plans ----------------------------------------
+  {
+    key: "training-plans",
+    path: "/training-plans",
+    component: lazy(() => import("../../pages/HR/Training/TrainingPlans.tsx")),
+  },
+  {
+    key: "add-training-plan",
+    path: "/add-training-plan",
+    component: lazy(
+      () => import("../../pages/HR/Training/AddTrainingPlan.tsx")
+    ),
+  },
+  {
+    key: "training-plan-details",
+    path: "/training-plan-details/:id",
+    component: lazy(
+      () => import("../../pages/HR/Training/TrainingPlanDetails.tsx")
+    ),
+  },
+  {
+    key: "approve-training-plan",
+    path: "/approve-training-plan/:id",
+    component: lazy(
+      () => import("../../pages/HR/Training/ApproveTrainingPlan.tsx")
+    ),
+  },
   // {
   //     key: 'approved-time-sheets',
   //     path: '/approved-time-sheets',

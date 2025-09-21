@@ -133,6 +133,7 @@ function PADetails() {
     sendBackToAppraiser,
     submitPA,
     state,
+    printPA,
   } = usePA({ mode: "detail" });
 
   useEffect(() => {
@@ -1807,7 +1808,7 @@ function PADetails() {
             id: "rating",
             disabled: formData.stage === "Appraisee Rating" ? false : true,
             min: 1,
-            max: 10,
+            max: 4,
           },
         ];
         break;
@@ -2606,6 +2607,11 @@ function PADetails() {
             submitPA(id);
           }
         }}
+        onPrintClick={() => {
+          if (id) {
+            printPA(id);
+          }
+        }}
         onGradingClick={() => setGradingDialogOpen(true)}
         lines={
           <>
@@ -2634,7 +2640,7 @@ function PADetails() {
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <SectionHeader
-                  title="Section C: Performance Appraisal Lines <i style='font-size: 13px; color: #d32f2f;'>(1= Below average, 2=Fair, 3=Good, 4=Very Good)</i>"
+                  title="Section A: Performance Appraisal Lines <i style='font-size: 13px; color: #d32f2f;'>(1= Below average, 2=Fair, 3=Good, 4=Very Good)</i>"
                   open={showPALines}
                   onToggle={() => setShowPALines((prev) => !prev)}
                 />
@@ -2690,7 +2696,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section D: Question:Q(1)"
+                title="Section B: Question:Q(1)"
                 open={showQuestionQ1}
                 onToggle={() => setShowQuestionQ1((prev) => !prev)}
               />
@@ -2745,7 +2751,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section E: Question:Q(2) What elements of your job do you find most difficult?"
+                title="Section C: Question:Q(2) What elements of your job do you find most difficult?"
                 open={showQuestionQ2}
                 onToggle={() => setShowQuestionQ2((prev) => !prev)}
                 action={
@@ -2831,7 +2837,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section F: Question:Q(3) What do you consider to be your most important aims and tasks in the next year?"
+                title="Section D: Question:Q(3) What do you consider to be your most important aims and tasks in the next year?"
                 open={showQuestionQ3}
                 onToggle={() => setShowQuestionQ3((prev) => !prev)}
                 action={
@@ -2918,7 +2924,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section G: Aspirations (What is your long term personal and career aspiration...)"
+                title="Section E: Aspirations (What is your long term personal and career aspiration...)"
                 open={showAspirations}
                 onToggle={() => setShowAspirations((prev) => !prev)}
                 action={
@@ -3011,7 +3017,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section H: Current level of Mobility and working hours preference"
+                title="Section F: Current level of Mobility and working hours preference"
                 open={showMobilityPreference}
                 onToggle={() => setShowMobilityPreference((prev) => !prev)}
               />
@@ -3064,7 +3070,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section I: Language Skills"
+                title="Section G: Language Skills"
                 open={showLanguageSkills}
                 onToggle={() => setShowLanguageSkills((prev) => !prev)}
                 action={
@@ -3151,7 +3157,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section J: Possible Next Career Move Options"
+                title="Section H: Possible Next Career Move Options"
                 open={showCareerMoveOptions}
                 onToggle={() => setShowCareerMoveOptions((prev) => !prev)}
                 action={
@@ -3238,7 +3244,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section K: Skills & Work Competency Areas <i style='font-size: 13px; color: #d32f2f;'>(Score yourself out of 10 for each skill and behavior)</i>"
+                title="Section I: Skills & Work Competency Areas <i style='font-size: 13px; color: #d32f2f;'>(Score yourself out of 10 for each skill and behavior)</i>"
                 open={showSkillsWorkCompetencyAreas}
                 onToggle={() =>
                   setShowSkillsWorkCompetencyAreas((prev) => !prev)
@@ -3312,7 +3318,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section L: Behaviors and Personal Style <i style='font-size: 13px; color: #d32f2f;'>(Score yourself out of 10 for each skill and behavior)</i>"
+                title="Section J: Behaviors and Personal Style <i style='font-size: 13px; color: #d32f2f;'>(Score yourself out of 10 for each skill and behavior)</i>"
                 open={showBehaviorsPersonalStyle}
                 onToggle={() => setShowBehaviorsPersonalStyle((prev) => !prev)}
               />

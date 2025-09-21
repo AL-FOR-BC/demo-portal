@@ -989,6 +989,80 @@ export const usePA = ({
     }
   };
 
+  const printPA = async (systemId: string) => {
+    try {
+      setState((prev) => ({ ...prev, isLoading: true }));
+
+      if (!formData.no) {
+        toast.error("PA No is required for printing");
+        setState((prev) => ({ ...prev, isLoading: false }));
+        return;
+      }
+
+      const response = await paService.printPA(companyId, formData.no);
+
+      if (response.data && response.data.value) {
+        try {
+          const base64String = response.data.value;
+
+          // Validate base64 string
+          if (base64String.length === 0) {
+            throw new Error("Base64 string is empty");
+          }
+
+          // Check if it's valid base64
+          try {
+            atob(base64String);
+          } catch (e) {
+            throw new Error("Invalid base64 string");
+          }
+
+          const byteCharacters = atob(base64String);
+
+          // Check if it's actually a PDF (should start with %PDF)
+          if (
+            byteCharacters.length < 4 ||
+            byteCharacters.substring(0, 4) !== "%PDF"
+          ) {
+            console.warn("Warning: Data doesn't start with PDF signature");
+          }
+
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: "application/pdf" });
+
+          // Create download link
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `performance_appraisal_${
+            formData.no || systemId
+          }.pdf`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+
+          toast.success("Performance Appraisal downloaded successfully");
+        } catch (error) {
+          console.error("Error converting PDF:", error);
+          toast.error("Failed to convert PDF response");
+        }
+      } else {
+        console.error("No value in response data:", response.data);
+        toast.error("No PDF data received from server");
+      }
+    } catch (error) {
+      console.error("Error printing PA:", error);
+      toast.error(
+        `Error printing Performance Appraisal: ${getErrorMessage(error)}`
+      );
+    } finally {
+      setState((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
   return {
     state,
     formData,
@@ -1014,5 +1088,6 @@ export const usePA = ({
     sendBackToAppraiser,
     handleInputChange,
     handleFieldUpdate,
+    printPA,
   };
 };

@@ -1,13 +1,8 @@
 import React from "react";
 import { RiseLoader } from "react-spinners";
 import LoadingOverlayWrapper from "react-loading-overlay-ts";
-import {
-  //   Box,
-  Container,
-  Alert as MuiAlert,
-  Card,
-  CardContent,
-} from "@mui/material";
+import { Container, Alert as MuiAlert, Card, CardContent } from "@mui/material";
+import ApprovalProgress from "../../ui/ApprovalProgress";
 import Select from "react-select";
 import { GridColDef, GridRowId } from "@mui/x-data-grid";
 import BreadCrumbs from "../../BreadCrumbs";
@@ -19,6 +14,7 @@ import {
   CancelIcon,
   ConvertIcon,
   DeleteIcon,
+  PrintIcon,
   ReopenIcon,
   SaveIcon,
   SendIcon,
@@ -43,6 +39,7 @@ interface HeaderMuiProps {
   toggleError?: () => void;
   handleBack?: () => void;
   handleSubmit?: () => void;
+  handleCancel?: () => void;
   handleSendApprovalRequest?: () => void;
   handleDeletePurchaseRequisition?: () => void;
   handleCancelApprovalRequest?: () => void;
@@ -79,6 +76,21 @@ interface HeaderMuiProps {
   handleSubmitPA?: () => void;
   headOfDepartment?: string;
   onGradingClick?: () => void;
+  onPrintClick?: () => void;
+  handleHROfficerClearance?: () => void;
+  handleFinanceClearance?: () => void;
+  handleITClearance?: () => void;
+  handleMedicalAdminClearance?: () => void;
+  handleHeadOfDepartmentClearance?: () => void;
+  handleHRManagerClearance?: () => void;
+  handleSupervisorClearance?: () => void;
+  hrOfficerStage?: string;
+  financeStage?: string;
+  adminStage?: string;
+  supervisorStage?: string;
+  ictStage?: string;
+  headOfDepartmentStage?: string;
+  hrManagerStage?: string;
 }
 
 const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
@@ -118,10 +130,22 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
     handleSendBackToAppraiser,
     handleSubmitPA,
     headOfDepartment,
+    onPrintClick,
+    handleHROfficerClearance,
+    handleFinanceClearance,
+    handleITClearance,
+    handleMedicalAdminClearance,
+    handleHeadOfDepartmentClearance,
+    handleHRManagerClearance,
+    handleSupervisorClearance,
+    hrOfficerStage,
+    financeStage,
+    adminStage,
+    supervisorStage,
+    ictStage,
+    headOfDepartmentStage,
+    hrManagerStage,
   } = props;
-  console.log("currentUser", props.currentUser);
-  console.log("stage", props.stage);
-  console.log("headOfDepartment", headOfDepartment);
   return (
     <LoadingOverlayWrapper
       active={isLoading}
@@ -135,6 +159,19 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
             subTitle={subtitle}
             breadcrumbItem={breadcrumbItem}
           />
+          {documentType === "Exit Clearance" &&
+            status === "Pending Approval" && (
+              <ApprovalProgress
+                status={status}
+                hrOfficerStage={hrOfficerStage}
+                financeStage={financeStage}
+                adminStage={adminStage}
+                supervisorStage={supervisorStage}
+                ictStage={ictStage}
+                headOfDepartmentStage={headOfDepartmentStage}
+                hrManagerStage={hrManagerStage}
+              />
+            )}
 
           {pageType === "add" && (
             <Row className="justify-content-center mb-4">
@@ -178,6 +215,28 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                       </i>
                       Back
                     </Button>
+                    {documentType === "Exit Interview" && (
+                      <Button
+                        color="primary"
+                        className="btn btn-label"
+                        onClick={handleSubmit}
+                      >
+                        <SendIcon className="label-icon" />
+                        Submit Exit Interview
+                      </Button>
+                    )}
+                    {documentType === "Exit Clearance" && (
+                      <>
+                        <Button
+                          color="primary"
+                          className="btn btn-label"
+                          onClick={handleSubmit}
+                        >
+                          <SendIcon className="label-icon" />
+                          Submit Exit Clearance
+                        </Button>
+                      </>
+                    )}
                     {documentType === "Performance Management" && (
                       <>
                         <Button
@@ -393,8 +452,6 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                             Send back to Appraiser
                           </Button>
 
-                        
-
                           <Button
                             color="primary"
                             className="btn btn-label"
@@ -405,33 +462,42 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                           </Button>
                         </>
                       )}
-                    {documentType !== "Performance Management" && (
-                      <Button
-                        color="primary"
-                        className="btn btn-label"
-                        onClick={handleSendApprovalRequest}
-                      >
-                        <SendIcon className="label-icon" />
-                        Send Approval Request
-                      </Button>
-                    )}
-                    <Attachments
-                      defaultCompany={companyId}
-                      docType={documentType}
-                      docNo={requestNo}
-                      status={status}
-                      tableId={tableId}
-                    />
-                    <ApprovalEntries
-                      defaultCompany={companyId}
-                      docType={documentType}
-                      docNo={requestNo}
-                    />
-                    <ApprovalComments
-                      defaultCompany={companyId || ""}
-                      docType={documentType || ""}
-                      docNo={requestNo || ""}
-                    />
+                    {documentType !== "Performance Management" &&
+                      documentType !== "Exit Interview" &&
+                      documentType !== "Exit Clearance" && (
+                        <Button
+                          color="primary"
+                          className="btn btn-label"
+                          onClick={handleSendApprovalRequest}
+                        >
+                          <SendIcon className="label-icon" />
+                          Send Approval Request
+                        </Button>
+                      )}
+
+                    {documentType != "Exit Interview" &&
+                      documentType !== "Exit Clearance" && (
+                        <>
+                          <Attachments
+                            defaultCompany={companyId}
+                            docType={documentType}
+                            docNo={requestNo}
+                            status={status}
+                            tableId={tableId}
+                          />
+                          <ApprovalEntries
+                            defaultCompany={companyId}
+                            docType={documentType}
+                            docNo={requestNo}
+                          />
+                          <ApprovalComments
+                            defaultCompany={companyId || ""}
+                            docType={documentType || ""}
+                            docNo={requestNo || ""}
+                          />
+                        </>
+                      )}
+
                     {documentType === "Performance Management" &&
                       stage === "Appraisee Rating" &&
                       currentUser === "Appraisee" && (
@@ -516,15 +582,98 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                       </i>
                       Back
                     </Button>
-                    <Button
-                      color="danger"
-                      type="button"
-                      className="btn btn-danger btn-label"
-                      onClick={handleCancelApprovalRequest}
-                    >
-                      Cancel Approval Request
-                      <CancelIcon className="label-icon" />
-                    </Button>
+                    {documentType !== "Exit Clearance" && (
+                      <Button
+                        color="danger"
+                        type="button"
+                        className="btn btn-danger btn-label"
+                        onClick={handleCancelApprovalRequest}
+                      >
+                        Cancel Approval Request
+                        <CancelIcon className="label-icon" />
+                      </Button>
+                    )}
+                    {documentType === "Exit Clearance" && (
+                      <>
+                        {/* HR Officer */}
+                        {handleHROfficerClearance && (
+                          <Button
+                            color="success"
+                            className="btn btn-label"
+                            onClick={handleHROfficerClearance}
+                          >
+                            <i className="label-icon">👤</i>
+                            HR Officer Clearance
+                          </Button>
+                        )}
+                        {/* Finance */}
+                        {handleFinanceClearance && (
+                          <Button
+                            color="warning"
+                            className="btn btn-label"
+                            onClick={handleFinanceClearance}
+                          >
+                            <i className="label-icon">$</i>
+                            Finance Clearance
+                          </Button>
+                        )}
+                        {/* Admin */}
+                        {handleMedicalAdminClearance && (
+                          <Button
+                            color="success"
+                            className="btn btn-label"
+                            onClick={handleMedicalAdminClearance}
+                          >
+                            <i className="label-icon">🏥</i>
+                            Admin Clearance
+                          </Button>
+                        )}
+                        {/* Supervisor */}
+                        {handleSupervisorClearance && (
+                          <Button
+                            color="secondary"
+                            className="btn btn-label"
+                            onClick={handleSupervisorClearance}
+                          >
+                            <i className="label-icon">👨‍💼</i>
+                            Supervisor Clearance
+                          </Button>
+                        )}
+                        {/* IT */}
+                        {handleITClearance && (
+                          <Button
+                            color="info"
+                            className="btn btn-label"
+                            onClick={handleITClearance}
+                          >
+                            <i className="label-icon">💻</i>
+                            IT Clearance
+                          </Button>
+                        )}
+                        {/* Head of Department */}
+                        {handleHeadOfDepartmentClearance && (
+                          <Button
+                            color="primary"
+                            className="btn btn-label"
+                            onClick={handleHeadOfDepartmentClearance}
+                          >
+                            <i className="label-icon">👨‍💼</i>
+                            Head of Department Clearance
+                          </Button>
+                        )}
+                        {/* HR Manager */}
+                        {handleHRManagerClearance && (
+                          <Button
+                            color="info"
+                            className="btn btn-label"
+                            onClick={handleHRManagerClearance}
+                          >
+                            <i className="label-icon">👥</i>
+                            HR Manager Clearance
+                          </Button>
+                        )}
+                      </>
+                    )}
                     <Attachments
                       defaultCompany={companyId}
                       docType={documentType}
@@ -570,6 +719,22 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                           </Button>
                         </>
                       )}
+
+                    {documentType === "Performance Management" &&
+                      stage === "Closed" && (
+                        <>
+                          <Button
+                            color="primary"
+                            className="btn btn-label"
+                            onClick={onPrintClick}
+                          >
+                            <i className="label-icon">
+                              <PrintIcon className="label-icon" fontSize={16} />
+                            </i>
+                            Print Performance Appraisal
+                          </Button>
+                        </>
+                      )}
                     <Attachments
                       defaultCompany={companyId}
                       docType={documentType}
@@ -590,6 +755,31 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                     />
                   </div>
                 </Row>
+              )}
+              {status === "Submitted" && documentType === "Exit Interview" && (
+                // back button
+                <>
+                  <Row className="justify-content-center mb-4">
+                    <div className="d-flex flex-wrap gap-2">
+                      <Button
+                        color="secondary"
+                        className="btn btn-label"
+                        onClick={handleBack}
+                      >
+                        <ArrowBackIcon className="label-icon" />
+                        Back
+                      </Button>
+                      <Button
+                        color="primary"
+                        className="btn btn-label"
+                        onClick={onPrintClick}
+                      >
+                        <PrintIcon className="label-icon" />
+                        Print Exit Interview
+                      </Button>
+                    </div>
+                  </Row>
+                </>
               )}
               {(documentType === "TIME SHEET" ||
                 documentType === "Time Sheet") && (
@@ -626,6 +816,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
               )}
             </>
           )}
+
           {pageType === "approval" && (
             <>
               <Row className="justify-content-center mb-4">
