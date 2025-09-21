@@ -836,7 +836,7 @@ export const useExitClearance = ({ mode, systemId }: UseExitClearanceProps) => {
         required: true,
       },
       {
-        label: "Handover Date *",
+      label: "Handover Date *",
         type: "date",
         value: formData.handoverDate || "",
         id: "handoverDate",
