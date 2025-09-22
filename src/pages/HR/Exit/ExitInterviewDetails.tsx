@@ -107,7 +107,7 @@ function ExitInterviewDetails() {
         title="Exit Interview Details"
         subtitle="Exit Interview Details"
         breadcrumbItem="Exit Interview Details"
-        documentType={decodeValue(state.exitInterview?.documentType || "")}
+        documentType={decodeValue(state.exitInterview?.documentType || "Exit Interview")}
         fields={getFormFields()}
         isLoading={state.isLoading}
         handleBack={() => navigate("/exit-interviews")}
@@ -451,6 +451,73 @@ function ExitInterviewDetails() {
                         }
                         onBlur={handleSaveOnBlur}
                         rows={3}
+                        required
+                      />
+                    </Col>
+                  </Row>
+                  <Row className="mt-3">
+                    <Col sm={6}>
+                      <Label htmlFor="workingConditionsSuitable">
+                        12. Were the working conditions suitable? (i.e. hours,
+                        work area, etc.). If NOT, how would you advise ROM to
+                        improve?
+                      </Label>
+                      <Input
+                        type="textarea"
+                        id="workingConditionsSuitable"
+                        value={formData.workingConditionsSuitable || ""}
+                        disabled={isFieldDisabled}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "workingConditionsSuitable",
+                            e.target.value
+                          )
+                        }
+                        onBlur={handleSaveOnBlur}
+                        rows={3}
+                        required
+                      />
+                    </Col>
+                    <Col sm={6}>
+                      <Label htmlFor="payComparedToWorkload">
+                        13. How is the pay compared to the workload? Is it
+                        timely?
+                      </Label>
+                      <Input
+                        type="textarea"
+                        id="payComparedToWorkload"
+                        value={formData.payComparedToWorkload || ""}
+                        disabled={isFieldDisabled}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "payComparedToWorkload",
+                            e.target.value
+                          )
+                        }
+                        onBlur={handleSaveOnBlur}
+                        rows={3}
+                        required
+                      />
+                    </Col>
+                  </Row>
+                  <Row className="mt-3">
+                    <Col sm={12}>
+                      <Label htmlFor="additionalComments">
+                        14. Would you care to make any other comments?
+                      </Label>
+                      <Input
+                        type="textarea"
+                        id="additionalComments"
+                        value={formData.additionalComments || ""}
+                        disabled={isFieldDisabled}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "additionalComments",
+                            e.target.value
+                          )
+                        }
+                        onBlur={handleSaveOnBlur}
+                        rows={4}
                         required
                       />
                     </Col>

@@ -475,28 +475,27 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                         </Button>
                       )}
 
-                    {documentType != "Exit Interview" &&
-                      documentType !== "Exit Clearance" && (
-                        <>
-                          <Attachments
-                            defaultCompany={companyId}
-                            docType={documentType}
-                            docNo={requestNo}
-                            status={status}
-                            tableId={tableId}
-                          />
-                          <ApprovalEntries
-                            defaultCompany={companyId}
-                            docType={documentType}
-                            docNo={requestNo}
-                          />
-                          <ApprovalComments
-                            defaultCompany={companyId || ""}
-                            docType={documentType || ""}
-                            docNo={requestNo || ""}
-                          />
-                        </>
-                      )}
+                    {documentType != "Exit Interview" && (
+                      <>
+                        <Attachments
+                          defaultCompany={companyId}
+                          docType={documentType}
+                          docNo={requestNo}
+                          status={status}
+                          tableId={tableId}
+                        />
+                        <ApprovalEntries
+                          defaultCompany={companyId}
+                          docType={documentType}
+                          docNo={requestNo}
+                        />
+                        <ApprovalComments
+                          defaultCompany={companyId || ""}
+                          docType={documentType || ""}
+                          docNo={requestNo || ""}
+                        />
+                      </>
+                    )}
 
                     {documentType === "Performance Management" &&
                       stage === "Appraisee Rating" &&

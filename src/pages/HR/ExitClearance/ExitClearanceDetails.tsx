@@ -664,8 +664,11 @@ const ExitClearanceDetails: React.FC = () => {
       fields={getFormFields()}
       status={state.exitClearance?.status}
       documentType={decodeValue(
-        state.exitClearance?.approvalDocumentType || ""
+        state.exitClearance?.approvalDocumentType || "Exit Clearance"
       )}
+      tableId={50470}
+      requestNo={state.exitClearance?.no || ""}
+      companyId={companyId}
       isLoading={state.isLoading}
       pageType="detail"
       hrOfficerStage={formData.hrOfficerStage}

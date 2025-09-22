@@ -40,6 +40,9 @@ export interface ExitInterview {
   motivatedToReachPeakPerformance: string;
   relationshipWithTeamAndSupervisor: string;
   improveStaffMoraleRetention: string;
+  workingConditionsSuitable: string;
+  payComparedToWorkload: string;
+  additionalComments: string;
   generalEmployeeComments: string;
   generalInterviewerComments: string;
   documentType: string;
@@ -88,6 +91,9 @@ export interface ExitInterviewFormData {
   motivatedToReachPeakPerformance: string;
   relationshipWithTeamAndSupervisor: string;
   improveStaffMoraleRetention: string;
+  workingConditionsSuitable: string;
+  payComparedToWorkload: string;
+  additionalComments: string;
   generalEmployeeComments: string;
   generalInterviewerComments: string;
 }

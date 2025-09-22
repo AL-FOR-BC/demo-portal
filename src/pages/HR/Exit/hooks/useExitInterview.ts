@@ -46,6 +46,9 @@ const initialFormData: ExitInterviewFormData = {
   motivatedToReachPeakPerformance: "",
   relationshipWithTeamAndSupervisor: "",
   improveStaffMoraleRetention: "",
+  workingConditionsSuitable: "",
+  payComparedToWorkload: "",
+  additionalComments: "",
   generalEmployeeComments: "",
   generalInterviewerComments: "",
 };
@@ -152,6 +155,9 @@ export const useExitInterview = ({ mode }: { mode: DocumentTypeMode }) => {
         relationshipWithTeamAndSupervisor:
           formData.relationshipWithTeamAndSupervisor,
         improveStaffMoraleRetention: formData.improveStaffMoraleRetention,
+        workingConditionsSuitable: formData.workingConditionsSuitable,
+        payComparedToWorkload: formData.payComparedToWorkload,
+        additionalComments: formData.additionalComments,
         generalEmployeeComments: formData.generalEmployeeComments,
         generalInterviewerComments: formData.generalInterviewerComments,
         // Only include organization unit fields if they have values to prevent API errors
@@ -349,6 +355,18 @@ export const useExitInterview = ({ mode }: { mode: DocumentTypeMode }) => {
       {
         field: "improveStaffMoraleRetention",
         label: "Improve staff morale and retention",
+      },
+      {
+        field: "workingConditionsSuitable",
+        label: "Working conditions suitable",
+      },
+      {
+        field: "payComparedToWorkload",
+        label: "Pay compared to workload",
+      },
+      {
+        field: "additionalComments",
+        label: "Additional comments",
       },
     ];
 
