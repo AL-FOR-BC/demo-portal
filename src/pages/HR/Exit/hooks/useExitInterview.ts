@@ -236,6 +236,9 @@ export const useExitInterview = ({ mode }: { mode: DocumentTypeMode }) => {
         relationshipWithTeamAndSupervisor:
           formData.relationshipWithTeamAndSupervisor,
         improveStaffMoraleRetention: formData.improveStaffMoraleRetention,
+        workingConditionsSuitable: formData.workingConditionsSuitable,
+        payComparedToWorkload: formData.payComparedToWorkload,
+        additionalComments: formData.additionalComments,
         generalEmployeeComments: formData.generalEmployeeComments,
         generalInterviewerComments: formData.generalInterviewerComments,
       };
