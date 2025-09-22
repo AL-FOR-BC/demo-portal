@@ -379,6 +379,16 @@ export const useExitClearance = ({ mode, systemId }: UseExitClearanceProps) => {
       "financeManagerName",
       "admin",
       "adminName",
+      "headOfDepartmentNo",
+      "headOfDepartmentName",
+      "headOfDepartmentStage",
+      "hrManagerNo",
+      "hrManagerName",
+      "hrManagerStage",
+      "hasLoan",
+      "hasSalaryAdvance",
+      "loanAmount",
+      "salaryAdvanceAmount",
     ];
 
     // Remove read-only fields from the payload
@@ -836,7 +846,7 @@ export const useExitClearance = ({ mode, systemId }: UseExitClearanceProps) => {
         required: true,
       },
       {
-      label: "Handover Date *",
+        label: "Handover Date *",
         type: "date",
         value: formData.handoverDate || "",
         id: "handoverDate",
