@@ -53,6 +53,9 @@ const ExitClearanceDetails: React.FC = () => {
   // Check if current user is the supervisor
   const isSupervisor = user?.employeeNo === formData.supervisorNo;
 
+  // Check if current user is the HR Officer
+  const isHROfficer = user?.employeeNo === formData.hrOfficerNo;
+
   // Check if current user is the HR Manager
   const isHRManager = user?.employeeNo === formData.hrManagerNo;
 
@@ -106,13 +109,23 @@ const ExitClearanceDetails: React.FC = () => {
   // Determine if sections should be disabled based on ownership
   // const isSectionDisabled = !isOwner;
 
+  // HR Officer section should be enabled only if user is the HR Officer
+  // OR if status is "Pending Approval" and HR stage is "Pending Clearance" and user is HR Officer
+  const isHROfficerSectionDisabled =
+    !isHROfficer &&
+    !(
+      state.exitClearance?.status === "Pending Approval" &&
+      formData.hrOfficerStage === "Pending Clearance" &&
+      isHROfficer
+    );
+
   // HR Manager section should be enabled only if user is the HR Manager
-  // OR if status is "Pending Approval" and HR stage is "Pending Clearance" and user is HR Manager
+  // OR if status is "Pending Approval" and HR Manager stage is "Pending Clearance" and user is HR Manager
   const isHRManagerSectionDisabled =
     !isHRManager &&
     !(
       state.exitClearance?.status === "Pending Approval" &&
-      formData.hrOfficerStage === "Pending Clearance" &&
+      formData.hrManagerStage === "Pending Clearance" &&
       isHRManager
     );
 
@@ -602,7 +615,7 @@ const ExitClearanceDetails: React.FC = () => {
   const shouldShowHROfficerClearance =
     state.exitClearance?.status === "Pending Approval" &&
     formData.hrOfficerStage === "Pending Clearance" &&
-    isHRManager;
+    isHROfficer;
 
   const shouldShowFinanceClearance =
     state.exitClearance?.status === "Pending Approval" &&
@@ -622,12 +635,13 @@ const ExitClearanceDetails: React.FC = () => {
   const shouldShowSupervisorClearance =
     state.exitClearance?.status === "Pending Approval" &&
     formData.supervisorStage === "Pending Clearance" &&
-    isSupervisor;
+    isSupervisor &&
+    user?.employeeNo !== formData.headOfDepartmentNo; // Don't show if user is also Head of Department
 
   const shouldShowHeadOfDepartmentClearance =
     state.exitClearance?.status === "Pending Approval" &&
     formData.headOfDepartmentStage === "Pending Clearance" &&
-    isSupervisor;
+    user?.employeeNo === formData.headOfDepartmentNo;
 
   const shouldShowHRManagerClearance =
     state.exitClearance?.status === "Pending Approval" &&
@@ -821,16 +835,16 @@ const ExitClearanceDetails: React.FC = () => {
             </Collapse>
           </Paper>
 
-          {/* HR Manager Section */}
+          {/* HR Officer Section */}
           <Paper elevation={2} className="mt-4">
             <SectionHeader
               title="3.	OUTSTANDING HR ISSUES (To be completed/ Verified by the HR Officer)"
-              open={openSections.hrManager}
-              onToggle={() => toggleSection("hrManager")}
+              open={openSections.hrOfficer}
+              onToggle={() => toggleSection("hrOfficer")}
             />
-            <Collapse in={openSections.hrManager}>
+            <Collapse in={openSections.hrOfficer}>
               <Box p={3}>
-                {isHRManagerSectionDisabled && (
+                {isHROfficerSectionDisabled && (
                   <div className="alert alert-info mb-3">
                     <i className="bx bx-info-circle me-2"></i>
                     {state.exitClearance?.status === "Pending Approval" &&
@@ -861,7 +875,7 @@ const ExitClearanceDetails: React.FC = () => {
                         handleInputChange("identityCard", e.target.value)
                       }
                       onBlur={() => handleSaveOnBlur("identityCard")}
-                      disabled={isHRManagerSectionDisabled}
+                      disabled={isHROfficerSectionDisabled}
                     >
                       <option value="">Select...</option>
                       <option value="YES">YES</option>
@@ -878,7 +892,7 @@ const ExitClearanceDetails: React.FC = () => {
                         handleInputChange("medicalCard", e.target.value)
                       }
                       onBlur={() => handleSaveOnBlur("medicalCard")}
-                      disabled={isHRManagerSectionDisabled}
+                      disabled={isHROfficerSectionDisabled}
                     >
                       <option value="">Select...</option>
                       <option value="YES">YES</option>
@@ -904,7 +918,7 @@ const ExitClearanceDetails: React.FC = () => {
                       onBlur={() =>
                         handleSaveOnBlur("timeSheetForTheLastPeriod")
                       }
-                      disabled={isHRManagerSectionDisabled}
+                      disabled={isHROfficerSectionDisabled}
                     >
                       <option value="">Select...</option>
                       <option value="YES">YES</option>
@@ -1101,22 +1115,16 @@ const ExitClearanceDetails: React.FC = () => {
                     <Input
                       type="text"
                       id="outstandingAccountabilities"
-                      value={formData.outstandingAccountabilities || "N/A"}
+                      value={formData.outstandingAccountabilities || ""}
                       onChange={(e) =>
                         handleInputChange(
                           "outstandingAccountabilities",
-                          e.target.value || "N/A"
+                          e.target.value
                         )
                       }
-                      onBlur={(e) => {
-                        if (!e.target.value.trim()) {
-                          handleInputChange(
-                            "outstandingAccountabilities",
-                            "N/A"
-                          );
-                        }
-                        handleSaveOnBlur("outstandingAccountabilities");
-                      }}
+                      onBlur={() =>
+                        handleSaveOnBlur("outstandingAccountabilities")
+                      }
                       disabled={isFinanceManagerSectionDisabled}
                       placeholder="Enter N/A if none"
                     />
@@ -1578,11 +1586,13 @@ const ExitClearanceDetails: React.FC = () => {
             />
             <Collapse in={openSections.headOfDepartment}>
               <Box p={3}>
-                {!isSupervisor && (
+                {user?.employeeNo !== formData.headOfDepartmentNo && (
                   <div className="alert alert-info mb-3">
                     <i className="bx bx-info-circle me-2"></i>
                     This section is only accessible to the Head of Department
-                    assigned to this Exit Clearance.
+                    assigned to this Exit Clearance. Head of Department:{" "}
+                    {formData.headOfDepartmentNo || "Not assigned"}. Current
+                    user: {user?.employeeNo || "Unknown"}
                   </div>
                 )}
                 <Row>
@@ -1597,7 +1607,7 @@ const ExitClearanceDetails: React.FC = () => {
                       }
                       onBlur={() => handleSaveOnBlur("hodComments")}
                       disabled={
-                        !isSupervisor ||
+                        user?.employeeNo !== formData.headOfDepartmentNo ||
                         state.exitClearance?.status === "Approved"
                       }
                       rows={4}

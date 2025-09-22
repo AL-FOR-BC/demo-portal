@@ -43,6 +43,11 @@ const ExitClearance: React.FC = () => {
       sort: true,
     },
     {
+      dataField: "employeeNo",
+      text: "Employee No",
+      sort: true,
+    },
+    {
       dataField: "employeeName",
       text: "Employee Name",
       sort: true,

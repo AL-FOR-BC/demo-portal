@@ -347,6 +347,7 @@ export const useExitClearance = ({ mode, systemId }: UseExitClearanceProps) => {
       "medicalCard",
       "resignationAcceptance",
       "timeSheetForTheLastPeriod",
+      "supervisorVerification",
     ];
 
     // Fields that are read-only and should be excluded from create payload
@@ -681,11 +682,20 @@ export const useExitClearance = ({ mode, systemId }: UseExitClearanceProps) => {
               "medicalCard",
               "resignationAcceptance",
               "timeSheetForTheLastPeriod",
+              "supervisorVerification",
             ].includes(actualFieldName)
           ) {
-            // Handle boolean fields
-            updateData[actualFieldName] =
-              fieldValue === "YES" ? true : fieldValue === "NO" ? false : null;
+            // Handle boolean fields - support both boolean and string values
+            if (typeof fieldValue === "boolean") {
+              updateData[actualFieldName] = fieldValue;
+            } else {
+              updateData[actualFieldName] =
+                fieldValue === "YES"
+                  ? true
+                  : fieldValue === "NO"
+                  ? false
+                  : null;
+            }
           } else {
             updateData[actualFieldName] = fieldValue;
           }
@@ -757,14 +767,14 @@ export const useExitClearance = ({ mode, systemId }: UseExitClearanceProps) => {
       {
         label: "Employee No",
         type: "text",
-        value: employeeNo || "",
+        value: formData.employeeNo || "",
         disabled: true,
         id: "employeeNo",
       },
       {
         label: "Employee Name",
         type: "text",
-        value: employeeName || "",
+        value: formData.employeeName || "",
         disabled: true,
         id: "employeeName",
       },
