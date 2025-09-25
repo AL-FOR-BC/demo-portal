@@ -381,6 +381,35 @@ const appRoutes: Routes = [
   //     path: '/approved-time-sheets',
   //     component: lazy(() => import("../../pages/time-sheets/ApprovedTimeSheets.tsx"))
   // }
+
+  // ------------------------ Disciplinary Types ----------------------------------------
+  {
+    key: "disciplinary-types",
+    path: "/disciplinary-types",
+    component: lazy(() => import("../../pages/HR/D_&_G/DisciplinaryTypes.tsx")),
+  },
+  {
+    key: "grievance-types",
+    path: "/grievance-types",
+    component: lazy(() => import("../../pages/HR/D_&_G/GrievanceTypes.tsx")),
+  },
+  {
+    key: "grievance-cases",
+    path: "/grievances",
+    component: lazy(() => import("../../pages/HR/D_&_G/GrievanceCases.tsx")),
+  },
+  {
+    key: "add-grievance-case",
+    path: "/add-grievance-case",
+    component: lazy(() => import("../../pages/HR/D_&_G/AddGrievanceCase.tsx")),
+  },
+  {
+    key: "grievance-case-details",
+    path: "/grievance-case-details/:systemId",
+    component: lazy(
+      () => import("../../pages/HR/D_&_G/GrievanceCaseDetails.tsx")
+    ),
+  },
 ];
 
 export default appRoutes;

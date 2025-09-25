@@ -114,16 +114,17 @@ export const navbarOptions: NavigationTree[] = [
           },
           {
             id: 19,
-            name: "Grievance Cases",
-            path: "/grievances",
-            subOptions: [],
-          },
-          {
-            id: 20,
             name: "Grievance Types",
             path: "/grievance-types",
             subOptions: [],
           },
+          {
+            id: 20,
+            name: "Grievance Cases",
+            path: "/grievances",
+            subOptions: [],
+          },
+          
           {
             id: 21,
             name: "Grievances To Respond To",

@@ -84,6 +84,7 @@ interface HeaderMuiProps {
   handleHeadOfDepartmentClearance?: () => void;
   handleHRManagerClearance?: () => void;
   handleSupervisorClearance?: () => void;
+  handleSendResponse?: () => void;
   hrOfficerStage?: string;
   financeStage?: string;
   adminStage?: string;
@@ -138,6 +139,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
     handleHeadOfDepartmentClearance,
     handleHRManagerClearance,
     handleSupervisorClearance,
+    handleSendResponse,
     hrOfficerStage,
     financeStage,
     adminStage,
@@ -464,7 +466,8 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                       )}
                     {documentType !== "Performance Management" &&
                       documentType !== "Exit Interview" &&
-                      documentType !== "Exit Clearance" && (
+                      documentType !== "Exit Clearance" &&
+                      documentType !== "Grievance Case" && (
                         <Button
                           color="primary"
                           className="btn btn-label"
@@ -472,6 +475,18 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                         >
                           <SendIcon className="label-icon" />
                           Send Approval Request
+                        </Button>
+                      )}
+
+                    {handleSendResponse &&
+                      documentType === "Grievance Case" && (
+                        <Button
+                          color="primary"
+                          className="btn btn-label"
+                          onClick={handleSendResponse}
+                        >
+                          <SendIcon className="label-icon" />
+                          Send Response
                         </Button>
                       )}
 

@@ -68,7 +68,7 @@ const ExitClearanceDetails: React.FC = () => {
   // Check if Admin section should be disabled
   const isAdminSectionDisabled = !isAdmin;
 
-  // Check if current user is the ICT Manager
+  // Check if current user is the IT
   const isICTManager = user?.employeeNo === formData.ictManagerNo;
 
   // Check if IT section should be disabled
@@ -1175,8 +1175,8 @@ const ExitClearanceDetails: React.FC = () => {
                 {isITSectionDisabled && (
                   <div className="alert alert-info mb-3">
                     <i className="bx bx-info-circle me-2"></i>
-                    This section is only accessible to the ICT Manager assigned
-                    to this Exit Clearance.
+                    This section is only accessible to the IT assigned to this
+                    Exit Clearance.
                   </div>
                 )}
                 {/* IT Organizational Properties Form Fields */}
@@ -1460,10 +1460,10 @@ const ExitClearanceDetails: React.FC = () => {
                   </Col>
                 </Row>
 
-                {/* IT Manager Information */}
+                {/* IT Information */}
                 <Row className="mt-4">
                   <Col md={6}>
-                    <Label for="ictManagerNo">ICT Manager No.</Label>
+                    <Label for="ictManagerNo">IT No.</Label>
                     <Input
                       type="text"
                       id="ictManagerNo"
@@ -1472,7 +1472,7 @@ const ExitClearanceDetails: React.FC = () => {
                     />
                   </Col>
                   <Col md={6}>
-                    <Label for="ictManagerName">ICT Manager Name</Label>
+                    <Label for="ictManagerName">IT Name</Label>
                     <Input
                       type="text"
                       id="ictManagerName"

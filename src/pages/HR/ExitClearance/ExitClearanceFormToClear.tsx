@@ -52,7 +52,7 @@ function StaffHandoverFormToClear() {
     },
     {
       dataField: "ictManagerName",
-      text: "IT Manager Name",
+      text: "IT Name",
       sort: true,
     },
     {
@@ -112,15 +112,15 @@ function StaffHandoverFormToClear() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // For review page, we want to show Exit Clearances where the current user is involved
-        // This includes cases where the user is:
-        // 1. Initial HR Officer
-        // 2. Finance Manager
-        // 3. Admin
-        // 4. Supervisor
-        // 5. IT Manager
-        // 6. Head of Department
-        // 7. Final HR Manager
+        // Sequential approval flow implementation
+        // Records are only shown to users when it's their turn in the approval sequence:
+        // 1. HR Officer (First) - Can always proceed if their stage is pending
+        // 2. Finance Manager (Second) - Can only proceed if HR Officer is completed
+        // 3. Admin Manager (Third) - Can only proceed if HR Officer and Finance are completed
+        // 4. Supervisor (Fourth) - Can only proceed if HR Officer, Finance, and Admin are completed
+        // 5. IT (Fifth) - Can only proceed if HR Officer, Finance, Admin, and Supervisor are completed
+        // 6. Head of Department (Sixth) - Can only proceed if all previous stages are completed
+        // 7. HR Manager (Final) - Can only proceed if all previous stages are completed
         const result = await exitClearanceService.getExitClearances(companyId);
 
         const filteredResult = result.filter((item) => {
@@ -135,31 +135,123 @@ function StaffHandoverFormToClear() {
             headOfDepartmentNo: item.headOfDepartmentNo,
             hrManagerNo: item.hrManagerNo,
             status: item.status,
+            // Stage statuses
+            hrOfficerStage: item.hrOfficerStage,
+            financeStage: item.financeStage,
+            adminStage: item.adminStage,
+            supervisorStage: item.supervisorStage,
+            ictStage: item.ictStage,
+            headOfDepartmentStage: item.headOfDepartmentStage,
+            hrManagerStage: item.hrManagerStage,
           });
 
-          return (
-            // Initial HR Officer review
-            (item.hrOfficerNo === employeeNo &&
-              item.hrOfficerStage === "Pending Clearance") ||
-            // Finance Manager review
-            (item.financeManager === employeeNo &&
-              item.financeStage === "Pending Clearance") ||
-            // IT Manager review
-            (item.ictManagerNo === employeeNo &&
-              item.ictStage === "Pending Clearance") ||
-            // Admin review
-            (item.admin === employeeNo &&
-              item.adminStage === "Pending Clearance") ||
-            // Supervisor review
-            (item.supervisorNo === employeeNo &&
-              item.supervisorStage === "Pending Clearance") ||
-            // Head of Department review
-            (item.headOfDepartmentNo === employeeNo &&
-              item.headOfDepartmentStage === "Pending Clearance") ||
-            // Final HR Manager review
-            (item.hrManagerNo === employeeNo &&
-              item.hrManagerStage === "Pending Clearance")
-          );
+          // Sequential approval flow: HR Officer → Finance → Admin → Supervisor → IT → Head of Department → HR Manager
+          // Each stage must be completed before the next one can proceed
+          // This ensures proper workflow control and prevents users from seeing records out of sequence
+
+          // Helper function to check if a stage is completed
+          const isStageCompleted = (stage: string) => {
+            return stage === "Cleared" || stage === "Approved";
+          };
+
+          // Helper function to check if a stage is pending
+          const isStagePending = (stage: string) => {
+            return stage === "Pending Clearance";
+          };
+
+          // Check if it's the user's turn in the sequential flow
+          const isUserTurn = () => {
+            // 1. HR Officer (First in sequence)
+            if (
+              item.hrOfficerNo === employeeNo &&
+              isStagePending(item.hrOfficerStage)
+            ) {
+              return true;
+            }
+
+            // 2. Finance Manager (Second in sequence)
+            if (
+              item.financeManager === employeeNo &&
+              isStagePending(item.financeStage)
+            ) {
+              // Can only proceed if HR Officer stage is completed
+              return isStageCompleted(item.hrOfficerStage);
+            }
+
+            // 3. Admin Manager (Third in sequence)
+            if (item.admin === employeeNo && isStagePending(item.adminStage)) {
+              // Can only proceed if HR Officer and Finance stages are completed
+              return (
+                isStageCompleted(item.hrOfficerStage) &&
+                isStageCompleted(item.financeStage)
+              );
+            }
+
+            // 4. Supervisor (Fourth in sequence)
+            if (
+              item.supervisorNo === employeeNo &&
+              isStagePending(item.supervisorStage)
+            ) {
+              // Can only proceed if HR Officer, Finance, and Admin stages are completed
+              return (
+                isStageCompleted(item.hrOfficerStage) &&
+                isStageCompleted(item.financeStage) &&
+                isStageCompleted(item.adminStage)
+              );
+            }
+
+            // 5. IT (Fifth in sequence)
+            if (
+              item.ictManagerNo === employeeNo &&
+              isStagePending(item.ictStage)
+            ) {
+              // Can only proceed if HR Officer, Finance, Admin, and Supervisor stages are completed
+              return (
+                isStageCompleted(item.hrOfficerStage) &&
+                isStageCompleted(item.financeStage) &&
+                isStageCompleted(item.adminStage) &&
+                isStageCompleted(item.supervisorStage)
+              );
+            }
+
+            // 6. Head of Department (Sixth in sequence)
+            if (
+              item.headOfDepartmentNo === employeeNo &&
+              item.headOfDepartmentStage &&
+              isStagePending(item.headOfDepartmentStage)
+            ) {
+              // Can only proceed if all previous stages are completed
+              return (
+                isStageCompleted(item.hrOfficerStage) &&
+                isStageCompleted(item.financeStage) &&
+                isStageCompleted(item.adminStage) &&
+                isStageCompleted(item.supervisorStage) &&
+                isStageCompleted(item.ictStage)
+              );
+            }
+
+            // 7. HR Manager (Final in sequence)
+            if (
+              item.hrManagerNo === employeeNo &&
+              item.hrManagerStage &&
+              isStagePending(item.hrManagerStage)
+            ) {
+              // Can only proceed if all previous stages are completed
+              return (
+                isStageCompleted(item.hrOfficerStage) &&
+                isStageCompleted(item.financeStage) &&
+                isStageCompleted(item.adminStage) &&
+                isStageCompleted(item.supervisorStage) &&
+                isStageCompleted(item.ictStage) &&
+                item.headOfDepartmentStage &&
+                isStageCompleted(item.headOfDepartmentStage)
+              );
+            }
+
+            return false;
+          };
+
+          return isUserTurn();
         });
 
         console.log("Filtered Exit Clearances for review:", filteredResult);
