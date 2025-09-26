@@ -50,8 +50,8 @@ export interface TrainingPlan {
   trainingDescription: string;
   shortcutDimension1Code: string;
   shortcutDimension2Code: string;
-  supervisorId?: string;
-  supervisorName?: string; // Read-only field for display
+  employeeId?: string;
+  employeeName?: string; // Read-only field for display
   organizationUnit?: string;
   projectCode?: string;
   donorCode?: string;
@@ -79,7 +79,7 @@ export interface TrainingPlanFormData {
   trainingDescription: string;
   shortcutDimension1Code?: string;
   shortcutDimension2Code?: string;
-  supervisorId?: string;
+  employeeId?: string;
   organizationUnit?: string;
   projectCode?: string;
   donorCode?: string;

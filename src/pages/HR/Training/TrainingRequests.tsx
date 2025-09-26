@@ -81,7 +81,7 @@ const TrainingRequests: React.FC = () => {
       text: "Cost",
       sort: true,
       formatter: (cell: any) => {
-        return cell ? `$${cell.toLocaleString()}` : "$0";
+        return cell ? `${cell.toLocaleString()}` : "0";
       },
     },
     {

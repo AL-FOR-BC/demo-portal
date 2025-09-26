@@ -26,6 +26,7 @@ import Attachments from "../../common/Attachment";
 import ApprovalEntries from "../../common/ApprovalEntry";
 import ApprovalAction from "../../common/ApprovalAction";
 import ApprovalComments from "../../common/ApprovalComments";
+import Toggle from "../Toggle/Toggle";
 import Swal from "sweetalert2";
 
 interface HeaderMuiProps {
@@ -44,7 +45,12 @@ interface HeaderMuiProps {
   handleDeletePurchaseRequisition?: () => void;
   handleCancelApprovalRequest?: () => void;
   lines?: React.ReactNode;
-  status?: string;
+  status?:
+    | string
+    | "Open"
+    | "Submitted to Employee"
+    | "Approved"
+    | "Pending Approval";
   buttons?: {
     label: string;
     color: string;
@@ -85,6 +91,12 @@ interface HeaderMuiProps {
   handleHRManagerClearance?: () => void;
   handleSupervisorClearance?: () => void;
   handleSendResponse?: () => void;
+  handleNotifySupervisor?: () => void;
+  handleWithdrawCase?: () => void;
+  currentUserEmployeeNo?: string;
+  indictedEmployeeNo?: string;
+  caseRegisteredByNo?: string;
+  sendGrievanceTo?: string;
   hrOfficerStage?: string;
   financeStage?: string;
   adminStage?: string;
@@ -140,6 +152,12 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
     handleHRManagerClearance,
     handleSupervisorClearance,
     handleSendResponse,
+    handleNotifySupervisor,
+    handleWithdrawCase,
+    currentUserEmployeeNo,
+    indictedEmployeeNo,
+    caseRegisteredByNo,
+    sendGrievanceTo,
     hrOfficerStage,
     financeStage,
     adminStage,
@@ -148,6 +166,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
     headOfDepartmentStage,
     hrManagerStage,
   } = props;
+
   return (
     <LoadingOverlayWrapper
       active={isLoading}
@@ -204,19 +223,25 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
 
           {pageType === "detail" && (
             <>
+              {/* Back button for all statuses */}
+              <Row className="justify-content-center mb-4">
+                <div className="d-flex flex-wrap gap-2">
+                  <Button
+                    color="secondary"
+                    className="btn btn-label"
+                    onClick={handleBack}
+                  >
+                    <i className="label-icon">
+                      <ArrowBackIcon className="label-icon" />
+                    </i>
+                    Back
+                  </Button>
+                </div>
+              </Row>
+
               {status === "Open" && (
                 <Row className="justify-content-center mb-4">
                   <div className="d-flex flex-wrap gap-2">
-                    <Button
-                      color="secondary"
-                      className="btn btn-label"
-                      onClick={handleBack}
-                    >
-                      <i className="label-icon">
-                        <ArrowBackIcon className="label-icon" />
-                      </i>
-                      Back
-                    </Button>
                     {documentType === "Exit Interview" && (
                       <Button
                         color="primary"
@@ -478,15 +503,16 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                         </Button>
                       )}
 
-                    {handleSendResponse &&
-                      documentType === "Grievance Case" && (
+                    {handleNotifySupervisor &&
+                      documentType === "Grievance Case" &&
+                      String(status) === "Open" && (
                         <Button
-                          color="primary"
+                          color="warning"
                           className="btn btn-label"
-                          onClick={handleSendResponse}
+                          onClick={handleNotifySupervisor}
                         >
                           <SendIcon className="label-icon" />
-                          Send Response
+                          Notify Supervisor, Accused Employee and HR
                         </Button>
                       )}
 
@@ -548,13 +574,14 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                         </Button>
                       )}
                     {documentType !== "Performance Management" && (
-                      <Button
-                        color="danger"
-                        className="btn btn-label"
-                        onClick={
-                          handleDeletePurchaseRequisition
-                            ? handleDeletePurchaseRequisition
-                            : () => {
+                      <>
+                        {documentType === "Grievance Case" ? (
+                          // For Grievance Cases, only show delete if user is the case initiator
+                          currentUserEmployeeNo === caseRegisteredByNo && (
+                            <Button
+                              color="danger"
+                              className="btn btn-label"
+                              onClick={() => {
                                 if (handleDelete) {
                                   Swal.fire({
                                     title: "Are you sure?",
@@ -570,19 +597,93 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                     }
                                   });
                                 }
-                              }
-                        }
-                      >
-                        <DeleteIcon
-                          className="label-icon"
-                          style={{ padding: "8px" }}
-                        />
-                        Delete Request
-                      </Button>
+                              }}
+                            >
+                              <DeleteIcon
+                                className="label-icon"
+                                style={{ padding: "8px" }}
+                              />
+                              Delete Case
+                            </Button>
+                          )
+                        ) : (
+                          // For other document types, use existing logic
+                          <Button
+                            color="danger"
+                            className="btn btn-label"
+                            onClick={
+                              handleDeletePurchaseRequisition
+                                ? handleDeletePurchaseRequisition
+                                : () => {
+                                    if (handleDelete) {
+                                      Swal.fire({
+                                        title: "Are you sure?",
+                                        text: "You won't be able to revert this!",
+                                        icon: "warning",
+                                        showCancelButton: true,
+                                        confirmButtonColor: "#3085d6",
+                                        cancelButtonColor: "#d33",
+                                        confirmButtonText: "Yes, delete it!",
+                                      }).then((result) => {
+                                        if (result.isConfirmed) {
+                                          handleDelete();
+                                        }
+                                      });
+                                    }
+                                  }
+                            }
+                          >
+                            <DeleteIcon
+                              className="label-icon"
+                              style={{ padding: "8px" }}
+                            />
+                            Delete Request
+                          </Button>
+                        )}
+                      </>
                     )}
                   </div>
                 </Row>
               )}
+
+              {/* Send Response button for Submitted to Employee status */}
+              {handleSendResponse &&
+                documentType === "Grievance Case" &&
+                String(status) === "Submitted to Employee" &&
+                (currentUserEmployeeNo === indictedEmployeeNo ||
+                  currentUserEmployeeNo === sendGrievanceTo) && (
+                  <Row className="justify-content-center mb-4">
+                    <div className="d-flex flex-wrap gap-2">
+                      <Button
+                        color="primary"
+                        className="btn btn-label"
+                        onClick={handleSendResponse}
+                      >
+                        <SendIcon className="label-icon" />
+                        Send Response
+                      </Button>
+                    </div>
+                  </Row>
+                )}
+              {handleWithdrawCase &&
+                documentType === "Grievance Case" &&
+                (String(status) === "Employee Response" ||
+                  String(status) === "Submitted to Employee") &&
+                currentUserEmployeeNo === caseRegisteredByNo && (
+                  <Row className="justify-content-center mb-4">
+                    <div className="d-flex flex-wrap gap-2">
+                      <Button
+                        color="danger"
+                        className="btn btn-label"
+                        onClick={handleWithdrawCase}
+                      >
+                        <CancelIcon className="label-icon" />
+                        Withdraw Case
+                      </Button>
+                    </div>
+                  </Row>
+                )}
+
               {status === "Pending Approval" && (
                 <Row className="justify-content-center mb-4">
                   <div className="d-flex flex-wrap gap-2">
@@ -968,6 +1069,8 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                     rows,
                                     onBlur,
                                     placeholder,
+                                    checked,
+                                    className,
                                   },
                                   idx
                                 ) => (
@@ -1068,6 +1171,21 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                         id={id}
                                         onBlur={onBlur}
                                       />
+                                    ) : type === "toggle" ? (
+                                      <Toggle
+                                        checked={checked || false}
+                                        onChange={(newValue) => {
+                                          if (onChange) {
+                                            onChange({
+                                              target: { checked: newValue },
+                                            });
+                                          }
+                                        }}
+                                        disabled={disabled}
+                                        id={id}
+                                        size="md"
+                                        onBlur={onBlur}
+                                      />
                                     ) : (
                                       <Input
                                         type={type}
@@ -1078,6 +1196,8 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                                         rows={rows}
                                         id={id}
                                         onBlur={onBlur}
+                                        checked={checked}
+                                        className={className}
                                       />
                                     )}
                                   </Col>

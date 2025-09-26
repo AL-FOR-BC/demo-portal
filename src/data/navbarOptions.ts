@@ -124,9 +124,14 @@ export const navbarOptions: NavigationTree[] = [
             path: "/grievances",
             subOptions: [],
           },
-          
           {
             id: 21,
+            name: "Disciplinary Cases",
+            path: "/disciplinary-cases",
+            subOptions: [],
+          },
+          {
+            id: 22,
             name: "Grievances To Respond To",
             path: "/grievances-to-respond-to",
             subOptions: [],
@@ -134,7 +139,7 @@ export const navbarOptions: NavigationTree[] = [
         ],
       },
       {
-        id: 22,
+        id: 23,
         name: "Training",
         path: "/training",
         subOptions: [

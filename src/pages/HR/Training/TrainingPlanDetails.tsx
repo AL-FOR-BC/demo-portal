@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAppSelector } from "../../../store/hook";
 import HeaderMui from "../../../Components/ui/Header/HeaderMui";
 import { Typography } from "@mui/material";
 import { useTrainingPlanDocument } from "../../../hooks/documents/useTrainingPlanDocument";
@@ -8,7 +7,6 @@ import { useTrainingPlanDocument } from "../../../hooks/documents/useTrainingPla
 const TrainingPlanDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { companyId } = useAppSelector((state) => state.auth.session);
 
   const {
     formData,
@@ -24,7 +22,7 @@ const TrainingPlanDetails: React.FC = () => {
       // Populate the document with the training plan data using the systemId
       populateDocument(id);
     }
-  }, [id, companyId, populateDocument]);
+  }, [id]);
 
   if (state.isLoading) {
     return (
@@ -32,20 +30,22 @@ const TrainingPlanDetails: React.FC = () => {
         className="d-flex justify-content-center align-items-center"
         style={{ height: "400px" }}
       >
-        <div className="spinner-border" role="status">
+        <div className="spinner-border text-primary" role="status">
           <span className="sr-only">Loading...</span>
         </div>
       </div>
     );
   }
 
-  if (!formData.no) {
+  if (!formData.no && !state.isLoading) {
     return (
       <div
         className="d-flex justify-content-center align-items-center"
         style={{ height: "400px" }}
       >
-        <Typography variant="h6">Training plan not found</Typography>
+        <Typography variant="h6" color="error">
+          Training plan not found
+        </Typography>
       </div>
     );
   }

@@ -410,6 +410,32 @@ const appRoutes: Routes = [
       () => import("../../pages/HR/D_&_G/GrievanceCaseDetails.tsx")
     ),
   },
+  {
+    key: "disciplinary-cases",
+    path: "/disciplinary-cases",
+    component: lazy(() => import("../../pages/HR/D_&_G/DisciplinaryCases.tsx")),
+  },
+  {
+    key: "add-disciplinary-case",
+    path: "/add-disciplinary-case",
+    component: lazy(
+      () => import("../../pages/HR/D_&_G/AddDisciplinaryCase.tsx")
+    ),
+  },
+  {
+    key: "disciplinary-case-details",
+    path: "/disciplinary-case-details/:systemId",
+    component: lazy(
+      () => import("../../pages/HR/D_&_G/DisciplinaryCaseDetails.tsx")
+    ),
+  },
+  {
+    key: "grievances-to-respond",
+    path: "/grievances-to-respond-to",
+    component: lazy(
+      () => import("../../pages/HR/D_&_G/GrievancesToRespond.tsx")
+    ),
+  },
 ];
 
 export default appRoutes;

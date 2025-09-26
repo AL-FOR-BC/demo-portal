@@ -1,7 +1,7 @@
 import {
   GrievanceCase,
-  GrievanceCaseFormData,
   GrievanceCaseFormUpdate,
+  GrievanceCaseSubmissionData,
 } from "../@types/grievanceCases.dto";
 import { BaseApiService } from "./base/BaseApiService";
 
@@ -45,10 +45,13 @@ class GrievanceCasesService extends BaseApiService {
    * Creates a new Grievance Case
    * @async
    * @param {string} companyId - Company identifier
-   * @param {GrievanceCaseFormData} data - Grievance Case form data
+   * @param {GrievanceCaseSubmissionData} data - Grievance Case submission data
    * @returns {Promise<GrievanceCase>} Created Grievance Case
    */
-  async createGrievanceCase(companyId: string, data: GrievanceCaseFormData) {
+  async createGrievanceCase(
+    companyId: string,
+    data: GrievanceCaseSubmissionData
+  ) {
     return this.create<GrievanceCase>({ companyId, data });
   }
 
@@ -99,6 +102,38 @@ class GrievanceCasesService extends BaseApiService {
       data,
       type: "approval",
       customEndpoint: "HRMISActions_SendGrievanceResponse",
+    });
+  }
+
+  /**
+   * Notifies supervisor, accused employee and HR about Grievance Case
+   * @async
+   * @param {string} companyId - Company identifier
+   * @param {object} data - Notification data
+   * @returns {Promise<any>} Notification result
+   */
+  async notifySupervisor(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_GDNotifySupervisor",
+    });
+  }
+
+  /**
+   * Withdraws Grievance Case
+   * @async
+   * @param {string} companyId - Company identifier
+   * @param {object} data - Withdrawal data
+   * @returns {Promise<any>} Withdrawal result
+   */
+  async withdrawCase(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_WithdrawCase",
     });
   }
 }

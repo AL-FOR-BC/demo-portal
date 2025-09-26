@@ -43,25 +43,40 @@ const TrainingPlans: React.FC = () => {
       sort: true,
     },
     {
+      dataField: "employeeId",
+      text: "Employee No",
+      sort: true,
+    },
+    {
+      dataField: "employeeName",
+      text: "Employee Name",
+      sort: true,
+    },
+    {
       dataField: "trainingDescription",
       text: "Training Description",
       sort: true,
     },
     {
-      dataField: "directorate",
-      text: "Directorate",
+      dataField: "organizationUnit",
+      text: "Organization Unit",
       sort: true,
     },
     {
-      dataField: "businessUnit",
-      text: "Business Unit",
+      dataField: "shortcutDimension1Code",
+      text: "Project Code",
+      sort: true,
+    },
+    {
+      dataField: "shortcutDimension2Code",
+      text: "Donor Code",
       sort: true,
     },
     {
       dataField: "totalCost",
       text: "Total Cost",
       sort: true,
-      formatter: (cell: any) => `$${cell?.toFixed(2) || "0.00"}`,
+      formatter: (cell: any) => `${cell?.toFixed(2) || "0.00"}`,
     },
     {
       dataField: "status",

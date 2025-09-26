@@ -32,6 +32,7 @@ interface LinesProps {
   handleDeleteLines?: (row: any) => void;
   collapsibleName?: string;
   multipleLines?: boolean;
+  canAddLines?: boolean;
 }
 
 function Lines({
@@ -46,6 +47,7 @@ function Lines({
   clearLineFields,
   handleValidateHeaderFields,
   multipleLines,
+  canAddLines,
 }: LinesProps) {
   const [lineTab, setLineTab] = React.useState(true);
   const toggleLines = () => {
@@ -88,6 +90,7 @@ function Lines({
               // handleSubmitUpdateLines={handleSubmitUpdatedLine}
               clearLineFields={clearLineFields}
               multipleLines={multipleLines}
+              canAddLines={canAddLines}
             />
           </div>
         </Collapse>

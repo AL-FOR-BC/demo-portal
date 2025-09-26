@@ -68,6 +68,7 @@ interface TableLinesMuiProps {
   handleValidateHeaderFields: () => boolean;
   documentName?: string;
   multipleLines?: boolean;
+  canAddLines?: boolean;
 }
 
 // Clean Cell component for displaying text with ellipsis
@@ -336,6 +337,7 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
   handleSubmitUpdatedLine,
   handleValidateHeaderFields,
   documentName,
+  canAddLines,
 }) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -484,7 +486,7 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
         </Col>
 
         <Col sm="8">
-          {status === "Open" && (
+          {(canAddLines !== undefined ? canAddLines : status === "Open") && (
             <div className="text-sm-end">
               <Link
                 className="btn btn-primary btn-label"

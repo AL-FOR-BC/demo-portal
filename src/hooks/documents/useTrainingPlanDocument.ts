@@ -1,5 +1,5 @@
 import { useAppSelector } from "../../store/hook";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { getErrorMessage } from "../../utils/common";
 import { toast } from "react-toastify";
 import { trainingPlanService } from "../../services/TrainingPlanService";
@@ -12,8 +12,8 @@ import { options } from "../../@types/common.dto";
 
 export interface TrainingPlanFormData {
   no?: string;
-  supervisorId: string;
-  supervisorName?: string; // Read-only field for display
+  employeeId: string;
+  employeeName?: string; // Read-only field for display
   totalCost?: number;
   status?: string;
   completed?: boolean;
@@ -40,8 +40,8 @@ const initialTrainingPlanDocumentState: TrainingPlanDocumentState = {
 };
 
 const initialFormData: TrainingPlanFormData = {
-  supervisorId: "",
-  supervisorName: "",
+  employeeId: "",
+  employeeName: "",
   trainingDescription: "",
   status: "Open",
   completed: false,
@@ -71,19 +71,28 @@ export const useTrainingPlanDocument = ({
 
   // ------------------------------------- ACTIONS -------------------------------------
   const submitTrainingPlan = async () => {
-    // check for empty fields
-    if (!formData.supervisorId || !formData.trainingDescription) {
-      toast.error("Please fill all required fields");
+    // Enhanced validation
+    if (!formData.employeeId?.trim()) {
+      toast.error("Employee ID is required");
       return;
     }
+    if (!formData.trainingDescription?.trim()) {
+      toast.error("Training description is required");
+      return;
+    }
+    if (formData.trainingDescription.trim().length < 10) {
+      toast.error("Training description must be at least 10 characters long");
+      return;
+    }
+
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
 
       // Create API payload that matches the Business Central API structure
       const apiPayload = {
-        empId: formData.supervisorId,
+        empId: formData.employeeId.trim(),
         completed: formData.completed || false,
-        trainingDescription: formData.trainingDescription,
+        trainingDescription: formData.trainingDescription.trim(),
         shortcutDimension1Code: formData.projectCode?.[0]?.value || "",
         shortcutDimension2Code: formData.donorCode?.[0]?.value || "",
       };
@@ -164,121 +173,57 @@ export const useTrainingPlanDocument = ({
     }
   };
 
-  const populateDocumentDetail = async (systemId: string) => {
-    const response = await trainingPlanService.getTrainingPlan(
-      companyId,
-      systemId
-    );
-    setDocSystemId(systemId);
-    setFormData({
-      no: response.no,
-      supervisorId: response.empId || "", // Map empId to supervisorId for form
-      supervisorName: employeeName || "", // Use current logged-in user's name
-      totalCost: response.totalCost,
-      status: response.status,
-      completed: response.completed,
-      trainingDescription: response.trainingDescription,
-      organizationUnit: response.organizationUnit
-        ? [
-            {
-              label: response.organizationUnit,
-              value: response.organizationUnit,
-            },
-          ]
-        : [],
-      projectCode: response.shortcutDimension1Code
-        ? [
-            {
-              label: response.shortcutDimension1Code,
-              value: response.shortcutDimension1Code,
-            },
-          ]
-        : [],
-      donorCode: response.shortcutDimension2Code
-        ? [
-            {
-              label: response.shortcutDimension2Code,
-              value: response.shortcutDimension2Code,
-            },
-          ]
-        : [],
-    });
-  };
-
-  const populateDocument = async (systemId?: string, documentNo?: string) => {
-    try {
-      setState((prev) => ({ ...prev, isLoading: true }));
-
-      // Always populate the API data for select options
-      await populateData();
-
-      if (mode === "list") {
-        const filterQuery = `$filter=empId eq '${employeeNo}'`;
-        const response = await trainingPlanService.getTrainingPlans(
+  const populateDocumentDetail = useCallback(
+    async (systemId: string) => {
+      try {
+        const response = await trainingPlanService.getTrainingPlan(
           companyId,
-          filterQuery
+          systemId
         );
-        setState((prev) => ({
-          ...prev,
-          trainingPlans: response,
-        }));
-      }
-      if (mode === "add") {
-        setFormData((prev) => ({
-          ...prev,
-          supervisorId: employeeNo || "",
-          supervisorName: employeeName || "",
-        }));
-      }
-      if (mode === "detail" && systemId) {
-        await populateDocumentDetail(systemId);
-      }
-      if (mode === "approve") {
-        const filterQuery = `$filter=no eq '${documentNo}'`;
-        const response = await trainingPlanService.getTrainingPlans(
-          companyId,
-          filterQuery
-        );
-        if (response.length > 0) {
-          const data = response[0];
-          setFormData({
-            no: data.no,
-            supervisorId: data.empId || "", // Map empId to supervisorId for form
-            supervisorName: employeeName || "", // Use current logged-in user's name
-            totalCost: data.totalCost,
-            status: data.status,
-            completed: data.completed,
-            trainingDescription: data.trainingDescription,
-            organizationUnit: data.organizationUnit
-              ? [{ label: data.organizationUnit, value: data.organizationUnit }]
-              : [],
-            projectCode: data.shortcutDimension1Code
+        setDocSystemId(systemId);
+        setFormData({
+          no: response.no,
+          employeeId: response.employeeId || response.empId || "", // Use employeeId from API or fallback to empId
+          employeeName: employeeName || "", // Use current logged-in user's name
+          totalCost: response.totalCost,
+          status: response.status,
+          completed: response.completed,
+          trainingDescription: response.trainingDescription,
+          organizationUnit:
+            response.organizationUnit || response.directorate
               ? [
                   {
-                    label: data.shortcutDimension1Code,
-                    value: data.shortcutDimension1Code,
+                    label: response.organizationUnit || response.directorate,
+                    value: response.organizationUnit || response.directorate,
                   },
                 ]
               : [],
-            donorCode: data.shortcutDimension2Code
-              ? [
-                  {
-                    label: data.shortcutDimension2Code,
-                    value: data.shortcutDimension2Code,
-                  },
-                ]
-              : [],
-          });
-        }
+          projectCode: response.shortcutDimension1Code
+            ? [
+                {
+                  label: response.shortcutDimension1Code,
+                  value: response.shortcutDimension1Code,
+                },
+              ]
+            : [],
+          donorCode: response.shortcutDimension2Code
+            ? [
+                {
+                  label: response.shortcutDimension2Code,
+                  value: response.shortcutDimension2Code,
+                },
+              ]
+            : [],
+        });
+      } catch (error) {
+        console.error("Error populating document detail:", error);
+        toast.error(`Error loading training plan: ${getErrorMessage(error)}`);
       }
-    } catch (error) {
-      toast.error(`Error fetching data: ${getErrorMessage(error)}`);
-    } finally {
-      setState((prev) => ({ ...prev, isLoading: false }));
-    }
-  };
+    },
+    [companyId, employeeName]
+  );
 
-  const populateData = async () => {
+  const populateData = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
 
@@ -327,7 +272,96 @@ export const useTrainingPlanDocument = ({
     } finally {
       setState((prev) => ({ ...prev, isLoading: false }));
     }
-  };
+  }, [companyId]);
+
+  const populateDocument = useCallback(
+    async (systemId?: string, documentNo?: string) => {
+      try {
+        setState((prev) => ({ ...prev, isLoading: true }));
+
+        // Always populate the API data for select options
+        await populateData();
+
+        if (mode === "list") {
+          const filterQuery = `$filter=empId eq '${employeeNo}'`;
+          const response = await trainingPlanService.getTrainingPlans(
+            companyId,
+            filterQuery
+          );
+          setState((prev) => ({
+            ...prev,
+            trainingPlans: response,
+          }));
+        }
+        if (mode === "add") {
+          setFormData((prev) => ({
+            ...prev,
+            employeeId: employeeNo || "",
+            employeeName: employeeName || "",
+          }));
+        }
+        if (mode === "detail" && systemId) {
+          await populateDocumentDetail(systemId);
+        }
+        if (mode === "approve") {
+          const filterQuery = `$filter=no eq '${documentNo}'`;
+          const response = await trainingPlanService.getTrainingPlans(
+            companyId,
+            filterQuery
+          );
+          if (response.length > 0) {
+            const data = response[0];
+            setFormData({
+              no: data.no,
+              employeeId: data.employeeId || data.empId || "", // Use employeeId from API or fallback to empId
+              employeeName: employeeName || "", // Use current logged-in user's name
+              totalCost: data.totalCost,
+              status: data.status,
+              completed: data.completed,
+              trainingDescription: data.trainingDescription,
+              organizationUnit:
+                data.organizationUnit || data.directorate
+                  ? [
+                      {
+                        label: data.organizationUnit || data.directorate,
+                        value: data.organizationUnit || data.directorate,
+                      },
+                    ]
+                  : [],
+              projectCode: data.shortcutDimension1Code
+                ? [
+                    {
+                      label: data.shortcutDimension1Code,
+                      value: data.shortcutDimension1Code,
+                    },
+                  ]
+                : [],
+              donorCode: data.shortcutDimension2Code
+                ? [
+                    {
+                      label: data.shortcutDimension2Code,
+                      value: data.shortcutDimension2Code,
+                    },
+                  ]
+                : [],
+            });
+          }
+        }
+      } catch (error) {
+        toast.error(`Error fetching data: ${getErrorMessage(error)}`);
+      } finally {
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    },
+    [
+      mode,
+      employeeNo,
+      employeeName,
+      companyId,
+      populateData,
+      populateDocumentDetail,
+    ]
+  );
 
   const handleInputChange = (
     field: keyof TrainingPlanFormData,
@@ -389,27 +423,28 @@ export const useTrainingPlanDocument = ({
         id: "no",
       },
       {
-        label: "Supervisor ID",
+        label: "Employee ID",
         type: "text",
-        value: formData.supervisorId || "",
+        value: formData.employeeId || "",
         disabled: isFieldDisabled,
-        id: "supervisorId",
+        id: "employeeId",
         onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-          handleInputChange("supervisorId", e.target.value);
+          handleInputChange("employeeId", e.target.value);
         },
         onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
           if (mode === "detail") {
-            handleFieldUpdate("supervisorId", e.target.value);
+            handleFieldUpdate("employeeId", e.target.value);
           }
         },
         required: true,
+        placeholder: "Enter employee ID",
       },
       {
-        label: "Supervisor Name",
+        label: "Employee Name",
         type: "text",
-        value: formData.supervisorName || "",
+        value: formData.employeeName || "",
         disabled: true,
-        id: "supervisorName",
+        id: "employeeName",
       },
       {
         label: "Status",
@@ -429,6 +464,9 @@ export const useTrainingPlanDocument = ({
               value: formData.totalCost || 0,
               id: "totalCost",
               disabled: isFieldDisabled,
+              min: 0,
+              step: 0.01,
+              placeholder: "Enter total cost",
               onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
                 handleInputChange("totalCost", parseFloat(e.target.value) || 0);
               },
@@ -443,23 +481,26 @@ export const useTrainingPlanDocument = ({
             },
           ]
         : []),
-      ...(mode !== "add"
-        ? [
-            {
-              label: "Organization Unit",
-              type: "select",
-              value: formData.organizationUnit || [],
-              id: "organizationUnit",
-              disabled: isFieldDisabled,
-              options: state.organizationUnitOptions,
-              onChange: (e: options) => {
-                handleInputChange("organizationUnit", [
-                  { label: e.label, value: e.value },
-                ]);
-              },
-            },
-          ]
-        : []),
+      {
+        label: "Organization Unit",
+        type: "select",
+        value: formData.organizationUnit || [],
+        id: "organizationUnit",
+        disabled: isFieldDisabled,
+        options: state.organizationUnitOptions,
+        onChange: (e: options) => {
+          handleInputChange("organizationUnit", [
+            { label: e.label, value: e.value },
+          ]);
+        },
+        onBlur: (e: options) => {
+          if (mode === "detail") {
+            handleFieldUpdate("organizationUnit", [
+              { label: e.label, value: e.value },
+            ]);
+          }
+        },
+      },
       {
         label: "Project Code",
         type: "select",
@@ -472,6 +513,13 @@ export const useTrainingPlanDocument = ({
             { label: e.label, value: e.value },
           ]);
         },
+        onBlur: (e: options) => {
+          if (mode === "detail") {
+            handleFieldUpdate("projectCode", [
+              { label: e.label, value: e.value },
+            ]);
+          }
+        },
       },
       {
         label: "Donor Code",
@@ -483,6 +531,13 @@ export const useTrainingPlanDocument = ({
         onChange: (e: options) => {
           handleInputChange("donorCode", [{ label: e.label, value: e.value }]);
         },
+        onBlur: (e: options) => {
+          if (mode === "detail") {
+            handleFieldUpdate("donorCode", [
+              { label: e.label, value: e.value },
+            ]);
+          }
+        },
       },
       {
         label: "Training Description",
@@ -490,7 +545,8 @@ export const useTrainingPlanDocument = ({
         value: formData.trainingDescription || "",
         id: "trainingDescription",
         disabled: isFieldDisabled,
-        rows: 3,
+        rows: 4,
+        placeholder: "Enter detailed description of the training plan",
         onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           handleInputChange("trainingDescription", e.target.value);
         },

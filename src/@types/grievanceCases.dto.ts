@@ -9,11 +9,13 @@ export interface GrievanceCase {
   no: string;
   caseCategory: string;
   gdCode: string;
-  disciplinaryCaseDescription: string;
+  grievanceCaseDescription?: string;
+  disciplinaryCaseDescription?: string;
   caseRegisteredByNo: string;
   caseRegisteredByName: string;
   employeeNo: string;
   nameOfIndicted: string;
+  indictedEmployeeNo?: string;
   incidentDate: string;
   dateRaised: string;
   sendGrievanceTo: string;
@@ -48,11 +50,13 @@ export interface GrievanceCaseFormData {
   no?: string;
   caseCategory: string;
   gdCode: string;
-  disciplinaryCaseDescription: string;
+  grievanceCaseDescription?: string;
+  disciplinaryCaseDescription?: string;
   caseRegisteredByNo?: string;
   caseRegisteredByName?: string;
   employeeNo: string;
   nameOfIndicted?: string;
+  indictedEmployeeNo?: string;
   incidentDate: string;
   dateRaised: string;
   sendGrievanceTo?: string;
@@ -80,4 +84,33 @@ export interface GrievanceCaseFormData {
  */
 export interface GrievanceCaseFormUpdate extends GrievanceCaseFormData {
   systemId: string;
+}
+
+/**
+ * @interface GrievanceCaseSubmissionData
+ * Data for creating Grievance Case (excludes read-only fields and client-only fields)
+ */
+export interface GrievanceCaseSubmissionData {
+  no?: string;
+  caseCategory: string;
+  gdCode: string;
+  caseRegisteredByNo?: string;
+  indictedEmployeeNo?: string;
+  incidentDate: string;
+  dateRaised: string;
+  sendGrievanceTo?: string;
+  copyGrievancyTo?: string;
+  witnesses?: string;
+  investigators?: string;
+  submitTo?: string;
+  dateSubmitted?: string;
+  investigationStartDate?: string;
+  withdrawalDate?: string;
+  resolutionDate?: string;
+  escalationDate?: string;
+  posted?: boolean;
+  type?: string;
+  natureOfGrievance?: string;
+  processType?: string;
+  complainantFeedback?: string;
 }

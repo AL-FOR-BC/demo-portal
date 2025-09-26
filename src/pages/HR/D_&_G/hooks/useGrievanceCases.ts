@@ -8,6 +8,7 @@ import {
   GrievanceCase,
   GrievanceCaseFormData,
   GrievanceCaseFormUpdate,
+  GrievanceCaseSubmissionData,
 } from "../../../../@types/grievanceCases.dto";
 import { DisciplinaryType } from "../../../../@types/disciplinaryTypes.dto";
 import { getErrorMessage } from "../../../../utils/common";
@@ -18,11 +19,13 @@ type DocumentTypeMode = "add" | "edit" | "view" | "approve";
 interface UseGrievanceCasesProps {
   mode: DocumentTypeMode;
   systemId?: string;
+  status?: string;
 }
 
 export const useGrievanceCases = ({
   mode,
   systemId,
+  status,
 }: UseGrievanceCasesProps) => {
   const navigate = useNavigate();
   const { companyId } = useAppSelector((state) => state.auth.session);
@@ -48,16 +51,23 @@ export const useGrievanceCases = ({
     Array<{ label: string; value: string }>
   >([]);
 
+  // Helper function to get today's date in YYYY-MM-DD format
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  };
+
   const [formData, setFormData] = useState<GrievanceCaseFormData>({
     caseCategory: "",
     gdCode: "",
-    disciplinaryCaseDescription: "",
+    grievanceCaseDescription: "",
     caseRegisteredByNo: employeeNo || "",
     caseRegisteredByName: employeeName || "",
     employeeNo: "",
     nameOfIndicted: "",
-    incidentDate: new Date().toISOString().split("T")[0],
-    dateRaised: new Date().toISOString().split("T")[0],
+    indictedEmployeeNo: "",
+    incidentDate: getTodayDate(),
+    dateRaised: getTodayDate(),
     sendGrievanceTo: "",
     copyGrievancyTo: "",
     status: "Open",
@@ -70,16 +80,37 @@ export const useGrievanceCases = ({
     complainantSatisfaction: "",
   });
 
-  const isFieldDisabled = mode === "view" || mode === "approve";
+  const isFieldDisabled =
+    mode === "view" ||
+    mode === "approve" ||
+    (mode === "edit" && status !== "Open");
+
+  // Save on blur functionality
 
   useEffect(() => {
-    if (mode === "add") {
+    if (mode === "add" || mode === "edit") {
       fetchGrievanceTypes();
       fetchEmployeeOptions();
-    } else if (systemId) {
+    }
+    if (systemId) {
       fetchGrievanceCase();
+      // Always fetch employee options when viewing/editing existing cases
+      fetchEmployeeOptions();
     }
   }, [mode, systemId, companyId]);
+
+  // Ensure Date Raised defaults to today's date in add mode
+  useEffect(() => {
+    if (
+      mode === "add" &&
+      (!formData.dateRaised || formData.dateRaised === "")
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        dateRaised: getTodayDate(),
+      }));
+    }
+  }, [mode, formData.dateRaised]);
 
   // Debug: Monitor filteredGrievanceTypes changes
   useEffect(() => {
@@ -106,11 +137,11 @@ export const useGrievanceCases = ({
       setFormData({
         caseCategory: data.caseCategory || "",
         gdCode: data.gdCode || "",
-        disciplinaryCaseDescription: data.disciplinaryCaseDescription || "",
+        grievanceCaseDescription: data.disciplinaryCaseDescription || "",
         caseRegisteredByNo: data.caseRegisteredByNo || "",
         caseRegisteredByName: data.caseRegisteredByName || "",
         employeeNo: data.employeeNo || "",
-        nameOfIndicted: data.nameOfIndicted || "",
+        nameOfIndicted: data.indictedEmployeeNo || "",
         incidentDate: data.incidentDate || "",
         dateRaised: data.dateRaised || "",
         sendGrievanceTo: data.sendGrievanceTo || "",
@@ -136,8 +167,11 @@ export const useGrievanceCases = ({
 
   const fetchGrievanceTypes = async () => {
     try {
+      // Filter at API level to only get grievance types
+      const filterQuery = `$filter=type eq 'Grievance'`;
       const data = await disciplinaryTypesService.getDisciplinaryTypes(
-        companyId
+        companyId,
+        filterQuery
       );
       console.log("Fetched grievance types:", data);
       setGrievanceTypes(data);
@@ -188,7 +222,7 @@ export const useGrievanceCases = ({
     }
 
     // Auto-populate G/D Code when Case Description is selected
-    if (field === "disciplinaryCaseDescription") {
+    if (field === "grievanceCaseDescription") {
       // Extract the actual value if it's an object (from react-select)
       const actualValue = typeof value === "object" ? value.value : value;
       const selectedType = filteredGrievanceTypes.find(
@@ -207,8 +241,17 @@ export const useGrievanceCases = ({
       setFormData((prev) => ({
         ...prev,
         nameOfIndicted: "",
-        processType: "",
+        indictedEmployeeNo: "",
         sendGrievanceTo: "",
+      }));
+    }
+
+    // Auto-populate indictedEmployeeNo when nameOfIndicted changes
+    if (field === "nameOfIndicted") {
+      const actualValue = typeof value === "object" ? value.value : value;
+      setFormData((prev) => ({
+        ...prev,
+        indictedEmployeeNo: actualValue,
       }));
     }
   };
@@ -241,7 +284,7 @@ export const useGrievanceCases = ({
     // Clear Case Description and G/D Code when category changes
     setFormData((prev) => ({
       ...prev,
-      disciplinaryCaseDescription: "",
+      grievanceCaseDescription: "",
       gdCode: "",
     }));
   };
@@ -250,18 +293,20 @@ export const useGrievanceCases = ({
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
 
-      // Exclude read-only fields from submission
+      // Exclude read-only fields and employeeNo from submission
       const {
         status,
         complainantSatisfaction,
         caseRegisteredByName,
         nameOfIndicted,
+        grievanceCaseDescription,
+        employeeNo, // Exclude employeeNo as it's not expected by the API
         ...submissionData
       } = formData;
 
       const response = await grievanceCasesService.createGrievanceCase(
         companyId,
-        submissionData
+        submissionData as GrievanceCaseSubmissionData
       );
 
       setState((prev) => ({ ...prev, isLoading: false }));
@@ -303,6 +348,100 @@ export const useGrievanceCases = ({
       setState((prev) => ({ ...prev, isLoading: false }));
       toast.error(`Error updating Grievance Case: ${getErrorMessage(error)}`);
       throw error;
+    }
+  };
+
+  const handleSaveOnBlur = async (
+    fieldName?: string | React.FocusEvent<HTMLInputElement>,
+    newValue?: any
+  ) => {
+    if (
+      mode === "edit" &&
+      status === "Open" &&
+      systemId &&
+      state.grievanceCase
+    ) {
+      try {
+        // If a specific field is provided, only update that field
+        let updateData: any = { systemId: state.grievanceCase.systemId };
+
+        // Handle both string fieldName and FocusEvent
+        let actualFieldName: string | undefined;
+        if (typeof fieldName === "string") {
+          actualFieldName = fieldName;
+        } else if (fieldName && "target" in fieldName) {
+          // Extract field name from the input element's id
+          actualFieldName = (fieldName.target as HTMLInputElement).id;
+        }
+
+        if (actualFieldName) {
+          // Handle special case: when Case Description is selected, save the G/D Code instead
+          if (actualFieldName === "grievanceCaseDescription") {
+            console.log("Case Description selected, saving G/D Code instead");
+            const gdCodeValue = formData.gdCode;
+            if (gdCodeValue) {
+              updateData["gdCode"] = gdCodeValue;
+              await grievanceCasesService.updateGrievanceCase(
+                companyId,
+                updateData,
+                systemId,
+                "*"
+              );
+              toast.success("G/D Code updated successfully");
+            }
+            return;
+          }
+
+          // Handle special case: when Name of Indicted is selected, save indictedEmployeeNo instead
+          if (actualFieldName === "nameOfIndicted") {
+            console.log(
+              "Name of Indicted selected, saving indictedEmployeeNo instead"
+            );
+            const indictedEmployeeNoValue = formData.nameOfIndicted;
+            if (indictedEmployeeNoValue) {
+              updateData["indictedEmployeeNo"] = indictedEmployeeNoValue;
+              await grievanceCasesService.updateGrievanceCase(
+                companyId,
+                updateData,
+                systemId,
+                "*"
+              );
+              toast.success("Indicted Employee No updated successfully");
+            }
+            return;
+          }
+
+          const fieldValue =
+            newValue !== undefined
+              ? newValue
+              : formData[actualFieldName as keyof GrievanceCaseFormData];
+
+          console.log(
+            `handleSaveOnBlur - Updating field ${actualFieldName} with value:`,
+            fieldValue
+          );
+
+          updateData[actualFieldName] = fieldValue;
+
+          // Update the grievance case with just this field
+          await grievanceCasesService.updateGrievanceCase(
+            companyId,
+            updateData,
+            systemId,
+            "*"
+          );
+
+          const fieldLabel = actualFieldName
+            ? actualFieldName
+                .replace(/([A-Z])/g, " $1")
+                .replace(/^./, (str) => str.toUpperCase())
+            : "Field";
+          toast.success(`${fieldLabel} updated successfully`);
+        }
+      } catch (error) {
+        console.error("handleSaveOnBlur - Error:", error);
+        toast.error(`Error updating field: ${getErrorMessage(error)}`);
+      }
     }
   };
 
@@ -358,6 +497,7 @@ export const useGrievanceCases = ({
         onChange: (value: any) => {
           handleInputChange("caseCategory", value);
         },
+        onBlur: () => handleSaveOnBlur("caseCategory"),
       },
       {
         label: "Case Description",
@@ -365,22 +505,22 @@ export const useGrievanceCases = ({
         value: (() => {
           console.log(
             "Case Description field value:",
-            formData.disciplinaryCaseDescription
+            formData.grievanceCaseDescription
           );
           // Return object format for HeaderMui component
           if (
-            formData.disciplinaryCaseDescription &&
-            formData.disciplinaryCaseDescription !== ""
+            formData.grievanceCaseDescription &&
+            formData.grievanceCaseDescription !== ""
           ) {
             return {
-              label: formData.disciplinaryCaseDescription,
-              value: formData.disciplinaryCaseDescription,
+              label: formData.grievanceCaseDescription,
+              value: formData.grievanceCaseDescription,
             };
           }
           return { label: "Select...", value: "" };
         })(),
         disabled: isFieldDisabled,
-        id: "disciplinaryCaseDescription",
+        id: "grievanceCaseDescription",
         options: [
           { label: "Select...", value: "" },
           ...filteredGrievanceTypes.map((type) => ({
@@ -390,8 +530,9 @@ export const useGrievanceCases = ({
         ],
         onChange: (value: any) => {
           console.log("Case Description onChange - received value:", value);
-          handleInputChange("disciplinaryCaseDescription", value);
+          handleInputChange("grievanceCaseDescription", value);
         },
+        onBlur: () => handleSaveOnBlur("grievanceCaseDescription"),
       },
       {
         label: "G/D Code",
@@ -428,6 +569,7 @@ export const useGrievanceCases = ({
           console.log("Nature of Grievance onChange - received value:", value);
           handleInputChange("natureOfGrievance", value);
         },
+        onBlur: () => handleSaveOnBlur("natureOfGrievance"),
       },
       {
         label: "Copy Grievancy To",
@@ -461,6 +603,7 @@ export const useGrievanceCases = ({
           console.log("Copy Grievancy To onChange - received value:", value);
           handleInputChange("copyGrievancyTo", value);
         },
+        onBlur: () => handleSaveOnBlur("copyGrievancyTo"),
       },
       // Show Name of Indicted only if Nature of Grievance is "Person"
       ...(formData.natureOfGrievance === "Person"
@@ -500,16 +643,26 @@ export const useGrievanceCases = ({
                 );
                 handleInputChange("nameOfIndicted", value);
               },
+              onBlur: () => handleSaveOnBlur("nameOfIndicted"),
             },
           ]
         : []),
-      // Show Process Type and Send Grievance To only if Nature of Grievance is "Process"
+      // Show Process Type only if Nature of Grievance is "Process"
       ...(formData.natureOfGrievance === "Process"
         ? [
             {
               label: "Process Type",
               type: "select",
-              value: formData.processType || "",
+              value: (() => {
+                // Convert string value to object format for React-Select
+                if (formData.processType) {
+                  return {
+                    label: formData.processType,
+                    value: formData.processType,
+                  };
+                }
+                return null;
+              })(),
               disabled: isFieldDisabled,
               id: "processType",
               options: [
@@ -542,43 +695,39 @@ export const useGrievanceCases = ({
               onChange: (value: string) => {
                 handleInputChange("processType", value);
               },
-            },
-            {
-              label: "Send Grievance To",
-              type: "select",
-              value: (() => {
-                console.log(
-                  "Send Grievance To field value:",
-                  formData.sendGrievanceTo
-                );
-                // Return object format for HeaderMui component
-                if (
-                  formData.sendGrievanceTo &&
-                  formData.sendGrievanceTo !== ""
-                ) {
-                  // Find the employee option that matches the selected value
-                  const selectedEmployee = employeeOptions.find(
-                    (emp) => emp.value === formData.sendGrievanceTo
-                  );
-                  if (selectedEmployee) {
-                    return selectedEmployee;
-                  }
-                }
-                return { label: "Select...", value: "" };
-              })(),
-              disabled: isFieldDisabled,
-              id: "sendGrievanceTo",
-              options: [{ label: "Select...", value: "" }, ...employeeOptions],
-              onChange: (value: any) => {
-                console.log(
-                  "Send Grievance To onChange - received value:",
-                  value
-                );
-                handleInputChange("sendGrievanceTo", value);
-              },
+              onBlur: () => handleSaveOnBlur("processType"),
             },
           ]
         : []),
+      {
+        label: "Send Grievance To",
+        type: "select",
+        value: (() => {
+          console.log(
+            "Send Grievance To field value:",
+            formData.sendGrievanceTo
+          );
+          // Return object format for HeaderMui component
+          if (formData.sendGrievanceTo && formData.sendGrievanceTo !== "") {
+            // Find the employee option that matches the selected value
+            const selectedEmployee = employeeOptions.find(
+              (emp) => emp.value === formData.sendGrievanceTo
+            );
+            if (selectedEmployee) {
+              return selectedEmployee;
+            }
+          }
+          return { label: "Select...", value: "" };
+        })(),
+        disabled: isFieldDisabled,
+        id: "sendGrievanceTo",
+        options: [{ label: "Select...", value: "" }, ...employeeOptions],
+        onChange: (value: any) => {
+          console.log("Send Grievance To onChange - received value:", value);
+          handleInputChange("sendGrievanceTo", value);
+        },
+        onBlur: () => handleSaveOnBlur("sendGrievanceTo"),
+      },
       {
         label: "Incident Date",
         type: "date",
@@ -588,21 +737,23 @@ export const useGrievanceCases = ({
         onChange: (_: Date[], dateStr: string) => {
           handleInputChange("incidentDate", dateStr);
         },
+        onBlur: () => handleSaveOnBlur("incidentDate"),
       },
       {
         label: "Date Raised",
         type: "date",
-        value: formData.dateRaised || "",
+        value: formData.dateRaised || (mode === "add" ? getTodayDate() : ""),
         disabled: isFieldDisabled,
         id: "dateRaised",
         onChange: (_: Date[], dateStr: string) => {
           handleInputChange("dateRaised", dateStr);
         },
+        onBlur: () => handleSaveOnBlur("dateRaised"),
       },
       {
         label: "Status",
         type: "text",
-        value: "Open",
+        value: state.grievanceCase?.status || "Open",
         disabled: true,
         id: "docStatus",
       },
@@ -618,5 +769,6 @@ export const useGrievanceCases = ({
     updateGrievanceCase,
     getFormFields,
     handleInputChange,
+    handleSaveOnBlur,
   };
 };
