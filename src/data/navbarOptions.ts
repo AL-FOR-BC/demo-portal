@@ -136,39 +136,45 @@ export const navbarOptions: NavigationTree[] = [
             path: "/grievances-to-respond-to",
             subOptions: [],
           },
+          {
+            id: 23,
+            name: "Disciplinary Cases To Respond To",
+            path: "/disciplinary-cases-to-respond-to",
+            subOptions: [],
+          },
         ],
       },
       {
-        id: 23,
+        id: 24,
         name: "Training",
         path: "/training",
         subOptions: [
           // {
-          //   id: 23,
+          //   id: 24,
           //   name: "Training Needs Assessment",
           //   path: "/training-needs-assessment",
           //   subOptions: [],
           // },
           {
-            id: 24,
+            id: 25,
             name: "Training Plans",
             path: "/training-plans",
             subOptions: [],
           },
           {
-            id: 25,
+            id: 26,
             name: "Training Requests",
             path: "/training-requests",
             subOptions: [],
           },
           {
-            id: 26,
+            id: 27,
             name: "Training Evaluations",
             path: "/training-evaluations",
             subOptions: [],
           },
           {
-            id: 27,
+            id: 28,
             name: "Training Feedback Forms",
             path: "/training-feedback-forms",
             subOptions: [],
@@ -176,12 +182,12 @@ export const navbarOptions: NavigationTree[] = [
         ],
       },
       {
-        id: 28,
+        id: 29,
         name: "Staff Exit",
         path: "/staff-exit",
         subOptions: [
           {
-            id: 29,
+            id: 30,
             name: "Staff Exit Interview Form",
             path: "/exit-interviews",
             subOptions: [],
@@ -199,13 +205,13 @@ export const navbarOptions: NavigationTree[] = [
           //   subOptions: [],
           // },
           {
-            id: 32,
+            id: 31,
             name: "Exit Clearance Form",
             path: "/exit-clearance-form ",
             subOptions: [],
           },
           {
-            id: 33,
+            id: 32,
             name: "Exit Clearance Form To Clear",
             path: "/exit-clearance-form-to-clear",
             subOptions: [],
@@ -215,37 +221,37 @@ export const navbarOptions: NavigationTree[] = [
     ],
   },
   {
-    id: 35,
+    id: 33,
     name: "Time Sheets",
     path: "/time-sheets",
     icon: "clock",
     subOptions: [
       {
-        id: 36,
+        id: 34,
         name: "Time Sheets",
         path: "/time-sheets",
       },
     ],
   },
   {
-    id: 37,
+    id: 35,
     name: "Requisition",
     path: "/requisition",
     icon: "cart",
     subOptions: [
       {
-        id: 38,
+        id: 36,
         name: "Purchase Requisition",
         path: "/purchase-requisition",
         subOptions: [
           {
-            id: 39,
+            id: 37,
             name: "Purchase Requisitions",
             path: "/purchase-requisitions",
             subOptions: [],
           },
           {
-            id: 40,
+            id: 38,
             name: "Archived Purchase Requisitions",
             path: "/archived-purchase-requisitions",
             subOptions: [],
@@ -253,13 +259,13 @@ export const navbarOptions: NavigationTree[] = [
         ],
       },
       {
-        id: 41,
+        id: 39,
         name: "Payment Requisition",
         path: "/payment-requisitions",
         // subOptions: [],
       },
       {
-        id: 42,
+        id: 40,
         name: "Stores Requests",
         path: "/stores-requests",
         // subOptions: [],
@@ -267,19 +273,19 @@ export const navbarOptions: NavigationTree[] = [
     ],
   },
   {
-    id: 43,
+    id: 41,
     name: "Travel Requests",
     path: "/travel-requests",
     icon: "train",
     subOptions: [
       {
-        id: 44,
+        id: 42,
         name: "Travel Requests",
         path: "/travel-requests",
         // subOptions: []
       },
       {
-        id: 45,
+        id: 43,
         name: "Archived Travel Requests",
         path: "/archived-travel-requests",
         // subOptions: []
@@ -287,19 +293,19 @@ export const navbarOptions: NavigationTree[] = [
     ],
   },
   {
-    id: 46,
+    id: 44,
     name: "Accountability",
     path: "/accountability",
     icon: "accountCheck",
     subOptions: [
       {
-        id: 47,
+        id: 45,
         name: "Imprest Pending Accountability",
         path: "/imprest-pending-accountability",
         subOptions: [],
       },
       {
-        id: 48,
+        id: 46,
         name: "Accountability List",
         path: "/accountability-list",
         subOptions: [],

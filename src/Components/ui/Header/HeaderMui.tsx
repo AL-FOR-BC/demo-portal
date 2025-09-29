@@ -92,7 +92,9 @@ interface HeaderMuiProps {
   handleSupervisorClearance?: () => void;
   handleSendResponse?: () => void;
   handleNotifySupervisor?: () => void;
+  handleSendNotification?: () => void;
   handleWithdrawCase?: () => void;
+  handleCloseGrievance?: () => void;
   currentUserEmployeeNo?: string;
   indictedEmployeeNo?: string;
   caseRegisteredByNo?: string;
@@ -153,7 +155,9 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
     handleSupervisorClearance,
     handleSendResponse,
     handleNotifySupervisor,
+    handleSendNotification,
     handleWithdrawCase,
+    handleCloseGrievance,
     currentUserEmployeeNo,
     indictedEmployeeNo,
     caseRegisteredByNo,
@@ -207,41 +211,37 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                   </i>
                   Back
                 </Button>
-                <Button
-                  color="primary"
-                  className="btn btn-label"
-                  onClick={handleSubmit}
-                >
-                  <i className="label-icon">
-                    <SaveIcon className="label-icon" />
-                  </i>
-                  Create Request
-                </Button>
+                {pageType === "add" && (
+                  <Button
+                    color="primary"
+                    className="btn btn-label"
+                    onClick={handleSubmit}
+                  >
+                    <i className="label-icon">
+                      <SaveIcon className="label-icon" />
+                    </i>
+                    Create Request
+                  </Button>
+                )}
               </div>
             </Row>
           )}
 
           {pageType === "detail" && (
             <>
-              {/* Back button for all statuses */}
-              <Row className="justify-content-center mb-4">
-                <div className="d-flex flex-wrap gap-2">
-                  <Button
-                    color="secondary"
-                    className="btn btn-label"
-                    onClick={handleBack}
-                  >
-                    <i className="label-icon">
-                      <ArrowBackIcon className="label-icon" />
-                    </i>
-                    Back
-                  </Button>
-                </div>
-              </Row>
-
               {status === "Open" && (
                 <Row className="justify-content-center mb-4">
                   <div className="d-flex flex-wrap gap-2">
+                    <Button
+                      color="secondary"
+                      className="btn  btn-label"
+                      onClick={handleBack}
+                    >
+                      <i className="label-icon">
+                        <ArrowBackIcon className="label-icon" />
+                      </i>
+                      Back
+                    </Button>
                     {documentType === "Exit Interview" && (
                       <Button
                         color="primary"
@@ -492,7 +492,8 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                     {documentType !== "Performance Management" &&
                       documentType !== "Exit Interview" &&
                       documentType !== "Exit Clearance" &&
-                      documentType !== "Grievance Case" && (
+                      documentType !== "Grievance Case" &&
+                      documentType !== "Disciplinary Case" && (
                         <Button
                           color="primary"
                           className="btn btn-label"
@@ -506,14 +507,43 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                     {handleNotifySupervisor &&
                       documentType === "Grievance Case" &&
                       String(status) === "Open" && (
-                        <Button
-                          color="warning"
-                          className="btn btn-label"
-                          onClick={handleNotifySupervisor}
-                        >
-                          <SendIcon className="label-icon" />
-                          Notify Supervisor, Accused Employee and HR
-                        </Button>
+                        <>
+                          {/* // back */}
+                          <Button
+                            color="secondary"
+                            className="btn btn-label"
+                            onClick={handleBack}
+                          >
+                            <ArrowBackIcon className="label-icon" />
+                            Back
+                          </Button>
+                          {/* // notify supervisor */}
+                          <Button
+                            color="warning"
+                            className="btn btn-label"
+                            onClick={handleNotifySupervisor}
+                          >
+                            <SendIcon className="label-icon" />
+                            Notify Supervisor, Accused Employee and HR
+                          </Button>
+                        </>
+                      )}
+
+                    {handleSendNotification &&
+                      documentType === "Disciplinary Case" &&
+                      String(status) === "Open" &&
+                      currentUserEmployeeNo === caseRegisteredByNo && (
+                        <>
+                          {/* // send notification */}
+                          <Button
+                            color="info"
+                            className="btn btn-label"
+                            onClick={handleSendNotification}
+                          >
+                            <SendIcon className="label-icon" />
+                            Send Notification
+                          </Button>
+                        </>
                       )}
 
                     {documentType != "Exit Interview" && (
@@ -665,13 +695,76 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                     </div>
                   </Row>
                 )}
-              {handleWithdrawCase &&
-                documentType === "Grievance Case" &&
-                (String(status) === "Employee Response" ||
-                  String(status) === "Submitted to Employee") &&
+              {documentType === "Grievance Case" &&
+                String(status) === "Employee Response" &&
                 currentUserEmployeeNo === caseRegisteredByNo && (
                   <Row className="justify-content-center mb-4">
                     <div className="d-flex flex-wrap gap-2">
+                      {/* back button */}
+                      <Button
+                        color="secondary"
+                        className="btn btn-label"
+                        onClick={handleBack}
+                      >
+                        <ArrowBackIcon className="label-icon" />
+                        Back
+                      </Button>
+                      {handleWithdrawCase && (
+                        <Button
+                          color="danger"
+                          className="btn btn-label"
+                          onClick={handleWithdrawCase}
+                        >
+                          <CancelIcon className="label-icon" />
+                          Withdraw Case
+                        </Button>
+                      )}
+                      {handleCloseGrievance && (
+                        <Button
+                          color="success"
+                          className="btn btn-label"
+                          onClick={handleCloseGrievance}
+                        >
+                          <i className="label-icon">
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                            </svg>
+                          </i>
+                          Close Grievance
+                        </Button>
+                      )}
+                      <Attachments
+                        defaultCompany={companyId}
+                        docType={documentType}
+                        docNo={requestNo}
+                        status={status}
+                        tableId={tableId}
+                      />
+                    </div>
+                  </Row>
+                )}
+
+              {handleWithdrawCase &&
+                documentType === "Grievance Case" &&
+                String(status) === "Submitted to Employee" &&
+                currentUserEmployeeNo === caseRegisteredByNo && (
+                  <Row className="justify-content-center mb-4">
+                    <div className="d-flex flex-wrap gap-2">
+                      {/* back button */}
+                      <Button
+                        color="secondary"
+                        className="btn btn-label"
+                        onClick={handleBack}
+                      >
+                        <ArrowBackIcon className="label-icon" />
+                        Back
+                      </Button>
+                      {/* withdraw button */}
                       <Button
                         color="danger"
                         className="btn btn-label"
@@ -687,6 +780,7 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
               {status === "Pending Approval" && (
                 <Row className="justify-content-center mb-4">
                   <div className="d-flex flex-wrap gap-2">
+                    {/* back button */}
                     <Button
                       color="secondary"
                       className="btn  btn-label"

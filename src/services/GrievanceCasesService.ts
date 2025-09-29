@@ -136,6 +136,22 @@ class GrievanceCasesService extends BaseApiService {
       customEndpoint: "HRMISActions_WithdrawCase",
     });
   }
+
+  /**
+   * Closes Grievance Case
+   * @async
+   * @param {string} companyId - Company identifier
+   * @param {object} data - Close data
+   * @returns {Promise<any>} Close result
+   */
+  async closeGrievanceCase(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_CloseGrievanceCase",
+    });
+  }
 }
 
 export const grievanceCasesService = new GrievanceCasesService();

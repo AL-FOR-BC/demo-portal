@@ -88,8 +88,8 @@ const DisciplinaryCases: React.FC = () => {
       sort: true,
     },
     {
-      dataField: "nameOfIndicted",
-      text: "Name of Indicted",
+      dataField: "indictedEmployeeNo",
+      text: "Indicted Employee No.",
       sort: true,
     },
     {

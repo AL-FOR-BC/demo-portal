@@ -237,8 +237,6 @@ export const getErrorMessage = (error: any): string => {
   }
 };
 
-
-
 function isErrorResponse(error: unknown): error is ErrorResponse {
   return (
     typeof error === "object" &&

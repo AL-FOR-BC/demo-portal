@@ -1,7 +1,7 @@
 import {
   DisciplinaryCase,
-  DisciplinaryCaseFormData,
   DisciplinaryCaseFormUpdate,
+  DisciplinaryCaseSubmissionData,
 } from "../@types/disciplinaryCases.dto";
 import { BaseApiService } from "./base/BaseApiService";
 
@@ -45,12 +45,12 @@ class DisciplinaryCasesService extends BaseApiService {
    * Creates a new Disciplinary Case
    * @async
    * @param {string} companyId - Company identifier
-   * @param {DisciplinaryCaseFormData} data - Disciplinary Case form data
+   * @param {DisciplinaryCaseSubmissionData} data - Disciplinary Case submission data
    * @returns {Promise<DisciplinaryCase>} Created Disciplinary Case
    */
   async createDisciplinaryCase(
     companyId: string,
-    data: DisciplinaryCaseFormData
+    data: DisciplinaryCaseSubmissionData
   ) {
     return this.create<DisciplinaryCase>({ companyId, data });
   }
@@ -118,6 +118,41 @@ class DisciplinaryCasesService extends BaseApiService {
       data,
       type: "approval",
       customEndpoint: "HRMISActions_GDNotifySupervisor",
+    });
+  }
+
+  /**
+   * Sends disciplinary notification with options
+   * @async
+   * @param {string} companyId - Company identifier
+   * @param {object} data - Notification data with sendNotificationOption
+   * @returns {Promise<any>} Notification result
+   */
+  async sendDisciplinaryNotification(
+    companyId: string,
+    data: { no: string; sendNotificationOption: number }
+  ) {
+    return this.create<{ no: string; sendNotificationOption: number }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_SendDisciplinaryNotification",
+    });
+  }
+
+  /**
+   * Sends employee response for Disciplinary Case
+   * @async
+   * @param {string} companyId - Company identifier
+   * @param {object} data - Response data
+   * @returns {Promise<any>} Response result
+   */
+  async sendEmployeeResponse(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_SendEmployeeResponse",
     });
   }
 }

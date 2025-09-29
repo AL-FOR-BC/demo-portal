@@ -436,6 +436,13 @@ const appRoutes: Routes = [
       () => import("../../pages/HR/D_&_G/GrievancesToRespond.tsx")
     ),
   },
+  {
+    key: "disciplinary-cases-to-respond",
+    path: "/disciplinary-cases-to-respond-to",
+    component: lazy(
+      () => import("../../pages/HR/D_&_G/DisciplinaryCasesToRespond.tsx")
+    ),
+  },
 ];
 
 export default appRoutes;

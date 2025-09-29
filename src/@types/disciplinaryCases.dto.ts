@@ -14,15 +14,14 @@ export interface DisciplinaryCase {
   caseRegisteredByNo: string;
   caseRegisteredByName: string;
   employeeNo: string;
-  nameOfIndicted: string;
+  indictedEmployeeNo: string;
+  indictedEmployeeName: string;
   incidentDate: string;
   dateRaised: string;
   raisedByEmpNo: string;
   sendGrievanceTo: string;
   copyGrievancyTo: string;
   status: string;
-  witnesses: string;
-  investigators: string;
   submitTo: string;
   dateSubmitted: string;
   investigationStartDate: string;
@@ -50,15 +49,14 @@ export interface DisciplinaryCaseFormData {
   caseRegisteredByNo?: string;
   caseRegisteredByName?: string;
   employeeNo: string;
-  nameOfIndicted?: string;
+  indictedEmployeeNo?: string;
+  indictedEmployeeName?: string;
   incidentDate: string;
   dateRaised: string;
   raisedByEmpNo?: string;
   sendGrievanceTo?: string;
   copyGrievancyTo?: string;
   status?: string;
-  witnesses?: string;
-  investigators?: string;
   submitTo?: string;
   dateSubmitted?: string;
   investigationStartDate?: string;
@@ -75,4 +73,23 @@ export interface DisciplinaryCaseFormData {
  */
 export interface DisciplinaryCaseFormUpdate extends DisciplinaryCaseFormData {
   systemId: string;
+}
+
+/**
+ * @interface DisciplinaryCaseSubmissionData
+ * Data for submitting Disciplinary Case (excludes read-only fields)
+ */
+export interface DisciplinaryCaseSubmissionData {
+  no?: string;
+  caseCategory: string;
+  gdCode: string;
+  caseRegisteredByNo?: string;
+  employeeNo: string;
+  incidentDate: string;
+  dateRaised: string;
+  raisedByEmpNo?: string;
+  sendGrievanceTo?: string;
+  status?: string;
+  submitTo?: string;
+  type?: string;
 }

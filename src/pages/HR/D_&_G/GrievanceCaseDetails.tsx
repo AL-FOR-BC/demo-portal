@@ -172,8 +172,8 @@ const GrievanceCaseDetails: React.FC = () => {
               : // If user is in sendGrievanceTo field, show Findings, Recommendations, and Employee Response
               employeeNo === state.grievanceCase?.sendGrievanceTo
               ? [
-                  { label: "Findings", value: "Findings" },
-                  { label: "Recommendations", value: "Recommendations" },
+                  // { label: "Findings", value: "Findings" },
+                  // { label: "Recommendations", value: "Recommendations" },
                   { label: "Employee Response", value: "Employee Response" },
                 ]
               : // Default for other users
@@ -482,6 +482,131 @@ const GrievanceCaseDetails: React.FC = () => {
     }
   };
 
+  const handleCloseGrievance = async () => {
+    try {
+      // Show a more professional and compact SweetAlert modal
+      const result = await Swal.fire({
+        title: "Close Grievance Case",
+        html: `
+          <div style="text-align: left; margin: 10px 0; max-width: 400px;">
+            <p style="margin-bottom: 12px; color: #666; font-size: 14px;">Please provide feedback before closing this case:</p>
+            
+            <div style="margin-bottom: 12px;">
+              <label for="complainantSatisfaction" style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 13px; color: #333;">
+                Satisfaction Level
+              </label>
+              <select id="complainantSatisfaction" class="swal2-select" style="width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px;">
+                <option value="false">Not Satisfied</option>
+                <option value="true">Satisfied</option>
+              </select>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              <label for="complainantFeedback" style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 13px; color: #333;">
+                Feedback
+              </label>
+              <textarea id="complainantFeedback" class="swal2-textarea" placeholder="Brief feedback..." 
+                        style="width: 100%; min-height: 60px; padding: 6px 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px; resize: vertical;"></textarea>
+            </div>
+            
+            <p style="color: #dc3545; font-size: 12px; margin-top: 8px; font-weight: 500;">
+              ⚠️ This action cannot be undone
+            </p>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: "#28a745",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Close",
+        cancelButtonText: "Cancel",
+        width: "420px",
+        padding: "20px",
+        preConfirm: () => {
+          const satisfaction =
+            (
+              document.getElementById(
+                "complainantSatisfaction"
+              ) as HTMLSelectElement
+            )?.value === "true";
+          const feedback =
+            (
+              document.getElementById(
+                "complainantFeedback"
+              ) as HTMLTextAreaElement
+            )?.value || "";
+
+          if (!feedback.trim()) {
+            Swal.showValidationMessage("Please provide feedback");
+            return false;
+          }
+
+          return { satisfaction, feedback };
+        },
+        allowOutsideClick: () => !Swal.isLoading(),
+        allowEscapeKey: () => !Swal.isLoading(),
+      });
+
+      if (!result.isConfirmed || !result.value) {
+        return;
+      }
+
+      const { satisfaction, feedback } = result.value;
+
+      if (!state.grievanceCase?.no) {
+        toast.error("Grievance case number not found");
+        return;
+      }
+
+      // First, update the complainant satisfaction and feedback
+      console.log("Updating complainant data before closing:", {
+        satisfaction,
+        feedback,
+      });
+
+      const updateData: any = {
+        systemId: state.grievanceCase.systemId,
+        complainantSatisfaction: satisfaction,
+        complainantFeedback: feedback,
+      };
+
+      await grievanceCasesService.updateGrievanceCase(
+        companyId,
+        updateData,
+        state.grievanceCase.systemId,
+        state.grievanceCase["@odata.etag"] || "*"
+      );
+
+      // Update local state
+      setComplainantSatisfaction(satisfaction);
+      setComplainantFeedback(feedback);
+
+      toast.success("Complainant feedback updated successfully!");
+
+      // Then proceed with closing the case
+      const responseData = {
+        no: state.grievanceCase.no,
+      };
+
+      console.log("Closing case:", responseData);
+
+      const response = await grievanceCasesService.closeGrievanceCase(
+        companyId,
+        responseData
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success("Grievance case closed successfully!");
+        // Navigate back to the grievance list page
+        navigate("/grievances");
+      } else {
+        toast.error("Failed to close grievance case");
+      }
+    } catch (error) {
+      console.error("Error closing grievance case:", error);
+      toast.error(`Error closing grievance case: ${getErrorMessage(error)}`);
+    }
+  };
+
   const handleDeleteGrievanceCase = async () => {
     try {
       if (!state.grievanceCase?.systemId) {
@@ -676,6 +801,7 @@ const GrievanceCaseDetails: React.FC = () => {
       handleNotifySupervisor={handleNotifySupervisor}
       handleWithdrawCase={handleWithdrawCase}
       handleDelete={handleDeleteGrievanceCase}
+      handleCloseGrievance={handleCloseGrievance}
       documentType="Grievance Case"
       pageType="detail"
       status={status}

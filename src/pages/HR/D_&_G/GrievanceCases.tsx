@@ -51,17 +51,7 @@ const GrievanceCases: React.FC = () => {
       dataField: "caseRegisteredByName",
       text: "Case Registered By Name",
       sort: true,
-    },
-    {
-      dataField: "caseCategory",
-      text: "Case Category",
-      sort: true,
-    },
-    {
-      dataField: "gdCode",
-      text: "G/D Code",
-      sort: true,
-    },
+    },    
     {
       dataField: "incidentDate",
       text: "Incident Date",

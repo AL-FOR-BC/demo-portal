@@ -5,6 +5,7 @@ import HeaderMui from "../../../Components/ui/Header/HeaderMui";
 import SectionHeader from "../../../Components/ui/SectionHeader";
 import { Collapse, Paper, Box } from "@mui/material";
 import { Row, Col, Input, Label } from "reactstrap";
+import Toggle from "../../../Components/ui/Toggle/Toggle";
 import { useAppSelector } from "../../../store/hook";
 import { toast } from "react-toastify";
 import { decodeValue, getErrorMessage } from "../../../utils/common";
@@ -73,38 +74,6 @@ const ExitClearanceDetails: React.FC = () => {
 
   // Check if IT section should be disabled
   const isITSectionDisabled = !isICTManager;
-
-  // Debug logging for HR Manager access
-  console.log("HR Manager Access Check:", {
-    currentUserEmployeeNo: user?.employeeNo,
-    hrManagerEmployeeNo: formData.hrOfficerNo,
-    isHRManager: isHRManager,
-    status: state.exitClearance?.status,
-    hrStage: formData.hrOfficerStage,
-    isHRManagerSectionDisabled:
-      !isHRManager &&
-      !(
-        state.exitClearance?.status === "Pending Approval" &&
-        formData.hrOfficerStage === "Pending Clearance" &&
-        isHRManager
-      ),
-  });
-
-  // Debug logging for Finance Manager access
-  console.log("Finance Manager Access Check:", {
-    currentUserEmployeeNo: user?.employeeNo,
-    financeManagerEmployeeNo: formData.financeManager,
-    isFinanceManager: isFinanceManager,
-    status: state.exitClearance?.status,
-    hrStage: formData.hrOfficerStage,
-    isFinanceManagerSectionDisabled:
-      !isFinanceManager &&
-      !(
-        state.exitClearance?.status === "Pending Approval" &&
-        formData.hrOfficerStage === "Pending Clearance" &&
-        isFinanceManager
-      ),
-  });
 
   // Determine if sections should be disabled based on ownership
   // const isSectionDisabled = !isOwner;
@@ -800,26 +769,36 @@ const ExitClearanceDetails: React.FC = () => {
                 </Row>
                 <Row className="mt-3">
                   <Col md={6}>
-                    <Label for="supervisorVerification">
-                      Supervisor Verification
-                    </Label>
-                    <Input
-                      type="select"
+                    <Toggle
                       id="supervisorVerification"
-                      value={formData.supervisorVerification ? "YES" : "NO"}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "supervisorVerification",
-                          e.target.value === "YES"
-                        )
-                      }
-                      onBlur={() => handleSaveOnBlur("supervisorVerification")}
+                      checked={(() => {
+                        const value = formData.supervisorVerification;
+                        const isChecked =
+                          value === "YES" || (value as any) === true;
+                        console.log("Supervisor Verification Debug:", {
+                          rawValue: value,
+                          type: typeof value,
+                          isChecked: isChecked,
+                        });
+                        return isChecked;
+                      })()}
+                      onChange={(checked) => {
+                        const value = checked ? "YES" : "NO";
+                        console.log("Toggle onChange called:", {
+                          checked,
+                          value,
+                        });
+                        handleInputChange("supervisorVerification", value);
+                        // Save immediately with the new value
+                        handleSaveOnBlur("supervisorVerification", value);
+                      }}
+                      onBlur={() => {
+                        // onBlur is redundant now since we save on change
+                        console.log("Toggle onBlur called (redundant)");
+                      }}
                       disabled={!isSupervisor}
-                    >
-                      <option value="">Select...</option>
-                      <option value="YES">YES</option>
-                      <option value="NO">NO</option>
-                    </Input>
+                      label="Supervisor Verification"
+                    />
                   </Col>
                   <Col md={6}>
                     <Label for="supervisorStage">Supervisor Stage</Label>

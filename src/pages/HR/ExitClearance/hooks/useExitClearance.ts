@@ -192,8 +192,13 @@ export const useExitClearance = ({ mode, systemId }: UseExitClearanceProps) => {
 
       // Helper function to convert boolean to YES/NO string
       const booleanToString = (value: any): string => {
+        console.log("booleanToString called with:", {
+          value,
+          type: typeof value,
+        });
         if (value === true) return "YES";
         if (value === false) return "NO";
+        console.log("booleanToString returning original value:", value);
         return value || "";
       };
 
@@ -272,7 +277,13 @@ export const useExitClearance = ({ mode, systemId }: UseExitClearanceProps) => {
         // Additional fields from the API
         admin: data.admin || "",
         adminName: data.adminName || "",
-        supervisorVerification: booleanToString(data.supervisorVerification),
+        supervisorVerification: (() => {
+          console.log("API supervisorVerification data:", {
+            value: data.supervisorVerification,
+            type: typeof data.supervisorVerification,
+          });
+          return booleanToString(data.supervisorVerification);
+        })(),
         // Head of Department fields
         headOfDepartmentNo: data.headOfDepartmentNo || "",
         headOfDepartmentName: data.headOfDepartmentName || "",
@@ -657,6 +668,13 @@ export const useExitClearance = ({ mode, systemId }: UseExitClearanceProps) => {
               formData[actualFieldName as keyof ExitClearanceFormData]
             }`
           );
+          console.log("handleSaveOnBlur - Field details:", {
+            actualFieldName,
+            newValue,
+            formDataValue:
+              formData[actualFieldName as keyof ExitClearanceFormData],
+            finalFieldValue: fieldValue,
+          });
 
           // Handle special cases for different field types
           if (
@@ -689,12 +707,18 @@ export const useExitClearance = ({ mode, systemId }: UseExitClearanceProps) => {
             if (typeof fieldValue === "boolean") {
               updateData[actualFieldName] = fieldValue;
             } else {
-              updateData[actualFieldName] =
+              const convertedValue =
                 fieldValue === "YES"
                   ? true
                   : fieldValue === "NO"
                   ? false
                   : null;
+              console.log(`Boolean conversion for ${actualFieldName}:`, {
+                fieldValue,
+                type: typeof fieldValue,
+                convertedValue,
+              });
+              updateData[actualFieldName] = convertedValue;
             }
           } else {
             updateData[actualFieldName] = fieldValue;

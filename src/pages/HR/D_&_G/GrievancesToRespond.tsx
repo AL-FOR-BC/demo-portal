@@ -84,11 +84,7 @@ const GrievancesToRespond: React.FC = () => {
         return cell || "Person-related";
       },
     },
-    {
-      dataField: "nameOfIndicted",
-      text: "Accused Employee",
-      sort: true,
-    },
+    
     {
       dataField: "sendGrievanceTo",
       text: "Sent To",

@@ -17,13 +17,14 @@ import {
   modelLoadingRequisition,
   openModalRequisition,
 } from "../../../store/slices/Requisitions";
+import Swal from "sweetalert2";
 
 const DisciplinaryCaseDetails: React.FC = () => {
   const { systemId } = useParams<{ systemId: string }>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { companyId } = useAppSelector((state) => state.auth.session);
-  const { email } = useAppSelector((state) => state.auth.user);
+  const { email, employeeNo } = useAppSelector((state) => state.auth.user);
 
   const [disciplinaryLines, setDisciplinaryLines] = useState<
     DisciplinaryLine[]
@@ -31,6 +32,8 @@ const DisciplinaryCaseDetails: React.FC = () => {
   const [lineSystemId, setLineSystemId] = useState("");
   const [lineEtag, setLineEtag] = useState("");
   const [status, setStatus] = useState("");
+  const [caseRegisteredByNo, setCaseRegisteredByNo] = useState("");
+  const [indictedEmployeeNo, setIndictedEmployeeNo] = useState<string>("");
 
   // Line form state
   const [entryType, setEntryType] = useState("");
@@ -38,10 +41,30 @@ const DisciplinaryCaseDetails: React.FC = () => {
 
   const { updateDisciplinaryCase, getFormFields, state } = useDisciplinaryCases(
     {
-      mode: "view",
+      mode: "edit",
       systemId,
     }
   );
+
+  // Check if current user can add lines
+  const canAddLines = () => {
+    // Can add lines if status is "Open" OR if status is "Submitted to Employee" and current user is the indicted employee OR current user is in sendGrievanceTo field
+    const canAdd =
+      status === "Open" ||
+      (status === "Submitted to Employee" &&
+        (employeeNo === indictedEmployeeNo ||
+          employeeNo === state.disciplinaryCase?.sendGrievanceTo));
+
+    console.log("Can Add Lines Debug:", {
+      status,
+      employeeNo,
+      indictedEmployeeNo,
+      sendGrievanceTo: state.disciplinaryCase?.sendGrievanceTo,
+      canAdd,
+    });
+
+    return canAdd;
+  };
 
   // API handler function for ActionFormatterLines
   const apiDisciplinaryLines = async (
@@ -95,11 +118,6 @@ const DisciplinaryCaseDetails: React.FC = () => {
 
   const columns = [
     {
-      dataField: "lineNo",
-      text: "Line No",
-      sort: true,
-    },
-    {
       dataField: "entryType",
       text: "Entry Type",
       sort: true,
@@ -109,7 +127,7 @@ const DisciplinaryCaseDetails: React.FC = () => {
       text: "Description",
       sort: true,
     },
-    (status === "Open" ? true : false) && {
+    (canAddLines() ? true : false) && {
       dataField: "action",
       text: "Action",
       sort: true,
@@ -123,6 +141,7 @@ const DisciplinaryCaseDetails: React.FC = () => {
             handleEditLine={handleEditLine}
             handleDeleteLine={handleDeleteLine}
             populateData={populateData}
+            status={status}
           />
         );
       },
@@ -138,16 +157,53 @@ const DisciplinaryCaseDetails: React.FC = () => {
           ? { label: entryType, value: entryType }
           : { label: "Select Entry Type", value: "" },
         id: "entryType",
-        options: [
-          { label: "Select Entry Type", value: "" },
-          {
-            label: "Issue Detail Description",
-            value: "Issue Detail Description",
-          },
-          { label: "Findings", value: "Findings" },
-          { label: "Recommendations", value: "Recommendations" },
-          { label: "Employee Response", value: "Employee Response" },
-        ],
+        options: (() => {
+          const isOpenAndCaseInitiator =
+            status === "Open" && employeeNo === caseRegisteredByNo;
+          const isSubmittedToEmployee = status === "Submitted to Employee";
+          console.log("Entry Type Options Debug:", {
+            status,
+            employeeNo,
+            caseRegisteredByNo,
+            indictedEmployeeNo,
+            sendGrievanceTo: state.disciplinaryCase?.sendGrievanceTo,
+            isOpenAndCaseInitiator,
+            isSubmittedToEmployee,
+          });
+
+          return [
+            { label: "Select Entry Type", value: "" },
+            // If status is "Open" and current user is case initiator, only show Issue Detail Description and Findings
+            ...(isOpenAndCaseInitiator
+              ? [
+                  {
+                    label: "Issue Detail Description",
+                    value: "Issue Detail Description",
+                  },
+                  { label: "Findings", value: "Findings" },
+                ]
+              : // If status is "Submitted to Employee" and current user is the indicted employee or in sendGrievanceTo, show Employee Response
+              isSubmittedToEmployee &&
+                (employeeNo === indictedEmployeeNo ||
+                  employeeNo === state.disciplinaryCase?.sendGrievanceTo)
+              ? [
+                  {
+                    label: "Employee Response",
+                    value: "Employee Response",
+                  },
+                ]
+              : // Otherwise show all options
+                [
+                  {
+                    label: "Issue Detail Description",
+                    value: "Issue Detail Description",
+                  },
+                  { label: "Findings", value: "Findings" },
+                  { label: "Recommendations", value: "Recommendations" },
+                  { label: "Employee Response", value: "Employee Response" },
+                ]),
+          ];
+        })(),
         onChange: (e: any) => setEntryType(e?.value || ""),
       },
       {
@@ -181,6 +237,8 @@ const DisciplinaryCaseDetails: React.FC = () => {
 
         setDisciplinaryLines(disciplinaryLines);
         setStatus(response.status || "Open");
+        setCaseRegisteredByNo(response.caseRegisteredByNo || "");
+        setIndictedEmployeeNo(response.indictedEmployeeNo || "");
       }
     } catch (error) {
       console.error("Error details:", error);
@@ -286,47 +344,6 @@ const DisciplinaryCaseDetails: React.FC = () => {
     }
   };
 
-  const handleSendResponse = async () => {
-    try {
-      if (!state.disciplinaryCase?.no) {
-        toast.error("No disciplinary case number found");
-        return;
-      }
-
-      if (!email) {
-        toast.error("User email not found. Please sign in again.");
-        return;
-      }
-
-      const responseData = {
-        no: state.disciplinaryCase.no,
-      };
-
-      console.log("Sending disciplinary response:", responseData);
-
-      // Try the simple response method first
-      const response = await disciplinaryCasesService.sendDisciplinaryResponse(
-        companyId,
-        responseData
-      );
-
-      if (response.status === 200 || response.status === 201) {
-        toast.success("Disciplinary case sent for processing successfully!");
-        // Optionally refresh the data or navigate
-        populateData();
-      } else {
-        toast.error("Failed to send disciplinary case for processing");
-      }
-    } catch (error) {
-      console.error("Error sending disciplinary case for processing:", error);
-      toast.error(
-        `Error sending disciplinary case for processing: ${getErrorMessage(
-          error
-        )}`
-      );
-    }
-  };
-
   const handleNotifySupervisor = async () => {
     try {
       if (!state.disciplinaryCase?.no) {
@@ -358,6 +375,135 @@ const DisciplinaryCaseDetails: React.FC = () => {
     }
   };
 
+  const handleSendNotification = async () => {
+    try {
+      if (!state.disciplinaryCase?.no) {
+        toast.error("No disciplinary case number found");
+        return;
+      }
+
+      // Show SweetAlert with radio button options
+      const { value: sendNotificationOption } = await Swal.fire({
+        title: "Send Disciplinary Notification",
+        html: `
+          <div style="text-align: left; margin: 20px 0;">
+            <p style="margin-bottom: 15px;">Select notification recipients:</p>
+            <div style="margin-bottom: 10px;">
+              <input type="radio" id="accusedOnly" name="notificationOption" value="1" style="margin-right: 8px;">
+              <label for="accusedOnly">Accused Employee</label>
+            </div>
+            <div>
+              <input type="radio" id="accusedAndCommittee" name="notificationOption" value="2" checked style="margin-right: 8px;">
+              <label for="accusedAndCommittee">Accused Employee and Disciplinary Committee</label>
+            </div>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: "Send Notification",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#28a745",
+        cancelButtonColor: "#6c757d",
+        focusConfirm: false,
+        allowOutsideClick: false,
+        allowEscapeKey: true,
+        preConfirm: () => {
+          const selectedOption = document.querySelector(
+            'input[name="notificationOption"]:checked'
+          ) as HTMLInputElement;
+          if (!selectedOption) {
+            Swal.showValidationMessage("Please select a notification option");
+            return false;
+          }
+          return selectedOption.value;
+        },
+      });
+
+      if (sendNotificationOption) {
+        const responseData = {
+          no: state.disciplinaryCase.no,
+          sendNotificationOption: parseInt(sendNotificationOption),
+        };
+
+        console.log("Sending disciplinary notification:", responseData);
+
+        const response =
+          await disciplinaryCasesService.sendDisciplinaryNotification(
+            companyId,
+            responseData
+          );
+
+        if (response.status === 200 || response.status === 201) {
+          const optionText =
+            sendNotificationOption === "1"
+              ? "Accused Employee"
+              : "Accused Employee and Disciplinary Committee";
+          toast.success(`Notification sent to ${optionText} successfully!`);
+          populateData();
+        } else {
+          toast.error("Failed to send disciplinary notification");
+        }
+      }
+    } catch (error) {
+      console.error("Error sending disciplinary notification:", error);
+      toast.error(
+        `Error sending disciplinary notification: ${getErrorMessage(error)}`
+      );
+    }
+  };
+
+  const handleSendEmployeeResponse = async () => {
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: "Send Employee Response",
+      text: "Are you sure you want to send your employee response for this disciplinary case?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Send Response",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    try {
+      if (!state.disciplinaryCase?.no) {
+        toast.error("No disciplinary case number found");
+        return;
+      }
+
+      if (!email) {
+        toast.error("User email not found. Please sign in again.");
+        return;
+      }
+
+      const responseData = {
+        no: state.disciplinaryCase.no,
+      };
+
+      console.log("Sending employee response:", responseData);
+
+      // Use the new sendEmployeeResponse method
+      const response = await disciplinaryCasesService.sendEmployeeResponse(
+        companyId,
+        responseData
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success("Employee response sent successfully!");
+        // Optionally refresh the data or navigate
+        populateData();
+      } else {
+        toast.error("Failed to send employee response");
+      }
+    } catch (error) {
+      console.error("Error sending employee response:", error);
+      toast.error(`Error sending employee response: ${getErrorMessage(error)}`);
+    }
+  };
+
   useEffect(() => {
     if (state.disciplinaryCase?.no) {
       populateData();
@@ -373,8 +519,9 @@ const DisciplinaryCaseDetails: React.FC = () => {
       isLoading={state.isLoading}
       handleBack={() => navigate("/disciplinary-cases")}
       handleSubmit={handleSubmit}
-      handleSendResponse={handleSendResponse}
+      handleSendResponse={handleSendEmployeeResponse}
       handleNotifySupervisor={handleNotifySupervisor}
+      handleSendNotification={handleSendNotification}
       documentType="Disciplinary Case"
       pageType="detail"
       status={status}
@@ -402,6 +549,7 @@ const DisciplinaryCaseDetails: React.FC = () => {
             setDescription("");
           }}
           handleValidateHeaderFields={() => true}
+          canAddLines={canAddLines()}
         />
       }
     />
