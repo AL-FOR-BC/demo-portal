@@ -1,1 +1,0 @@
-import{r as e,i as a}from"./createSvgIcon-DicxdZpb.js";import{j as r}from"./index-BJD_Eh7D.js";var o={},t=a;Object.defineProperty(o,"__esModule",{value:!0});var d=o.default=void 0,s=t(e()),f=r;d=o.default=(0,s.default)((0,f.jsx)("path",{d:"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 15h-2v-6h2zm0-8h-2V7h2z"}),"Info");export{d};

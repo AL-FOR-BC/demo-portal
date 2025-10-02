@@ -1,0 +1,1 @@
+var e=Object.defineProperty;import{bb as o}from"./index-Na0UFlYX.js";const r=((o,r)=>e(o,"name",{value:r,configurable:!0}))((async(e,r,a,n,t,c)=>{const d={documentNo:e,senderEmailAddress:r};try{await o({data:d,documentLines:a,companyId:n,link:t,populateDoc:c})}catch(s){console.error("Error sending for approval:",s)}}),"handleSendForApproval");export{r as h};
