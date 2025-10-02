@@ -841,6 +841,7 @@ function PaymentRequisitionDetail() {
                   handleEditLine={handleEditLine}
                   handleDeleteLine={handleDelteLine}
                   populateData={populateData}
+                  status={status}
                 />
               );
             },

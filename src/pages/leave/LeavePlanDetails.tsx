@@ -102,6 +102,7 @@ export default function LeavePlanDetails() {
             handleEditLine={handleEditLine}
             handleDeleteLine={handleDeleteLine}
             populateData={populateData}
+            status={status}
           />
         );
       },

@@ -18,7 +18,7 @@ export interface TrainingPlanFormData {
   status?: string;
   completed?: boolean;
   trainingDescription: string;
-  organizationUnit?: options[];
+  organizationUnit?: string;
   projectCode?: options[];
   donorCode?: options[];
 }
@@ -46,7 +46,7 @@ const initialFormData: TrainingPlanFormData = {
   status: "Open",
   completed: false,
   totalCost: 0,
-  organizationUnit: [],
+  organizationUnit: "",
   projectCode: [],
   donorCode: [],
 };
@@ -90,9 +90,10 @@ export const useTrainingPlanDocument = ({
 
       // Create API payload that matches the Business Central API structure
       const apiPayload = {
-        empId: formData.employeeId.trim(),
+        employeeId: formData.employeeId.trim(),
         completed: formData.completed || false,
         trainingDescription: formData.trainingDescription.trim(),
+        organizationUnit: formData.organizationUnit || "",
         shortcutDimension1Code: formData.projectCode?.[0]?.value || "",
         shortcutDimension2Code: formData.donorCode?.[0]?.value || "",
       };
@@ -181,6 +182,11 @@ export const useTrainingPlanDocument = ({
           systemId
         );
         setDocSystemId(systemId);
+
+        // Get the current options from state
+        const currentProjectOptions = state.projectCodeOptions;
+        const currentDonorOptions = state.donorCodeOptions;
+
         setFormData({
           no: response.no,
           employeeId: response.employeeId || response.empId || "", // Use employeeId from API or fallback to empId
@@ -190,18 +196,14 @@ export const useTrainingPlanDocument = ({
           completed: response.completed,
           trainingDescription: response.trainingDescription,
           organizationUnit:
-            response.organizationUnit || response.directorate
-              ? [
-                  {
-                    label: response.organizationUnit || response.directorate,
-                    value: response.organizationUnit || response.directorate,
-                  },
-                ]
-              : [],
+            response.organizationUnit || response.directorate || "",
           projectCode: response.shortcutDimension1Code
             ? [
                 {
-                  label: response.shortcutDimension1Code,
+                  label:
+                    currentProjectOptions.find(
+                      (opt) => opt.value === response.shortcutDimension1Code
+                    )?.label || response.shortcutDimension1Code,
                   value: response.shortcutDimension1Code,
                 },
               ]
@@ -209,7 +211,10 @@ export const useTrainingPlanDocument = ({
           donorCode: response.shortcutDimension2Code
             ? [
                 {
-                  label: response.shortcutDimension2Code,
+                  label:
+                    currentDonorOptions.find(
+                      (opt) => opt.value === response.shortcutDimension2Code
+                    )?.label || response.shortcutDimension2Code,
                   value: response.shortcutDimension2Code,
                 },
               ]
@@ -220,7 +225,7 @@ export const useTrainingPlanDocument = ({
         toast.error(`Error loading training plan: ${getErrorMessage(error)}`);
       }
     },
-    [companyId, employeeName]
+    [companyId, employeeName, state.projectCodeOptions, state.donorCodeOptions]
   );
 
   const populateData = useCallback(async () => {
@@ -319,15 +324,7 @@ export const useTrainingPlanDocument = ({
               status: data.status,
               completed: data.completed,
               trainingDescription: data.trainingDescription,
-              organizationUnit:
-                data.organizationUnit || data.directorate
-                  ? [
-                      {
-                        label: data.organizationUnit || data.directorate,
-                        value: data.organizationUnit || data.directorate,
-                      },
-                    ]
-                  : [],
+              organizationUnit: data.organizationUnit || data.directorate || "",
               projectCode: data.shortcutDimension1Code
                 ? [
                     {
@@ -379,6 +376,20 @@ export const useTrainingPlanDocument = ({
   ) => {
     if (!docSystemId) return;
 
+    // Map form field names to API field names
+    const fieldMapping: Record<string, string> = {
+      projectCode: "shortcutDimension1Code",
+      donorCode: "shortcutDimension2Code",
+    };
+
+    const apiField = fieldMapping[field as string] || field;
+    let apiValue = value;
+
+    // For select fields, extract the value from the options array
+    if (field === "projectCode" || field === "donorCode") {
+      apiValue = Array.isArray(value) && value.length > 0 ? value[0].value : "";
+    }
+
     // Create a wrapper function that matches the expected signature
     const updateWrapper = async (
       companyId: string,
@@ -394,7 +405,7 @@ export const useTrainingPlanDocument = ({
       companyId,
       id: docSystemId,
       apiService: updateWrapper,
-      data: { [field]: value },
+      data: { [apiField]: apiValue },
       successMessage: `${field} updated successfully`,
       errorMessage: `Error updating ${field}`,
       onSucesss: () => {
@@ -426,18 +437,9 @@ export const useTrainingPlanDocument = ({
         label: "Employee ID",
         type: "text",
         value: formData.employeeId || "",
-        disabled: isFieldDisabled,
+        disabled: true, // Always disabled - read only
         id: "employeeId",
-        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-          handleInputChange("employeeId", e.target.value);
-        },
-        onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
-          if (mode === "detail") {
-            handleFieldUpdate("employeeId", e.target.value);
-          }
-        },
-        required: true,
-        placeholder: "Enter employee ID",
+        placeholder: "Employee ID",
       },
       {
         label: "Employee Name",
@@ -463,43 +465,20 @@ export const useTrainingPlanDocument = ({
               type: "number",
               value: formData.totalCost || 0,
               id: "totalCost",
-              disabled: isFieldDisabled,
+              disabled: true, // Always disabled - read only
               min: 0,
               step: 0.01,
-              placeholder: "Enter total cost",
-              onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                handleInputChange("totalCost", parseFloat(e.target.value) || 0);
-              },
-              onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
-                if (mode === "detail") {
-                  handleFieldUpdate(
-                    "totalCost",
-                    parseFloat(e.target.value) || 0
-                  );
-                }
-              },
+              placeholder: "Total Cost",
             },
           ]
         : []),
       {
         label: "Organization Unit",
-        type: "select",
-        value: formData.organizationUnit || [],
+        type: "text",
+        value: formData.organizationUnit || "",
         id: "organizationUnit",
-        disabled: isFieldDisabled,
-        options: state.organizationUnitOptions,
-        onChange: (e: options) => {
-          handleInputChange("organizationUnit", [
-            { label: e.label, value: e.value },
-          ]);
-        },
-        onBlur: (e: options) => {
-          if (mode === "detail") {
-            handleFieldUpdate("organizationUnit", [
-              { label: e.label, value: e.value },
-            ]);
-          }
-        },
+        disabled: true, // Always disabled - read only
+        placeholder: "Organization Unit",
       },
       {
         label: "Project Code",

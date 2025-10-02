@@ -32,7 +32,7 @@ export default defineConfig({
 
     // ---------------------------------- ROM TEST ------------------------------------
     "import.meta.env.VITE_EHUB_BC_URL_ROM": JSON.stringify(
-      "https://api.businesscentral.dynamics.com/v2.0/24528e89-fa53-4fc5-9847-429bb50802ff/ROMProductionCopy2/"
+      "https://api.businesscentral.dynamics.com/v2.0/24528e89-fa53-4fc5-9847-429bb50802ff/ROMProductionCopy1/"
     ),
     "import.meta.env.VITE_EHUB_BACKEND_URL_ROM": JSON.stringify(
       "http://51.8.80.47:5001"

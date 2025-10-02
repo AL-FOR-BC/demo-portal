@@ -31,7 +31,7 @@ function IPADetails() {
   } = useIPA({ mode: "detail" });
 
   const columns =
-    "Open" == "Open"
+    formData.status === "Open"
       ? [
           {
             dataField: "jobObjective",
@@ -73,6 +73,7 @@ function IPADetails() {
                       populateDocumentDetail(id);
                     }
                   }}
+                  status={formData.status}
                 />
               );
             },

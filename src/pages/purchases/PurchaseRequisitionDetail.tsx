@@ -512,6 +512,7 @@ function PurchaseRequisitionDetail() {
                   handleDeleteLine={handleDelteLine}
                   handleEditLine={handleEditLine}
                   populateData={populateData}
+                  status={status}
                 />
               );
             },

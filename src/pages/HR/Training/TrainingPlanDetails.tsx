@@ -24,19 +24,6 @@ const TrainingPlanDetails: React.FC = () => {
     }
   }, [id]);
 
-  if (state.isLoading) {
-    return (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "400px" }}
-      >
-        <div className="spinner-border text-primary" role="status">
-          <span className="sr-only">Loading...</span>
-        </div>
-      </div>
-    );
-  }
-
   if (!formData.no && !state.isLoading) {
     return (
       <div

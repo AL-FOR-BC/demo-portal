@@ -224,13 +224,17 @@ export const ActionFormatterLines: React.FC<ActionsFormatterLinesProps> = ({
       // If current user is in sendGrievanceTo field, show buttons for their own entries
       if (
         currentUserEmployeeNo === sendGrievanceTo &&
-        (
-          row.entryType === "Findings" ||
+        (row.entryType === "Findings" ||
           row.entryType === "Recommendations" ||
           row.entryType === "Employee Response")
       ) {
         return true;
       }
+    }
+
+    // For IPA documents, show buttons only when status is "Open"
+    if (status === "Open") {
+      return true;
     }
 
     return false;
