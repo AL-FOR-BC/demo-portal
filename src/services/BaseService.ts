@@ -11,7 +11,8 @@ const unauthorizedCode = [401];
 const getApiUrl = () => {
     if (appConfig.environment === 'production') {
         // Use relative URL in production
-        return `${window.location.origin}`;
+        // ${window.location.origin} ${window.location.origin} 
+        return `https://selfservicebackend.reachoutmbuya.org/`;
     }
     return appConfig.apiPrefix;
 };

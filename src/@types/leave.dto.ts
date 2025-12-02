@@ -63,6 +63,11 @@ export interface LeavePlanResponseSingle {
   leavePlanLines: LeavePlanLine[];
 }
 
+export interface LeavePlanLinesResponse {
+  "@odata.context": string;
+  value: LeavePlanLine[];
+}
+
 // --------------------------------- leave request ---------------------------------
 
 export interface LeaveRequest {

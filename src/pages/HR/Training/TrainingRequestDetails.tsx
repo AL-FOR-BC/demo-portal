@@ -6,10 +6,12 @@ import SectionHeader from "../../../Components/ui/SectionHeader";
 import { Collapse, Paper, Box } from "@mui/material";
 import { Row, Col, Input, Label } from "reactstrap";
 import { decodeValue } from "../../../utils/common";
+import { useAppSelector } from "../../../store/hook";
 
 const TrainingRequestDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { companyId } = useAppSelector((state) => state.auth.session);
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
     general: true,
     trainingDetails: true,
@@ -104,6 +106,7 @@ const TrainingRequestDetails: React.FC = () => {
       handleDelete={handleDelete}
       handleSendApprovalRequest={handleSendForApproval}
       handleCancelApprovalRequest={handleCancelApproval}
+      companyId={companyId}
       lines={
         <>
           {/* Training Details Section */}

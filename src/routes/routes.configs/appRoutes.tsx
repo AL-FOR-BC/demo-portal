@@ -376,6 +376,29 @@ const appRoutes: Routes = [
       () => import("../../pages/HR/Training/ApproveTrainingPlan.tsx")
     ),
   },
+
+  // ------------------------ Training Evaluations ----------------------------------------
+  {
+    key: "training-evaluations",
+    path: "/training-evaluations",
+    component: lazy(
+      () => import("../../pages/HR/Training/TrainingEvaluations.tsx")
+    ),
+  },
+  {
+    key: "add-training-evaluation",
+    path: "/add-training-evaluation",
+    component: lazy(
+      () => import("../../pages/HR/Training/TrainingEvaluationDetails.tsx")
+    ),
+  },
+  {
+    key: "training-evaluation-details",
+    path: "/training-evaluation-details/:id",
+    component: lazy(
+      () => import("../../pages/HR/Training/TrainingEvaluationDetails.tsx")
+    ),
+  },
   // {
   //     key: 'approved-time-sheets',
   //     path: '/approved-time-sheets',

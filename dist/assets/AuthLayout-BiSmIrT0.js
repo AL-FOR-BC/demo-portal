@@ -1,0 +1,1 @@
+import{j as t}from"./index-BTtBrfft.js";import{V as u}from"./Views-DO4icwXf.js";function AuthLayout(){return t.jsx(u,{})}(0,Object.defineProperty)(AuthLayout,"name",{value:"AuthLayout",configurable:!0});export{AuthLayout as default};

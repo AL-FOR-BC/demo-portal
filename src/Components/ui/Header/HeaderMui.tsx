@@ -489,11 +489,23 @@ const HeaderMui: React.FC<HeaderMuiProps> = (props) => {
                           </Button>
                         </>
                       )}
+                    {documentType === "Training Evaluation" && (
+                      <Button
+                        color="primary"
+                        className="btn btn-label"
+                        onClick={handleSubmit}
+                      >
+                        <SendIcon className="label-icon" />
+                        Submit to HOD
+                      </Button>
+                    )}
+
                     {documentType !== "Performance Management" &&
                       documentType !== "Exit Interview" &&
                       documentType !== "Exit Clearance" &&
                       documentType !== "Grievance Case" &&
-                      documentType !== "Disciplinary Case" && (
+                      documentType !== "Disciplinary Case" &&
+                      documentType !== "Training Evaluation" && (
                         <Button
                           color="primary"
                           className="btn btn-label"

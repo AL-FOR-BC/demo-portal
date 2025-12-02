@@ -4,12 +4,12 @@ import react from "@vitejs/plugin-react";
 console.log("process.env.ENVIRONMENT_TYPE", process.env.ENVIRONMENT_TYPE);
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/rom/",
+  base: "/",
   plugins: [react()],
   define: {
-    "import.meta.env.ENVIRONMENT": JSON.stringify("production"),
-    "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("ROM"),
-    // "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("HRP"),
+    "import.meta.env.ENVIRONMENT": JSON.stringify("development"),
+    // "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("ROM_TEST"),
+    "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("HRP"),
 
     "import.meta.env": JSON.stringify(process.env),
     "import.meta.env.VITE_EHUB_BACKEND_URL": JSON.stringify(

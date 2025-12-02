@@ -233,6 +233,38 @@ class TrainingPlanService extends BaseApiService {
       customEndpoint: "HRMISActions_SubmitTrainingPlan",
     });
   }
+
+  /**
+   * Approves training plan
+   * @async
+   * @param {string} companyId - Company identifier
+   * @param {object} data - Approval data
+   * @returns {Promise<any>} Approval response
+   */
+  async approveTrainingPlan(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_ApproveTrainingPlan",
+    });
+  }
+
+  /**
+   * Rejects training plan
+   * @async
+   * @param {string} companyId - Company identifier
+   * @param {object} data - Rejection data
+   * @returns {Promise<any>} Rejection response
+   */
+  async rejectTrainingPlan(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_RejectTrainingPlan",
+    });
+  }
 }
 
 export const trainingPlanService = new TrainingPlanService();

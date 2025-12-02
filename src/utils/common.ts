@@ -262,3 +262,22 @@ export const formatEmailDomain = (email: string) => {
   const emailDomain = email.split("@")[1].toUpperCase();
   return `${emailString}@${emailDomain}`;
 };
+
+// Number formatting helper
+export const formatNumberWithCommas = (value: number | string): string => {
+  if (value === null || value === undefined || value === "") {
+    return "0";
+  }
+
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
+
+  if (isNaN(numValue)) {
+    return "0";
+  }
+
+  // Format with commas and 2 decimal places
+  return numValue.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
