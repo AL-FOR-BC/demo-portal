@@ -8,8 +8,8 @@ export default defineConfig({
   plugins: [react()],
   define: {
     "import.meta.env.ENVIRONMENT": JSON.stringify("development"),
-    // "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("ROM_TEST"),
     "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("HRP"),
+    // "import.meta.env.ENVIRONMENT_TYPE": JSON.stringify("HRP"),
 
     "import.meta.env": JSON.stringify(process.env),
     "import.meta.env.VITE_EHUB_BACKEND_URL": JSON.stringify(

@@ -62,7 +62,7 @@ function TimeSheets() {
                 <ActionFormatter
                     row={row}
                     cellContent={cell}
-                    navigateTo="/time-sheet-details/"
+                    navigateTo="/time-sheet-details"
                 />
             )
         }
