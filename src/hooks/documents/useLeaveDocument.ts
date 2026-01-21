@@ -27,7 +27,7 @@ const initialFormData: LeaveFormData = {
   documentNo: "",
   telephoneNumber: "",
   delegate: { label: "", value: "" },
-  leaveCategoryType: { label: "", value: "" },  
+  leaveCategoryType: { label: "", value: "" },
   fromDate: "",
   toDate: "",
   leaveAddress: "",
@@ -78,10 +78,23 @@ export const useLeaveDocument = ({ mode }: { mode: DocumentTypeMode }) => {
         telephoneNumber: formData.telephoneNumber,
         leaveAddress: formData.leaveAddress,
       };
-      console.log(payload)
+      console.log(payload);
       const response = await leaveService.createLeaveRequest(
         companyId,
         payload
+      );
+      // send patch request to update the leave type
+      await leaveService.updateLeaveRequest(
+        companyId,
+        "PATCH",
+        {
+          leaveCategoryType:
+            typeof formData.leaveCategoryType === "object"
+              ? formData.leaveCategoryType.value
+              : formData.leaveCategoryType,
+        },
+        response.data.systemId,
+        "*"
       );
       toast.success("Leave request created successfully");
       navigate(`/leave-request-details/${response.data.systemId}`);
@@ -239,8 +252,8 @@ export const useLeaveDocument = ({ mode }: { mode: DocumentTypeMode }) => {
         });
         setFormData((prev) => ({
           ...prev,
-          employeeNo:response[0].employeeNo,
-          employeeName:response[0].employeeName,
+          employeeNo: response[0].employeeNo,
+          employeeName: response[0].employeeName,
           employeeTitle: response[0].employeeTitle,
           documentNo: response[0].documentNo,
           telephoneNumber: response[0].telephoneNumber,
@@ -333,21 +346,21 @@ export const useLeaveDocument = ({ mode }: { mode: DocumentTypeMode }) => {
       {
         label: "Requestor No",
         type: "text",
-        value: mode == 'approve' ? formData.employeeNo :employeeNo,
+        value: mode == "approve" ? formData.employeeNo : employeeNo,
         disabled: true,
         id: "empNo",
       },
       {
         label: "Requestor Name",
         type: "text",
-        value: mode == 'approve' ? formData.employeeName: employeeName, 
+        value: mode == "approve" ? formData.employeeName : employeeName,
         disabled: true,
         id: "empName",
       },
       {
         label: "Employment Title",
         type: "text",
-        value: mode == 'approve' ? formData.employeeTitle : jobTitle,
+        value: mode == "approve" ? formData.employeeTitle : jobTitle,
         disabled: true,
         id: "empTitle",
       },

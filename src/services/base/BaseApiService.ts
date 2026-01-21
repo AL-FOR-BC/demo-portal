@@ -41,10 +41,14 @@ export abstract class BaseApiService {
   }
 
   async get<T>(config: ApiRequestConfig): Promise<T[]> {
+    const url = this.getUrl(config);
+    console.log("BaseApiService.get - URL:", url);
+    console.log("BaseApiService.get - config:", config);
     const response = await BcApiService.fetchData<ODataResponse<T>>({
-      url: this.getUrl(config),
+      url,
       method: "GET",
     });
+    console.log("BaseApiService.get - response:", response);
     return response.data.value;
   }
 

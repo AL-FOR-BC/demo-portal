@@ -1,65 +1,79 @@
 import { LeavePlanLine } from "../@types/leave.dto";
 
-export type LeaveStatus = "approved" | "pending" | "rejected" | "cancelled" | "draft";
-
-export type LeaveType =
-  | "annual"
-  | "sick"
-  | "personal"
-  | "maternity"
-  | "paternity"
-  | "other";
-
+// Types for leave data in calendar
 export interface LeaveDay {
   id: string;
-  startDate: string;
-  endDate: string;
-  leaveType: LeaveType;
+  employeeId: string;
   employeeName: string;
+  leaveType:
+    | "annual"
+    | "sick"
+    | "personal"
+    | "maternity"
+    | "paternity"
+    | "other";
+  startDate: Date;
+  endDate: Date;
+  status: "approved" | "pending" | "rejected";
+  notes?: string;
   quantity?: number;
   description?: string;
-  notes?: string;
-  status?: LeaveStatus;
 }
 
-const normalizeLeaveType = (leaveType: string | undefined | null): LeaveType => {
-  const normalized = (leaveType || "").toLowerCase();
+/**
+ * Maps API leave type to calendar leave type
+ * @param apiLeaveType - Leave type from API (e.g., "ANNUAL", "SICK")
+ * @returns Mapped leave type for calendar component
+ */
+export function mapLeaveType(
+  apiLeaveType: string
+): LeaveDay["leaveType"] {
+  const normalized = apiLeaveType?.toUpperCase().trim();
+  
+  const leaveTypeMap: Record<string, LeaveDay["leaveType"]> = {
+    ANNUAL: "annual",
+    SICK: "sick",
+    PERSONAL: "personal",
+    MATERNITY: "maternity",
+    PATERNITY: "paternity",
+    COMPASSIONATE: "other",
+    STUDY: "other",
+    UNPAID: "other",
+  };
 
-  if (normalized.includes("annual")) return "annual";
-  if (normalized.includes("sick")) return "sick";
-  if (normalized.includes("personal")) return "personal";
-  if (normalized.includes("maternity")) return "maternity";
-  if (normalized.includes("paternity")) return "paternity";
+  return leaveTypeMap[normalized] || "other";
+}
 
-  return "other";
-};
+/**
+ * Transforms LeavePlanLine array to LeaveDay array for calendar display
+ * @param leavePlanLines - Array of leave plan lines from API
+ * @returns Array of LeaveDay objects for calendar
+ */
+export function transformLeavePlanLinesToLeaveDays(
+  leavePlanLines: LeavePlanLine[]
+): LeaveDay[] {
+  return leavePlanLines.map((line) => {
+    // Use SystemId as unique identifier, fallback to lineNo if SystemId is not available
+    const id = line.SystemId || `line-${line.lineNo}`;
+    
+    // Extract employee ID from employeeName if possible, or use a generated one
+    // This is a fallback since employeeNo is not in LeavePlanLine
+    const employeeId = `EMP-${line.lineNo}`;
 
-const getLineSystemId = (line: LeavePlanLine): string => {
-  const systemId = (line as unknown as { SystemId?: string; systemId?: string }).SystemId
-    ?? (line as unknown as { SystemId?: string; systemId?: string }).systemId;
-
-  if (systemId && systemId.trim()) {
-    return systemId;
-  }
-
-  const documentNo = (line as unknown as { documentNo?: string; documentNo_?: string }).documentNo;
-  return `${documentNo ?? "leave-line"}-${line.lineNo}`;
-};
-
-export const transformLeavePlanLinesToLeaveDays = (
-  lines: LeavePlanLine[]
-): LeaveDay[] => {
-  return (lines || [])
-    .filter((line) => Boolean(line?.startDate && line?.endDate))
-    .map((line) => ({
-      id: getLineSystemId(line),
-      startDate: line.startDate,
-      endDate: line.endDate,
-      leaveType: normalizeLeaveType(line.leaveType),
-      employeeName: line.employeeName ?? "Unknown",
+    return {
+      id,
+      employeeId,
+      employeeName: line.employeeName || "Unknown Employee",
+      leaveType: mapLeaveType(line.leaveType),
+      startDate: new Date(line.startDate),
+      endDate: new Date(line.endDate),
+      status: "approved" as const, // Leave plans are typically approved
+      notes: line.description,
       quantity: line.quantity,
       description: line.description,
-      status: "approved",
-    }))
-    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-};
+    };
+  });
+}
+
+
+

@@ -68,6 +68,7 @@ interface TableLinesMuiProps {
   handleValidateHeaderFields: () => boolean;
   documentName?: string;
   multipleLines?: boolean;
+  canAddLines?: boolean;
 }
 
 // Clean Cell component for displaying text with ellipsis
@@ -145,11 +146,15 @@ const CollapsibleRow = ({
           <StyledTableCell key={colIndex}>
             {colIndex === 0 && (
               <span
+                onClick={onToggle}
                 style={{
                   marginRight: "8px",
                   color: "#1976d2",
                   fontSize: "0.75rem",
+                  cursor: "pointer",
+                  userSelect: "none",
                 }}
+                title="Click to expand/collapse"
               >
                 {isExpanded ? "▼" : "▶"}
               </span>
@@ -210,14 +215,14 @@ const CollapsibleRow = ({
                       Performance Details
                     </Typography>
                     <Grid container spacing={3}>
-                      <Grid item xs={12} sm={6} md={4}>
+                      <Grid item xs={12} sm={6} md={3}>
                         <Typography
                           variant="subtitle2"
                           color="textSecondary"
                           gutterBottom
                           sx={{ fontWeight: 600, color: "#555" }}
                         >
-                          Strategic Objective
+                          Job Objective
                         </Typography>
                         <Box
                           sx={{
@@ -235,14 +240,14 @@ const CollapsibleRow = ({
                           </Typography>
                         </Box>
                       </Grid>
-                      <Grid item xs={12} sm={6} md={4}>
+                      <Grid item xs={12} sm={6} md={3}>
                         <Typography
                           variant="subtitle2"
                           color="textSecondary"
                           gutterBottom
                           sx={{ fontWeight: 600, color: "#555" }}
                         >
-                          Individual Objective
+                          Key Performance Indicator(s)
                         </Typography>
                         <Box
                           sx={{
@@ -260,14 +265,14 @@ const CollapsibleRow = ({
                           </Typography>
                         </Box>
                       </Grid>
-                      <Grid item xs={12} sm={6} md={4}>
+                      <Grid item xs={12} sm={6} md={3}>
                         <Typography
                           variant="subtitle2"
                           color="textSecondary"
                           gutterBottom
                           sx={{ fontWeight: 600, color: "#555" }}
                         >
-                          Initiative
+                          Measures/Deliverables
                         </Typography>
                         <Box
                           sx={{
@@ -285,39 +290,14 @@ const CollapsibleRow = ({
                           </Typography>
                         </Box>
                       </Grid>
-                      <Grid item xs={12} sm={6} md={4}>
+                      <Grid item xs={12} sm={6} md={3}>
                         <Typography
                           variant="subtitle2"
                           color="textSecondary"
                           gutterBottom
                           sx={{ fontWeight: 600, color: "#555" }}
                         >
-                          Measures
-                        </Typography>
-                        <Box
-                          sx={{
-                            backgroundColor: "#f8f9fa",
-                            padding: 2,
-                            borderRadius: 1.5,
-                            minHeight: "60px",
-                            border: "1px solid #e9ecef",
-                            display: "flex",
-                            alignItems: "flex-start",
-                          }}
-                        >
-                          <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
-                            {row.deliverables || "Not specified"}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={4}>
-                        <Typography
-                          variant="subtitle2"
-                          color="textSecondary"
-                          gutterBottom
-                          sx={{ fontWeight: 600, color: "#555" }}
-                        >
-                          Target Date
+                          By which Target Date?
                         </Typography>
                         <Box
                           sx={{
@@ -332,31 +312,6 @@ const CollapsibleRow = ({
                         >
                           <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
                             {row.byWhichTargetDate || "Not specified"}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={4}>
-                        <Typography
-                          variant="subtitle2"
-                          color="textSecondary"
-                          gutterBottom
-                          sx={{ fontWeight: 600, color: "#555" }}
-                        >
-                          Target Value
-                        </Typography>
-                        <Box
-                          sx={{
-                            backgroundColor: "#f8f9fa",
-                            padding: 2,
-                            borderRadius: 1.5,
-                            minHeight: "60px",
-                            border: "1px solid #e9ecef",
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
-                            {row.targetValue || "Not specified"}
                           </Typography>
                         </Box>
                       </Grid>
@@ -382,6 +337,7 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
   handleSubmitUpdatedLine,
   handleValidateHeaderFields,
   documentName,
+  canAddLines,
 }) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -530,7 +486,7 @@ const TableLinesMui: React.FC<TableLinesMuiProps> = ({
         </Col>
 
         <Col sm="8">
-          {status === "Open" && (
+          {(canAddLines !== undefined ? canAddLines : status === "Open") && (
             <div className="text-sm-end">
               <Link
                 className="btn btn-primary btn-label"

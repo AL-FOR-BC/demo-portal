@@ -183,7 +183,7 @@ const TableMui: React.FC<TableComponentProps> = ({
                             </div>
                           </div>
                         </Col>
-                        {title !== "Time Sheets" && (
+                        {title !== "Time Sheets" && addLabel && addLabel.length > 0 && (
                           <Col sm="8">
                             <div className="text-sm-end">
                               <Link
@@ -253,12 +253,19 @@ const TableMui: React.FC<TableComponentProps> = ({
                         <h6>{noDataMessage}</h6>
                       </div>
                       {title !== "Time Sheets" && (
-                        <div className="text-center mt-4">
-                          <Link to={addLink} className="btn btn-primary btn-sm">
-                            {addLabel}
-                            <ArrowRightIcon className="mdi mdi-arrow-right ms-1" />
-                          </Link>
-                        </div>
+                        <>
+                          {addLabel && addLabel.length > 0 && (
+                            <div className="text-center mt-4">
+                              <Link
+                                to={addLink}
+                                className="btn btn-primary btn-sm"
+                              >
+                                {addLabel}
+                                <ArrowRightIcon className="mdi mdi-arrow-right ms-1" />
+                              </Link>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   )}

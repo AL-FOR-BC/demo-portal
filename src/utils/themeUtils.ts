@@ -114,39 +114,42 @@ export function initializeTheme(): void {
   applyThemeColors(savedColor);
 }
 
-// Function to update favicon dynamically
-export function updateFavicon(faviconData: string | null): void {
-  const existingLinks = document.querySelectorAll(
-    'link[rel="icon"], link[rel="shortcut icon"]'
-  );
-  existingLinks.forEach((link) => link.remove());
+const FAVICON_STORAGE_KEY = "app-favicon";
 
-  if (faviconData) {
-    const link = document.createElement("link");
+function getFaviconLinkElement(): HTMLLinkElement {
+  let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+  if (!link) {
+    link = document.createElement("link");
     link.rel = "icon";
-    link.type = faviconData.startsWith("data:image")
-      ? faviconData.split(";")[0].split(":")[1]
-      : "image/x-icon";
-    link.href = faviconData;
     document.head.appendChild(link);
-    localStorage.setItem("favicon", faviconData);
-  } else {
-    const link = document.createElement("link");
-    link.rel = "icon";
-    link.type = "image/x-icon";
-    link.href = "/favicon.ico";
-    document.head.appendChild(link);
-    localStorage.removeItem("favicon");
   }
+  return link;
 }
 
-export function loadFavicon(): string | null {
-  return localStorage.getItem("favicon");
+export function updateFavicon(faviconData: string | null): void {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const link = getFaviconLinkElement();
+
+  if (!faviconData) {
+    link.href = "/favicon.ico";
+    localStorage.removeItem(FAVICON_STORAGE_KEY);
+    return;
+  }
+
+  link.href = faviconData;
+  localStorage.setItem(FAVICON_STORAGE_KEY, faviconData);
 }
 
-export function initializeFavicon(faviconData?: string | null): void {
-  const favicon = faviconData || loadFavicon();
-  if (favicon) {
-    updateFavicon(favicon);
+export function initializeFavicon(): void {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const savedFavicon = localStorage.getItem(FAVICON_STORAGE_KEY);
+  if (savedFavicon) {
+    updateFavicon(savedFavicon);
   }
 }

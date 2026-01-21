@@ -26,6 +26,8 @@ export interface IPA {
   performanceType: string;
   stage: string;
   performanceAppraisalState: string;
+  timeInPresentPosition: string;
+  lengthOfService: string;
   ipaLines: IPALine[];
 }
 
@@ -60,7 +62,7 @@ export interface IPALineResponse {
 // Enums for fixed values
 export enum AppraisalPeriod {
   MID_YEAR = "Mid-Year Appraisal",
-  FULL_YEAR = "Full-Year Appraisal",
+  FULL_YEAR = "Annual Appraisal",
   PROBATION = "Probation Appraisal",
 }
 
@@ -96,18 +98,20 @@ export interface IPAFormData {
   performanceType: string;
   stage: string;
   performanceAppraisalState: string;
+  timeInPresentPosition?: string;
+  lengthOfService?: string;
   systemId?: string;
 }
 
 // Form data interface for IPA lines
 export interface IPALineFormData {
+  lineNo?: number;
+  documentNo?: string;
   jobObjective?: string;
   keyPerformanceIndicators?: string;
   deliverables?: string;
   byWhichTargetDate?: string;
   systemId?: string;
-  lineNo?: number;
-  documentNo?: string;
 }
 
 // State interface for managing IPA document state

@@ -5,7 +5,7 @@ export async function getSetupSettings() {
     allowCompanyChange: boolean;
     themeColor: string;
     companyLogo: string | null;
-    favicon: string | null;
+    favicon?: string | null;
     shortcutDimCode1?: string | null;
     shortcutDimCode2?: string | null;
     id: string;
@@ -42,7 +42,7 @@ export async function getAllowCompanyChangeSetting() {
     allowCompanyChange: boolean;
     themeColor: string;
     companyLogo: string | null;
-    favicon: string | null;
+    favicon?: string | null;
     shortcutDimCode1?: string | null;
     shortcutDimCode2?: string | null;
     id: string;

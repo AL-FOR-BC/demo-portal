@@ -232,7 +232,7 @@ const Attachments = (props) => {
                     const fileData = {
                         No: props.docNo,
                         TableID: props.tableId,
-                        DocumentType: props.docType,
+                        DocumentType: props.docType === "Performance Appraisal" ? "Performance Management" : props.docType,
                         FileName: fileName,
                         FileExtension: fileExtension,
                         fileContentType: getContentTypeFromBase64(base64Data),

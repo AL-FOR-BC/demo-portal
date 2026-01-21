@@ -74,6 +74,10 @@ interface ActionsFormatterLinesProps {
   ) => Promise<any>;
   populateData: () => void;
   handleDeleteLine: (row: { systemId: string | number }) => void;
+  currentUserEmployeeNo?: string;
+  indictedEmployeeNo?: string;
+  status?: string;
+  sendGrievanceTo?: string;
 }
 export const ActionFormatter: React.FC<ActionFormatterProps> = ({
   cellContent,
@@ -90,7 +94,13 @@ export const ActionFormatter: React.FC<ActionFormatterProps> = ({
     if (onClick) {
       onClick(row); // Use the custom onClick handler if provided
     } else if (pageType === "" && navigateTo) {
-      navigate(row.systemId ? `${navigateTo}/${row.systemId}` : row.SystemId ? `${navigateTo}/${row.SystemId}` : `${navigateTo}`); // Default navigation behavior
+      navigate(
+        row.systemId
+          ? `${navigateTo}/${row.systemId}`
+          : row.SystemId
+          ? `${navigateTo}/${row.SystemId}`
+          : `${navigateTo}`
+      ); // Default navigation behavior
     } else if (pageType === "approval" && navigateTo) {
       console.log("navigateTo:", `${navigateTo}/${row.DocumentNo}`);
       navigate(`${navigateTo}`);
@@ -152,6 +162,10 @@ export const ActionFormatterLines: React.FC<ActionsFormatterLinesProps> = ({
   apiHandler,
   companyId,
   populateData,
+  currentUserEmployeeNo,
+  indictedEmployeeNo,
+  status,
+  sendGrievanceTo,
 }) => {
   const handleDeleteLine = async () => {
     if (!row) {
@@ -189,6 +203,48 @@ export const ActionFormatterLines: React.FC<ActionsFormatterLinesProps> = ({
       }
     });
   };
+
+  // Determine if buttons should be shown based on entry type and user permissions
+  const shouldShowButtons = () => {
+    // Always show buttons if status is "Open"
+    if (status === "Open") {
+      return true;
+    }
+
+    // If status is "Submitted to Employee", show buttons based on user role and entry type
+    if (status === "Submitted to Employee") {
+      // If current user is the indicted employee, only show buttons for "Employee Response" entries
+      if (
+        currentUserEmployeeNo === indictedEmployeeNo &&
+        row.entryType === "Employee Response"
+      ) {
+        return true;
+      }
+
+      // If current user is in sendGrievanceTo field, show buttons for their own entries
+      if (
+        currentUserEmployeeNo === sendGrievanceTo &&
+        (row.entryType === "Findings" ||
+          row.entryType === "Recommendations" ||
+          row.entryType === "Employee Response")
+      ) {
+        return true;
+      }
+    }
+
+    // For IPA documents, show buttons only when status is "Open"
+    if (status === "Open") {
+      return true;
+    }
+
+    return false;
+  };
+
+  // Don't render buttons if conditions are not met
+  if (!shouldShowButtons()) {
+    return null;
+  }
+
   return (
     <div className="d-flex gap-3">
       <Link

@@ -950,7 +950,7 @@ export const usePA = ({
     }
   };
 
-  const submitPA = async (systemId: string) => {
+  const submitPA = async (systemId?: string) => {
     const swalResponse = await Swal.fire({
       title: "Are you sure?",
       text: "You want to submit this PA?",
@@ -977,7 +977,9 @@ export const usePA = ({
 
       if (apiResponse.status === 200) {
         toast.success("Performance Appraisal has been submitted for approval.");
-        populateDocumentDetail(systemId);
+        if (systemId) {
+          populateDocumentDetail(systemId);
+        }
       }
     } catch (error) {
       toast.error(

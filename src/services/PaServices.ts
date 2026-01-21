@@ -4,7 +4,7 @@ import {
   PartialPALineFormData,
   PartialPAFormData,
 } from "../@types/pa.dto";
-import {  BaseApiService } from "./base/BaseApiService";
+import { BaseApiService } from "./base/BaseApiService";
 import BcApiService from "./BcApiServices";
 
 class PaService extends BaseApiService {
@@ -85,6 +85,53 @@ class PaService extends BaseApiService {
       data,
       type: "approval",
       customEndpoint: "HRMISActions_SendToAppraiser",
+    });
+  }
+
+  async sendToHeadOfDepartment(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_SendToHeadOfDepartment",
+    });
+  }
+
+  async sendBackToAppraisee(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_SendBackToAppraisee",
+    });
+  }
+
+  async sendBackToAppraiser(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_SendBackToAppraiser",
+    });
+  }
+
+  async submitPA(companyId: string, data: { no: string }) {
+    return this.create<{ no: string }>({
+      companyId,
+      data,
+      type: "approval",
+      customEndpoint: "HRMISActions_SubmitPerformanceAppraisal",
+    });
+  }
+
+  async printPA(companyId: string, no: string) {
+    return this.create<any>({
+      companyId,
+      data: {
+        no: no,
+      },
+      type: "approval",
+      customEndpoint: "HRMISActions_PrintPerformanceAppraisal",
     });
   }
 }

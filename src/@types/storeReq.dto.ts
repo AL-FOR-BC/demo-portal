@@ -18,7 +18,7 @@ export interface StoreRequestSubmitData {
   locationCode: string;
   transferTo?: string; // Optional for TransferOrder
   transitCode?: string; // Optional for TransferOrder
-  projectCode?: string; // Optional Department
+  projectCode?: string; // Optional project code
   storeRequestline?: StoreRequestLineType[];
 }
 

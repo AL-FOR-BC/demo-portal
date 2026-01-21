@@ -6,6 +6,7 @@ import {
 import {
   LeavePlanResponse,
   LeavePlanResponseSingle,
+  LeavePlanLinesResponse,
   LeaveRequest,
 } from "../@types/leave.dto";
 import { BaseApiService } from "./base/BaseApiService";
@@ -166,7 +167,7 @@ export async function apiLeavePlanLines(
   filterQuery?: string
 ) {
   if (method === "PATCH" || method === "DELETE") {
-    return BcApiService.fetchData<LeavePlanResponse>({
+    return BcApiService.fetchData<LeavePlanLinesResponse>({
       url: `/api/hrpsolutions/hrmis/v2.0/LeavePlanLines(${systemId})?Company=${companyId}&${filterQuery}`,
       method,
       data,
@@ -176,7 +177,7 @@ export async function apiLeavePlanLines(
     });
   } else {
     console.log(method, data);
-    return BcApiService.fetchData<LeavePlanResponse>({
+    return BcApiService.fetchData<LeavePlanLinesResponse>({
       url: `/api/hrpsolutions/hrmis/v2.0/LeavePlanLines?Company=${companyId}&${filterQuery}`,
       method,
       data,

@@ -29,6 +29,7 @@ export interface PA {
   employeeNo: string;
   employeeName: string;
   appraiser: string;
+  headOfDepartment: string;
   departmentCode: string;
   postingDate: string;
   status: string;
@@ -36,61 +37,23 @@ export interface PA {
   appraisalCycle: string;
   performanceYear: number;
   appraisalType: string;
-  stage: "Performance Planning" | "Appraisee Rating" | "Appraiser Rating" | "Closed" | "Cancelled";
+  stage:
+    | "Performance Planning"
+    | "Appraisee Rating"
+    | "Appraiser Rating"
+    | "Head of Department Review"
+    | "Closed"
+    | "Cancelled";
   performanceAppraisalState: string;
   paLines: PALine[];
-}
-
-export interface PAFormData {
-  no?: string;
-  employeeNo: string;
-  appraiser: string;
-  departmentCode: string;
-  postingDate: string;
-  status: string;
-  appraisalPeriod: string;
-  appraisalType: string;
-  stage: "Performance Planning" | "Appraisee Rating" | "Appraiser Rating" | "Closed" | "Cancelled";
-  performanceAppraisalState: string;
-}
-
-export type PartialPAFormData = Partial<PAFormData>;
-
-export type PartialPALineFormData = Partial<PALineFormData>;
-
-// export
-export interface PAResponse {
-  "@odata.context": string;
-  value: PA[];
-}
-
-export interface PALineResponse {
-  "@odata.context": string;
-  value: PALine[];
-}
-
-// Enums for fixed values
-export enum AppraisalPeriod {
-  MID_YEAR = "Mid-Year Appraisal",
-  FULL_YEAR = "Full-Year Appraisal",
-  PROBATION = "Probation Appraisal",
-}
-
-export enum AppraisalCycle {
-  FIRST = "1st Cycle",
-  SECOND = "2nd Cycle",
-  THIRD = "3rd Cycle",
-  FOURTH = "4th Cycle",
-}
-
-export enum AppraisalType {
-  PA = "Performance Appraisal",
-}
-
-export enum Stage {
-  APPRAISEE_RATING = "Appraisee Rating",
-  SUPERVISOR_RATING = "Supervisor Rating",
-  COMPLETED = "Completed",
+  employeeComments?: string;
+  lineManagerComments?: string;
+  headOfDepartmentComments?: string;
+  hrActionPoint?: string;
+  headOfDepartmentNames?: string;
+  peerEvaluationGeneralComment?: string;
+  subordinateEvaluationGeneralComment?: string;
+  overallRating?: string;
 }
 
 // Form data interface for the PA document
@@ -98,6 +61,7 @@ export interface PAFormData {
   no?: string;
   employeeNo: string;
   appraiser: string;
+  headOfDepartment: string;
   departmentCode: string;
   postingDate: string;
   status: string;
@@ -109,10 +73,33 @@ export interface PAFormData {
     | "Performance Planning"
     | "Appraisee Rating"
     | "Appraiser Rating"
+    | "Head of Department Review"
     | "Closed"
     | "Cancelled";
   performanceAppraisalState: string;
   systemId?: string;
+  employeeComments?: string;
+  lineManagerComments?: string;
+  headOfDepartmentComments?: string;
+  hrActionPoint?: string;
+  peerEvaluationGeneralComment?: string;
+  subordinateEvaluationGeneralComment?: string;
+  overallRating?: string;
+  "@odata.etag"?: string;
+  // Assessment Score Fields
+  selfAssessmentPerformanceScore?: number;
+  selfAssessmentBehaviorScore?: number;
+  peerAssessmentScore?: number;
+  subordinatesAssessmentScore?: number;
+  lineManagerAssessmentScore?: number;
+  // Assessment Actual Fields
+  selfAssessmentPerformanceActual?: number;
+  selfAssessmentBehaviorActual?: number;
+  peerAssessmentActual?: number;
+  subordinatesAssessmentActual?: number;
+  lineManagerAssessmentActual?: number;
+  // Total Score Field
+  totalScore?: number;
 }
 
 // Form data interface for PA lines
@@ -135,6 +122,47 @@ export interface PALineFormData {
   appraiserRating?: number;
   agreedScore?: number;
   agreedActionsInterventions?: string;
+  overallRating?: string;
+}
+
+export type PartialPAFormData = Partial<PAFormData>;
+
+export type PartialPALineFormData = Partial<PALineFormData>;
+
+// API Response types
+export interface PAResponse {
+  "@odata.context": string;
+  value: PA[];
+}
+
+export interface PALineResponse {
+  "@odata.context": string;
+  value: PALine[];
+}
+
+// Enums for fixed values
+export enum AppraisalPeriod {
+  MID_YEAR = "Mid-Year Appraisal",
+  FULL_YEAR = "Annual Appraisal",
+  PROBATION = "Probation Appraisal",
+}
+
+export enum AppraisalCycle {
+  FIRST = "1st Cycle",
+  SECOND = "2nd Cycle",
+  THIRD = "3rd Cycle",
+  FOURTH = "4th Cycle",
+}
+
+export enum AppraisalType {
+  PA = "Performance Appraisal",
+}
+
+export enum Stage {
+  APPRAISEE_RATING = "Appraisee Rating",
+  SUPERVISOR_RATING = "Supervisor Rating",
+  HEAD_OF_DEPARTMENT_REVIEW = "Head of Department Review",
+  COMPLETED = "Completed",
 }
 
 // State interface for managing PA document state
@@ -176,3 +204,62 @@ export const initialPALineFormData: PALineFormData = {
   agreedScore: 0,
   agreedActionsInterventions: "",
 };
+
+// Peer Evaluation types
+export interface PeerEvaluation {
+  "@odata.etag": string;
+  systemId: string;
+  documentNo?: string;
+  attributeCode?: string;
+  keyEnablingAttribute?: string;
+  rating?: number;
+  comment?: string;
+  anySuggestion?: string;
+}
+
+export interface PeerEvaluationFormData {
+  documentNo?: string;
+  attributeCode?: string;
+  keyEnablingAttribute?: string;
+  rating?: number;
+  comment?: string;
+  anySuggestion?: string;
+}
+
+export type PartialPeerEvaluationFormData = Partial<PeerEvaluationFormData>;
+
+// Peer Evaluation Response
+export interface PeerEvaluationResponse {
+  "@odata.context": string;
+  value: PeerEvaluation[];
+}
+
+// Other Personal Traits types
+export interface OtherPersonalTrait {
+  "@odata.etag": string;
+  systemId: string;
+  documentNo?: string;
+  lineNo?: number;
+  traitCode?: string;
+  traitDescription?: string;
+  description?: string;
+  rating?: number;
+}
+
+export interface OtherPersonalTraitFormData {
+  documentNo?: string;
+  lineNo?: number;
+  traitCode?: string;
+  traitDescription?: string;
+  description?: string;
+  rating?: number;
+}
+
+export type PartialOtherPersonalTraitFormData =
+  Partial<OtherPersonalTraitFormData>;
+
+// Other Personal Traits Response
+export interface OtherPersonalTraitResponse {
+  "@odata.context": string;
+  value: OtherPersonalTrait[];
+}
