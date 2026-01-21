@@ -20,6 +20,7 @@ import {
   saveThemeColor,
   updateFavicon,
 } from "../../../utils/themeUtils";
+import { useSettings } from "../../../contexts/SettingsContext";
 import {
   clearSystemConfigSession,
   isSystemConfigSessionActive,
@@ -33,6 +34,7 @@ import {
   updateEnvironmentConfig,
   fetchProjectSetupConfig,
   updateProjectSetupConfig,
+  SetupSettingsConfig,
   fetchProjectSetups,
   updateProjectSetup,
   AppSetupConfig,
@@ -83,6 +85,7 @@ const defaultEnvironmentConfig: EnvironmentConfigPayload = {
 const SystemConfigPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { refreshSettings } = useSettings();
   const fileInputRef = useRef < HTMLInputElement | null > (null);
   const faviconInputRef = useRef < HTMLInputElement | null > (null);
 
@@ -294,7 +297,7 @@ const SystemConfigPage = () => {
   const handleSetupSubmit = async () => {
     try {
       setSavingSection("setup");
-      await updateProjectSetupConfig({
+      const response = await updateProjectSetupConfig({
         allowCompanyChange: setupSettings.allowCompanyChange,
         themeColor: setupSettings.themeColor,
         companyLogo: setupSettings.companyLogo,
@@ -302,7 +305,28 @@ const SystemConfigPage = () => {
         shortcutDimCode1: setupSettings.shortcutDimCode1,
         shortcutDimCode2: setupSettings.shortcutDimCode2,
       });
-      setInitialSetupSettings(setupSettings);
+      const responseData = response?.data as SetupSettingsConfig | undefined;
+      if (responseData) {
+        setSetupSettings((prev) => ({
+          ...prev,
+          ...responseData,
+          companyLogo: responseData.companyLogo ?? prev.companyLogo,
+          favicon: responseData.favicon ?? prev.favicon,
+          shortcutDimCode1: responseData.shortcutDimCode1 ?? prev.shortcutDimCode1,
+          shortcutDimCode2: responseData.shortcutDimCode2 ?? prev.shortcutDimCode2,
+        }));
+        setInitialSetupSettings((prev) => ({
+          ...prev,
+          ...responseData,
+          companyLogo: responseData.companyLogo ?? prev.companyLogo,
+          favicon: responseData.favicon ?? prev.favicon,
+          shortcutDimCode1: responseData.shortcutDimCode1 ?? prev.shortcutDimCode1,
+          shortcutDimCode2: responseData.shortcutDimCode2 ?? prev.shortcutDimCode2,
+        }));
+      } else {
+        setInitialSetupSettings(setupSettings);
+      }
+      await refreshSettings();
       toast.success("System settings updated");
     } catch (error) {
       console.error("Setup update error:", error);

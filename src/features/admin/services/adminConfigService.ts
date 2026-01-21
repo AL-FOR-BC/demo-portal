@@ -1,4 +1,5 @@
 import ApiService from "../../../services/ApiServices";
+import type { AxiosResponse } from "axios";
 
 export type AppSetupConfig = {
   setupId?: number;
@@ -84,30 +85,34 @@ export const updateEnvironmentConfig = (payload: EnvironmentConfigPayload) => {
   });
 };
 
+export type SetupSettingsConfig = {
+  id: string;
+  themeColor: string;
+  companyLogo: string | null;
+  favicon: string | null;
+  allowCompanyChange: boolean;
+  shortcutDimCode1?: string | null;
+  shortcutDimCode2?: string | null;
+};
+
 export const fetchProjectSetupConfig = () => {
-  return ApiService.fetchData<{
-    id: string;
-    themeColor: string;
-    companyLogo: string | null;
-    favicon: string | null;
-    allowCompanyChange: boolean;
-    shortcutDimCode1?: string | null;
-    shortcutDimCode2?: string | null;
-  }>({
+  return ApiService.fetchData<SetupSettingsConfig>({
     url: "/api/admin/settings",
     method: "get",
   });
 };
 
-export const updateProjectSetupConfig = (payload: {
+export const updateProjectSetupConfig = (
+  payload: {
   allowCompanyChange: boolean;
   themeColor?: string;
   companyLogo?: string | null;
   favicon?: string | null;
   shortcutDimCode1?: string | null;
   shortcutDimCode2?: string | null;
-}) => {
-  return ApiService.fetchData({
+  }
+): Promise<AxiosResponse<SetupSettingsConfig>> => {
+  return ApiService.fetchData<SetupSettingsConfig>({
     url: "/api/admin/settings",
     method: "put",
     data: payload,
