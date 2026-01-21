@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -9,6 +9,8 @@ import {
   IconButton,
   Tooltip,
   Paper,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import {
   ChevronLeft,
@@ -32,24 +34,14 @@ import {
 } from "date-fns";
 import BreadCrumbs from "../../../Components/BreadCrumbs";
 import { useSettings } from "../../../contexts/SettingsContext";
-
-// Types for leave data
-interface LeaveDay {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  leaveType:
-    | "annual"
-    | "sick"
-    | "personal"
-    | "maternity"
-    | "paternity"
-    | "other";
-  startDate: Date;
-  endDate: Date;
-  status: "approved" | "pending" | "rejected";
-  notes?: string;
-}
+import { useAppSelector } from "../../../store/hook";
+import { apiLeavePlanLines } from "../../../services/LeaveServices";
+import {
+  transformLeavePlanLinesToLeaveDays,
+  LeaveDay,
+} from "../../../utils/leaveUtils";
+import { getErrorMessage } from "../../../utils/common";
+import { toast } from "react-toastify";
 
 interface LeaveCalendarViewProps {
   leaveData?: LeaveDay[];
@@ -68,15 +60,69 @@ const LEAVE_TYPES = {
 };
 
 const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({
-  leaveData = [],
+  leaveData: propLeaveData,
   onDayClick,
   onLeaveClick,
 }) => {
   const { settings } = useSettings();
   const { themeColor } = settings;
+  const { companyId } = useAppSelector((state) => state.auth.session);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [leaveData, setLeaveData] = useState<LeaveDay[]>(propLeaveData || []);
+  const [isLoading, setIsLoading] = useState(!propLeaveData);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch leave plan lines from API
+  useEffect(() => {
+    const fetchLeavePlanLines = async () => {
+      // If leaveData is provided as prop, don't fetch
+      if (propLeaveData) {
+        setLeaveData(propLeaveData);
+        return;
+      }
+
+      if (!companyId) {
+        setError("Company ID is required");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Fetch all leave plan lines
+        const response = await apiLeavePlanLines(companyId, "GET");
+        
+        if (response.data?.value && Array.isArray(response.data.value)) {
+          // Handle direct LeavePlanLines response (value is array of LeavePlanLine)
+          const transformedData = transformLeavePlanLinesToLeaveDays(
+            response.data.value
+          );
+          setLeaveData(transformedData);
+        } else if (Array.isArray(response.data)) {
+          // Handle case where response.data is directly an array
+          const transformedData = transformLeavePlanLinesToLeaveDays(
+            response.data
+          );
+          setLeaveData(transformedData);
+        } else {
+          setLeaveData([]);
+        }
+      } catch (err) {
+        const errorMessage = getErrorMessage(err);
+        setError(errorMessage);
+        toast.error(`Error fetching leave plan lines: ${errorMessage}`);
+        console.error("Error fetching leave plan lines:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLeavePlanLines();
+  }, [companyId, propLeaveData]);
 
   // Generate calendar days for current month
   const calendarDays = useMemo(() => {
@@ -137,40 +183,95 @@ const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({
     const pendingLeaves = leaves.filter((leave) => leave.status === "pending");
 
     return (
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mt: 0.5 }}>
-        {approvedLeaves.slice(0, 2).map((leave, _) => (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75, mt: 0.75, width: "100%" }}>
+        {approvedLeaves.slice(0, 3).map((leave, _) => (
           <Box
             key={leave.id}
             sx={{
-              height: 4,
+              height: 8,
+              width: "100%",
               borderRadius: 1,
               backgroundColor: LEAVE_TYPES[leave.leaveType].color,
               cursor: "pointer",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+              "&:hover": {
+                opacity: 0.8,
+                transform: "scaleY(1.1)",
+              },
             }}
             onClick={(e) => handleLeaveClick(leave, e)}
           />
         ))}
-        {approvedLeaves.length > 2 && (
+        {approvedLeaves.length > 3 && (
           <Typography
             variant="caption"
-            sx={{ fontSize: "0.6rem", color: "text.secondary" }}
+            sx={{ fontSize: "0.65rem", color: "text.secondary", fontWeight: 500 }}
           >
-            +{approvedLeaves.length - 2} more
+            +{approvedLeaves.length - 3} more
           </Typography>
         )}
         {pendingLeaves.length > 0 && (
           <Box
             sx={{
-              height: 4,
+              height: 8,
+              width: "100%",
               borderRadius: 1,
               backgroundColor: "#ff9800",
-              opacity: 0.6,
+              opacity: 0.8,
+              boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
             }}
           />
         )}
       </Box>
     );
   };
+
+  if (isLoading) {
+    return (
+      <>
+        <div style={{ padding: "20px 24px" }}>
+          <Typography variant="h6" sx={{ mb: 3, color: "#666" }}>
+            Leave Calendar
+          </Typography>
+          <BreadCrumbs
+            title="Leave Calendar"
+            subTitle="View and manage employee leave schedules"
+            breadcrumbItem="Leave Calendar"
+          />
+        </div>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "400px",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <div style={{ padding: "20px 24px" }}>
+          <Typography variant="h6" sx={{ mb: 3, color: "#666" }}>
+            Leave Calendar
+          </Typography>
+          <BreadCrumbs
+            title="Leave Calendar"
+            subTitle="View and manage employee leave schedules"
+            breadcrumbItem="Leave Calendar"
+          />
+        </div>
+        <Box sx={{ px: 3, pb: 3 }}>
+          <Alert severity="error">{error}</Alert>
+        </Box>
+      </>
+    );
+  }
 
   return (
     <>
@@ -429,8 +530,9 @@ const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({
                           >
                             {format(new Date(leave.startDate), "MMM d")} -{" "}
                             {format(new Date(leave.endDate), "MMM d, yyyy")}
+                            {leave.quantity && ` (${leave.quantity} days)`}
                           </Typography>
-                          {leave.notes && (
+                          {(leave.notes || leave.description) && (
                             <Typography
                               variant="caption"
                               sx={{
@@ -439,7 +541,7 @@ const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({
                                 fontStyle: "italic",
                               }}
                             >
-                              {leave.notes}
+                              {leave.notes || leave.description}
                             </Typography>
                           )}
                         </Paper>
@@ -456,33 +558,6 @@ const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({
                   Click on any date to view leave details.
                 </Typography>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Leave Type Legend */}
-          <Card sx={{ mt: 2 }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Leave Types
-              </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                {Object.entries(LEAVE_TYPES).map(([key, config]) => (
-                  <Box
-                    key={key}
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  >
-                    <Box
-                      sx={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: 1,
-                        backgroundColor: config.color,
-                      }}
-                    />
-                    <Typography variant="body2">{config.label}</Typography>
-                  </Box>
-                ))}
-              </Box>
             </CardContent>
           </Card>
         </Grid>

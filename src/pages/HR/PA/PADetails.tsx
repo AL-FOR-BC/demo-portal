@@ -6,14 +6,35 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 import { useAppSelector } from "../../../store/hook";
+import { useAppSelector as useAppSelectorAuth } from "../../../store/hook";
 import { apiPALInes } from "../../../services/PaServices";
 
 import PerformanceAppraisalLines from "../../../Components/ui/Lines/PerformanceAppraisalLines";
-import { Collapse, Paper, Box, IconButton, Button } from "@mui/material";
+import {
+  Collapse,
+  Paper,
+  Box,
+  IconButton,
+  Button,
+  Dialog,
+
+  // DialogTitle,
+  DialogContent,
+  // Table,
+  // TableBody,
+  // TableCell,
+  // TableContainer,
+  // TableHead,
+  // TableRow,
+} from "@mui/material";
+import InfoIcon from "@mui/icons-material/Info";
+import { Row, Col, Input, Label } from "reactstrap";
 
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import ModelMui from "../../../Components/ui/ModelMui/ModelMui";
 import React from "react";
+import Swal from "sweetalert2";
 import { useAspirations } from "./hooks/useAspirations";
 import { useQuestionQ1 } from "./hooks/useQuestionQ1";
 import { useQuestionQ2 } from "./hooks/useQuestionQ2";
@@ -23,37 +44,76 @@ import { useLanguageSkills } from "./hooks/useLanguageSkills";
 import { useCareerMoveOptions } from "./hooks/useCareerMoveOptions";
 import { useSkillsWorkCompetencyAreas } from "./hooks/useSkillsWorkCompetencyAreas";
 import { useBehaviorsPersonalStyle } from "./hooks/useBehaviorsPersonalStyle";
+import { useSubordinatesEvaluation } from "./hooks/useSubordinatesEvaluation";
+import { usePeerEvaluation } from "./hooks/usePeerEvaluation";
+import { useSubordinateStrengthsWeaknesses } from "./hooks/useSubordinateStrengthsWeaknesses";
+import { usePeerStrengthsWeaknesses } from "./hooks/usePeerStrengthsWeaknesses";
+import { useTrainingNeedsIdentified } from "./hooks/useTrainingNeedsIdentified";
 import { updateQuestionQ1 } from "../../../services/QuestionQ1Service";
 import {
   updateQuestionQ2,
   createQuestionQ2,
+  deleteQuestionQ2,
 } from "../../../services/QuestionQ2Service";
 import {
   updateAspirations,
   createAspirations,
+  deleteAspirations,
 } from "../../../services/AspirationsService";
 import {
   updateQuestionQ3,
   createQuestionQ3,
+  deleteQuestionQ3,
 } from "../../../services/QuestionQ3Service";
 import { updateMobilityPreference } from "../../../services/MobilityPreferenceService";
 import {
   updateLanguageSkills,
   createLanguageSkills,
+  deleteLanguageSkills,
 } from "../../../services/LanguageSkillsService";
 import {
   updateCareerMoveOptions,
   createCareerMoveOptions,
+  deleteCareerMoveOptions,
 } from "../../../services/CareerMoveOptionsService";
 import { updateSkillsWorkCompetencyAreas } from "../../../services/SkillsWorkCompetencyAreasService";
 import { updateBehaviorsPersonalStyle } from "../../../services/BehaviorsPersonalStyleService";
+import { subordinatesEvaluationService } from "../../../services/SubordinatesEvaluationService";
+// import { peerEvaluationService } from "../../../services/PeerEvaluationService";
 import SectionHeader from "../../../Components/ui/SectionHeader";
 import { getErrorMessage } from "../../../utils/common";
+import { peerEvaluationService } from "../../../services/PeerEvaluationService";
+import { subordinateStrengthsWeaknessesService } from "../../../services/SubordinateStrengthsWeaknessesService";
+import { peerStrengthsWeaknessesService } from "../../../services/PeerStrengthsWeaknessesService";
+import { trainingNeedsIdentifiedService } from "../../../services/TrainingNeedsIdentifiedService";
+import { otherPersonalTraitsService } from "../../../services/OtherPersonalTraitsService";
 
 function PADetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // Helper function to check if editing should be disabled
+  const isEditingDisabled = (allowedStage: string, allowedUser?: string) => {
+    if (formData.stage === "Head of Department Review") {
+      // Special case: Head of Department can edit their comments and HR Action Point
+      if (
+        allowedStage === "Head of Department Review" &&
+        formData.headOfDepartment === employeeNo
+      ) {
+        return false; // Allow Head of Department to edit during their review
+      }
+      return true; // Disabled for everyone else during Head of Department Review
+    }
+    if (allowedUser && currentUser !== allowedUser) {
+      return true; // Disabled if user doesn't match
+    }
+    return formData.stage !== allowedStage; // Disabled if stage doesn't match
+  };
+
   const { companyId } = useAppSelector((state) => state.auth.session);
+  const { employeeNo: currentUserEmployeeNo } = useAppSelectorAuth(
+    (state) => state.auth.user
+  );
   const [currentUser, setCurrentUser] = useState<"Appraisee" | "Appraiser">(
     "Appraisee"
   );
@@ -65,12 +125,20 @@ function PADetails() {
     deletePA,
     sendPAForApproval,
     sendToAppraiser,
+    sendToHeadOfDepartment,
+    sendBackToAppraisee,
     cancelPAApprovalRequest,
+    handleInputChange,
+    handleFieldUpdate,
+    sendBackToAppraiser,
+    submitPA,
+    state,
+    printPA,
   } = usePA({ mode: "detail" });
 
   useEffect(() => {
     const currentUser =
-      formData.appraiser === employeeNo ? "Appraiser" : "Appraisee";
+      formData.appraiser === currentUserEmployeeNo ? "Appraiser" : "Appraisee";
     setCurrentUser(currentUser);
   }, [formData.stage]);
   console.log("formData", formData);
@@ -114,18 +182,18 @@ function PADetails() {
             sort: true,
           },
           {
-            dataField: "appraiseeScore",
-            text: "Appraisee Score",
+            dataField: "appraiserLimitingFactors",
+            text: "Appraiser Limiting Factors",
+            sort: true,
+          },
+          {
+            dataField: "appraiserSuggestions",
+            text: "Appraiser Suggestions",
             sort: true,
           },
           {
             dataField: "appraiserRating",
             text: "Appraiser Rating",
-            sort: true,
-          },
-          {
-            dataField: "agreedScore",
-            text: "Agreed Score",
             sort: true,
           },
           formData.status === "Open" && {
@@ -141,8 +209,17 @@ function PADetails() {
                     e.stopPropagation(); // Prevent row click event
                     handleEditClick(row, "paLines");
                   }}
+                  disabled={formData.stage === "Head of Department Review"}
                 >
-                  <EditIcon fontSize="small" sx={{ color: "#1976d2" }} />
+                  <EditIcon
+                    fontSize="small"
+                    sx={{
+                      color:
+                        formData.stage === "Head of Department Review"
+                          ? "#ccc"
+                          : "#1976d2",
+                    }}
+                  />
                 </IconButton>
               );
             },
@@ -185,8 +262,13 @@ function PADetails() {
             sort: true,
           },
           {
-            dataField: "appraiseeScore",
-            text: "Appraisee Score",
+            dataField: "appraiserLimitingFactors",
+            text: "Appraiser Limiting Factors",
+            sort: true,
+          },
+          {
+            dataField: "appraiserSuggestions",
+            text: "Appraiser Suggestions",
             sort: true,
           },
           {
@@ -194,16 +276,10 @@ function PADetails() {
             text: "Appraiser Rating",
             sort: true,
           },
-          {
-            dataField: "agreedScore",
-            text: "Agreed Score",
-            sort: true,
-          },
         ];
 
- 
-
   const [modalOpen, setModalOpen] = React.useState(false);
+  const [gradingDialogOpen, setGradingDialogOpen] = React.useState(false);
   const [modalFields, setModalFields] = React.useState<any[]>([]);
   const [editRow, setEditRow] = React.useState<any | null>(null);
   const [editData, setEditData] = React.useState<any>({});
@@ -245,7 +321,7 @@ function PADetails() {
               handleEditChange("description", newValue);
             },
             id: "description",
-            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            disabled: isEditingDisabled("Appraisee Rating"),
             rows: 4,
           },
         ];
@@ -273,7 +349,7 @@ function PADetails() {
               handleEditChange("element", newValue);
             },
             id: "element",
-            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            disabled: isEditingDisabled("Appraisee Rating"),
           },
           {
             label: "What Do You Think Causes The Difficulty",
@@ -284,7 +360,7 @@ function PADetails() {
               handleEditChange("whatDoYouThinkCausesTheDifficulty", newValue);
             },
             id: "whatDoYouThinkCausesTheDifficulty",
-            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            disabled: isEditingDisabled("Appraisee Rating"),
             rows: 3,
           },
         ];
@@ -312,7 +388,7 @@ function PADetails() {
               handleEditChange("description", newValue);
             },
             id: "description",
-            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            disabled: isEditingDisabled("Appraisee Rating"),
             rows: 3,
           },
           {
@@ -324,7 +400,7 @@ function PADetails() {
               handleEditChange("byWhen", newValue);
             },
             id: "byWhen",
-            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            disabled: isEditingDisabled("Appraisee Rating"),
           },
         ];
         break;
@@ -423,14 +499,26 @@ function PADetails() {
           },
           {
             label: "Proficiency",
-            type: "text",
-            value: row.proficiency || "",
+            type: "select",
+            value: row.proficiency
+              ? {
+                  value: row.proficiency,
+                  label: row.proficiency,
+                }
+              : { value: "", label: "Select proficiency" },
             onChange: (e: any) => {
-              const newValue = e.target ? e.target.value : e;
+              const newValue = e?.value || e;
               handleEditChange("proficiency", newValue);
             },
             id: "proficiency",
             disabled: formData.stage === "Appraisee Rating" ? false : true,
+            options: [
+              { value: "", label: "Select proficiency" },
+              { value: "Native speaker", label: "Native speaker" },
+              { value: "Fluent", label: "Fluent" },
+              { value: "Advanced", label: "Advanced" },
+              { value: "Basic", label: "Basic" },
+            ],
           },
         ];
         break;
@@ -447,19 +535,30 @@ function PADetails() {
               handleEditChange("option", newValue);
             },
             id: "option",
-            disabled: false,
+            disabled: formData.stage !== "Appraisee Rating",
           },
           {
             label: "Possible Timing",
-            type: "textarea",
-            rows: 3,
-            value: row.possibleTiming || "",
+            type: "select",
+            value: row.possibleTiming
+              ? {
+                  value: row.possibleTiming,
+                  label: row.possibleTiming,
+                }
+              : { value: "", label: "Select timing" },
             onChange: (e: any) => {
-              const newValue = e.target ? e.target.value : e;
+              const newValue = e?.value || e;
               handleEditChange("possibleTiming", newValue);
             },
             id: "possibleTiming",
-            disabled: false,
+            disabled: formData.stage !== "Appraisee Rating",
+            options: [
+              { value: "", label: "Select timing" },
+              { value: "0-6 months", label: "0-6 months" },
+              { value: "6-12 months", label: "6-12 months" },
+              { value: "12-18 months", label: "12-18 months" },
+              { value: ">24 months", label: ">24 months" },
+            ],
           },
         ];
         break;
@@ -475,7 +574,10 @@ function PADetails() {
               handleEditChange("description", newValue);
             },
             id: "description",
-            disabled: true,
+            disabled: !(
+              formData.stage === "Appraisee Rating" &&
+              currentUser === "Appraisee"
+            ),
             rows: 3,
           },
           {
@@ -486,9 +588,9 @@ function PADetails() {
                   value: row.essentialOrDesirable,
                   label: row.essentialOrDesirable,
                 }
-              : "",
+              : null,
             onChange: (e: any) => {
-              const newValue = e.target ? e.target.value : e;
+              const newValue = e?.value || e;
               handleEditChange("essentialOrDesirable", newValue);
             },
             id: "essentialOrDesirable",
@@ -534,9 +636,10 @@ function PADetails() {
               handleEditChange("secondView", newValue);
             },
             id: "secondView",
-            disabled:
+            disabled: !(
               formData.stage === "Appraiser Rating" &&
-              currentUser === "Appraisee",
+              currentUser === "Appraiser"
+            ),
             inputProps: {
               max: 10,
               min: 0,
@@ -550,15 +653,16 @@ function PADetails() {
                   value: row.ed,
                   label: row.ed,
                 }
-              : "",
+              : null,
             onChange: (e: any) => {
               const newValue = e?.value || e;
               handleEditChange("ed", newValue);
             },
             id: "ed",
-            disabled:
+            disabled: !(
               formData.stage === "Appraiser Rating" &&
-              currentUser === "Appraisee",
+              currentUser === "Appraiser"
+            ),
             options: [
               {
                 value: "Essential",
@@ -584,7 +688,7 @@ function PADetails() {
               handleEditChange("description", newValue);
             },
             id: "description",
-            disabled: false,
+            disabled: true,
             rows: 3,
           },
           {
@@ -595,9 +699,9 @@ function PADetails() {
                   value: row.essentialOrDesirable,
                   label: row.essentialOrDesirable,
                 }
-              : "",
+              : null,
             onChange: (e: any) => {
-              const newValue = e.target ? e.target.value : e;
+              const newValue = e?.value || e;
               handleEditChange("essentialOrDesirable", newValue);
             },
             id: "essentialOrDesirable",
@@ -643,9 +747,10 @@ function PADetails() {
               handleEditChange("secondView", newValue);
             },
             id: "secondView",
-            disabled:
+            disabled: !(
               formData.stage === "Appraiser Rating" &&
-              currentUser === "Appraisee",
+              currentUser === "Appraiser"
+            ),
             inputProps: {
               max: 10,
               min: 0,
@@ -659,15 +764,16 @@ function PADetails() {
                   value: row.ed,
                   label: row.ed,
                 }
-              : "",
+              : null,
             onChange: (e: any) => {
               const newValue = e?.value || e;
               handleEditChange("ed", newValue);
             },
             id: "ed",
-            disabled:
+            disabled: !(
               formData.stage === "Appraiser Rating" &&
-              currentUser === "Appraisee",
+              currentUser === "Appraiser"
+            ),
             options: [
               {
                 value: "Essential",
@@ -678,6 +784,342 @@ function PADetails() {
                 label: "Desirable",
               },
             ],
+          },
+        ];
+        break;
+      case "subordinatesEvaluation":
+        setModalTitle("Edit Subordinates Evaluation");
+        fields = [
+          {
+            label: "Attribute Code",
+            type: "text",
+            value: row.attributeCode || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("attributeCode", newValue);
+            },
+            id: "attributeCode",
+            disabled: true,
+          },
+          {
+            label: "Key Enabling Attribute",
+            type: "text",
+            value: row.keyEnablingAttribute || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("keyEnablingAttribute", newValue);
+            },
+            id: "keyEnablingAttribute",
+            disabled: true,
+          },
+          {
+            label: "Rating (1-4)",
+            type: "number",
+            value: row.rating || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              // Allow empty value for backspace/delete operations
+              if (
+                newValue === "" ||
+                newValue === null ||
+                newValue === undefined
+              ) {
+                handleEditChange("rating", newValue);
+                return;
+              }
+              const numValue = Number(newValue);
+              if (numValue > 4 || numValue < 1) {
+                return;
+              }
+              handleEditChange("rating", newValue);
+            },
+            id: "rating",
+            disabled: !(
+              formData.stage === "Appraiser Rating" &&
+              currentUser === "Appraiser"
+            ),
+            inputProps: {
+              max: 4,
+              min: 1,
+              step: 0.1,
+            },
+          },
+          {
+            label: "Comment",
+            type: "textarea",
+            value: row.comment || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("comment", newValue);
+            },
+            id: "comment",
+            disabled: !(
+              formData.stage === "Appraiser Rating" &&
+              currentUser === "Appraiser"
+            ),
+            rows: 3,
+          },
+          {
+            label: "Any Suggestion",
+            type: "textarea",
+            value: row.anySuggestion || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("anySuggestion", newValue);
+            },
+            id: "anySuggestion",
+            disabled: !(
+              formData.stage === "Appraiser Rating" &&
+              currentUser === "Appraiser"
+            ),
+            rows: 3,
+          },
+        ];
+        break;
+      case "subordinateStrengthsWeaknesses":
+        setModalTitle("Edit Subordinate Strengths & Weaknesses");
+        fields = [
+          {
+            label: "Category",
+            type: "select",
+            value: row.category
+              ? { value: row.category, label: row.category }
+              : "",
+            onChange: (e: any) => {
+              const newValue = e?.value || e;
+              handleEditChange("category", newValue);
+            },
+            id: "category",
+            disabled: false,
+            options: [
+              { value: "Strength", label: "Strength" },
+              { value: "Weakness", label: "Weakness" },
+            ],
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: row.description || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "otherPersonalTraits":
+        setModalTitle("Edit Other Personal Traits");
+        fields = [
+          {
+            label: "Trait Description",
+            type: "text",
+            value: row.traitDescription || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("traitDescription", newValue);
+            },
+            id: "traitDescription",
+            disabled: true,
+          },
+
+          {
+            label: "Rating",
+            type: "number",
+            value: row.rating || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("rating", newValue);
+            },
+            id: "rating",
+            disabled: formData.stage === "Appraisee Rating" ? true : false,
+            min: 1,
+            max: 10,
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: row.description || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "trainingNeedsIdentified":
+        setModalTitle("Edit Training Needs Identified");
+        fields = [
+          {
+            label: "Skill Gap Need",
+            type: "text",
+            value: row.skillGapNeed || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("skillGapNeed", newValue);
+            },
+            id: "skillGapNeed",
+            disabled:
+              (currentUser === "Appraiser" ||
+                formData.headOfDepartment === employeeNo) &&
+              formData.stage === "Appraisee Rating",
+          },
+          {
+            label: "Type of Training",
+            type: "text",
+            value: row.typeOfTraining || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("typeOfTraining", newValue);
+            },
+            id: "typeOfTraining",
+            disabled:
+              (currentUser === "Appraiser" ||
+                formData.headOfDepartment === employeeNo) &&
+              formData.stage === "Appraisee Rating",
+          },
+          {
+            label: "Linkage to Performance",
+            type: "textarea",
+            value: row.linkageToPerformance || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("linkageToPerformance", newValue);
+            },
+            id: "linkageToPerformance",
+            disabled:
+              (currentUser === "Appraiser" ||
+                formData.headOfDepartment === employeeNo) &&
+              formData.stage === "Appraisee Rating",
+            rows: 3,
+          },
+        ];
+        break;
+      case "peerStrengthsWeaknesses":
+        setModalTitle("Edit Peer Strengths & Weaknesses");
+        fields = [
+          {
+            label: "Category",
+            type: "select",
+            value: row.category
+              ? { value: row.category, label: row.category }
+              : "",
+            onChange: (e: any) => {
+              const newValue = e?.value || e;
+              handleEditChange("category", newValue);
+            },
+            id: "category",
+            disabled: false,
+            options: [
+              { value: "Strength", label: "Strength" },
+              { value: "Weakness", label: "Weakness" },
+            ],
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: row.description || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "peerEvaluation":
+        setModalTitle("Edit Peer Evaluation");
+        fields = [
+          {
+            label: "Attribute Code",
+            type: "text",
+            value: row.attributeCode || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("attributeCode", newValue);
+            },
+            id: "attributeCode",
+            disabled: true,
+          },
+          {
+            label: "Key Enabling Attribute",
+            type: "text",
+            value: row.keyEnablingAttribute || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("keyEnablingAttribute", newValue);
+            },
+            id: "keyEnablingAttribute",
+            disabled: true,
+          },
+          {
+            label: "Rating (1-4)",
+            type: "number",
+            value: row.rating || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              // Allow empty value for backspace/delete operations
+              if (
+                newValue === "" ||
+                newValue === null ||
+                newValue === undefined
+              ) {
+                handleEditChange("rating", newValue);
+                return;
+              }
+              const numValue = Number(newValue);
+              if (numValue > 4 || numValue < 1) {
+                return;
+              }
+              handleEditChange("rating", newValue);
+            },
+            id: "rating",
+            disabled: !(
+              formData.stage === "Appraiser Rating" &&
+              currentUser === "Appraiser"
+            ),
+            inputProps: {
+              max: 4,
+              min: 1,
+              step: 0.1,
+            },
+          },
+          {
+            label: "Comment",
+            type: "textarea",
+            value: row.comment || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("comment", newValue);
+            },
+            id: "comment",
+            disabled: !(
+              formData.stage === "Appraiser Rating" &&
+              currentUser === "Appraiser"
+            ),
+            rows: 3,
+          },
+          {
+            label: "Any Suggestion",
+            type: "textarea",
+            value: row.anySuggestion || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("anySuggestion", newValue);
+            },
+            id: "anySuggestion",
+            disabled: !(
+              formData.stage === "Appraiser Rating" &&
+              currentUser === "Appraiser"
+            ),
+            rows: 3,
           },
         ];
         break;
@@ -755,7 +1197,7 @@ function PADetails() {
             rows: 3,
           },
           {
-            label: "Appraisee Rating",
+            label: "Appraisee Rating (1-4)",
             type: "text",
             inputProps: {
               max: 4,
@@ -777,20 +1219,31 @@ function PADetails() {
                 currentUser === "Appraisee"),
           },
           {
-            label: "Appraisee Score",
-            type: "number",
-            max: 4,
-            min: 1,
-            value: row.appraiseeScore || "",
+            label: "Appraiser Limiting Factors",
+            type: "textarea",
+            value: row.appraiserLimitingFactors || "",
             onChange: (e: any) => {
               const newValue = e.target ? e.target.value : e;
-              handleEditChange("appraiseeScore", newValue);
+              handleEditChange("appraiserLimitingFactors", newValue);
             },
-            id: "appraiseeScore",
-            disabled: true,
+            id: "appraiserLimitingFactors",
+            disabled: currentUser === "Appraisee",
+            rows: 3,
           },
           {
-            label: "Appraiser Rating",
+            label: "Appraiser Suggestions",
+            type: "textarea",
+            value: row.appraiserSuggestions || "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("appraiserSuggestions", newValue);
+            },
+            id: "appraiserSuggestions",
+            disabled: currentUser === "Appraisee",
+            rows: 3,
+          },
+          {
+            label: "Appraiser Rating (1-4)",
             type: "text",
             value: row.appraiserRating || "",
             onChange: (e: any) => {
@@ -799,17 +1252,6 @@ function PADetails() {
             },
             id: "appraiserRating",
             disabled: currentUser === "Appraisee",
-          },
-          {
-            label: "Agreed Score",
-            type: "number",
-            value: row.agreedScore || "",
-            onChange: (e: any) => {
-              const newValue = e.target ? e.target.value : e;
-              handleEditChange("agreedScore", newValue);
-            },
-            id: "agreedScore",
-            disabled: true,
           },
         ];
         break;
@@ -820,6 +1262,101 @@ function PADetails() {
 
     setModalFields([fields]);
     setModalOpen(true);
+  };
+
+  const handleDeleteClick = async (row: any, sectionType: string) => {
+    // Only allow delete for Appraisee users and not during Appraiser Rating stage
+    if (currentUser !== "Appraisee") {
+      toast.error("Only Appraisee can delete items");
+      return;
+    }
+
+    if (formData.stage === "Appraiser Rating") {
+      toast.error("Cannot delete items during Appraiser Rating stage");
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        // Handle delete based on section type
+        switch (sectionType) {
+          case "questionQ2":
+            // Delete questionQ2 line
+            await deleteQuestionQ2(companyId, row.systemId);
+            await refreshQuestionQ2();
+            toast.success("Question Q2 deleted successfully");
+            break;
+          case "questionQ3":
+            // Delete questionQ3 line
+            await deleteQuestionQ3(companyId, row.systemId);
+            await refreshQuestionQ3();
+            toast.success("Question Q3 deleted successfully");
+            break;
+          case "aspirations":
+            // Delete aspirations line
+            await deleteAspirations(companyId, row.systemId);
+            await refreshAspirations();
+            toast.success("Aspiration deleted successfully");
+            break;
+          case "languageSkills":
+            // Delete language skills line
+            await deleteLanguageSkills(companyId, row.systemId);
+            await refreshLanguageSkills();
+            toast.success("Language skill deleted successfully");
+            break;
+          case "careerMoveOptions":
+            // Delete career move options line
+            await deleteCareerMoveOptions(companyId, row.systemId);
+            await refreshCareerMoveOptions();
+            toast.success("Career move option deleted successfully");
+            break;
+          case "subordinateStrengthsWeaknesses":
+            // Delete subordinate strengths & weaknesses line
+            await subordinateStrengthsWeaknessesService.deleteSubordinateStrengthsWeaknesses(
+              companyId,
+              row.systemId
+            );
+            await refreshSubordinateStrengthsWeaknesses();
+            toast.success(
+              "Subordinate strengths & weaknesses deleted successfully"
+            );
+            break;
+          case "peerStrengthsWeaknesses":
+            // Delete peer strengths & weaknesses line
+            await peerStrengthsWeaknessesService.deletePeerStrengthsWeaknesses(
+              companyId,
+              row.systemId
+            );
+            await refreshPeerStrengthsWeaknesses();
+            toast.success("Peer strengths & weaknesses deleted successfully");
+            break;
+          case "trainingNeedsIdentified":
+            // Delete training needs identified line
+            await trainingNeedsIdentifiedService.deleteTrainingNeedsIdentified(
+              companyId,
+              row.systemId
+            );
+            await refreshTrainingNeedsIdentified();
+            toast.success("Training needs identified deleted successfully");
+            break;
+          default:
+            toast.error("Unknown section type");
+        }
+      } catch (error) {
+        toast.error("Error deleting item");
+        console.error("Delete error:", error);
+      }
+    }
   };
 
   const handleAddNew = (sectionType: string) => {
@@ -1001,14 +1538,21 @@ function PADetails() {
           },
           {
             label: "Proficiency",
-            type: "text",
-            value: "",
+            type: "select",
+            value: { value: "", label: "Select proficiency" },
             onChange: (e: any) => {
-              const newValue = e.target ? e.target.value : e;
+              const newValue = e?.value || e;
               handleEditChange("proficiency", newValue);
             },
             id: "proficiency",
             disabled: false,
+            options: [
+              { value: "", label: "Select proficiency" },
+              { value: "Native speaker", label: "Native speaker" },
+              { value: "Fluent", label: "Fluent" },
+              { value: "Advanced", label: "Advanced" },
+              { value: "Basic", label: "Basic" },
+            ],
           },
         ];
         break;
@@ -1024,18 +1568,325 @@ function PADetails() {
               handleEditChange("option", newValue);
             },
             id: "option",
-            disabled: false,
+            disabled: formData.stage !== "Appraisee Rating",
           },
           {
             label: "Possible Timing",
+            type: "select",
+            value: { value: "", label: "Select timing" },
+            onChange: (e: any) => {
+              const newValue = e?.value || e;
+              handleEditChange("possibleTiming", newValue);
+            },
+            id: "possibleTiming",
+            disabled: formData.stage !== "Appraisee Rating",
+            options: [
+              { value: "", label: "Select timing" },
+              { value: "0-6 months", label: "0-6 months" },
+              { value: "6-12 months", label: "6-12 months" },
+              { value: "12-18 months", label: "12-18 months" },
+              { value: ">24 months", label: ">24 months" },
+            ],
+          },
+        ];
+        break;
+      case "peerEvaluation":
+        setModalTitle("Add New Peer Evaluation");
+        fields = [
+          {
+            label: "Attribute Code",
             type: "text",
             value: "",
             onChange: (e: any) => {
               const newValue = e.target ? e.target.value : e;
-              handleEditChange("possibleTiming", newValue);
+              handleEditChange("attributeCode", newValue);
             },
-            id: "possibleTiming",
+            id: "attributeCode",
             disabled: false,
+          },
+          {
+            label: "Key Enabling Attribute",
+            type: "text",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("keyEnablingAttribute", newValue);
+            },
+            id: "keyEnablingAttribute",
+            disabled: false,
+          },
+          {
+            label: "Rating (1-4)",
+            type: "number",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              // Allow empty value for backspace/delete operations
+              if (
+                newValue === "" ||
+                newValue === null ||
+                newValue === undefined
+              ) {
+                handleEditChange("rating", newValue);
+                return;
+              }
+              const numValue = Number(newValue);
+              if (numValue > 4 || numValue < 1) {
+                return;
+              }
+              handleEditChange("rating", newValue);
+            },
+            id: "rating",
+            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            min: 1,
+            max: 4,
+            step: 0.1,
+          },
+          {
+            label: "Comment",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("comment", newValue);
+            },
+            id: "comment",
+            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            rows: 3,
+          },
+          {
+            label: "Any Suggestion",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("anySuggestion", newValue);
+            },
+            id: "anySuggestion",
+            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            rows: 3,
+          },
+        ];
+        break;
+      case "subordinateStrengthsWeaknesses":
+        setModalTitle("Add New Subordinate Strengths & Weaknesses");
+        fields = [
+          {
+            label: "Category",
+            type: "select",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e?.value || e;
+              handleEditChange("category", newValue);
+            },
+            id: "category",
+            disabled: false,
+            options: [
+              { value: "Strength", label: "Strength" },
+              { value: "Weakness", label: "Weakness" },
+            ],
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "trainingNeedsIdentified":
+        setModalTitle("Add New Training Needs Identified");
+        fields = [
+          {
+            label: "Skill Gap Need",
+            type: "text",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("skillGapNeed", newValue);
+            },
+            id: "skillGapNeed",
+            disabled: false,
+          },
+          {
+            label: "Type of Training",
+            type: "text",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("typeOfTraining", newValue);
+            },
+            id: "typeOfTraining",
+            disabled: false,
+          },
+          {
+            label: "Linkage to Performance",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("linkageToPerformance", newValue);
+            },
+            id: "linkageToPerformance",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "peerStrengthsWeaknesses":
+        setModalTitle("Add New Peer Strengths & Weaknesses");
+        fields = [
+          {
+            label: "Category",
+            type: "select",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e?.value || e;
+              handleEditChange("category", newValue);
+            },
+            id: "category",
+            disabled: false,
+            options: [
+              { value: "Strength", label: "Strength" },
+              { value: "Weakness", label: "Weakness" },
+            ],
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+        ];
+        break;
+      case "otherPersonalTraits":
+        setModalTitle("Edit Other Personal Traits");
+        fields = [
+          {
+            label: "Trait Description",
+            type: "text",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("traitDescription", newValue);
+            },
+            id: "traitDescription",
+            disabled: false,
+          },
+          {
+            label: "Description",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("description", newValue);
+            },
+            id: "description",
+            disabled: false,
+            rows: 3,
+          },
+          {
+            label: "Rating",
+            type: "number",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("rating", newValue);
+            },
+            id: "rating",
+            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            min: 1,
+            max: 4,
+          },
+        ];
+        break;
+      case "subordinatesEvaluation":
+        setModalTitle("Add New Subordinates Evaluation");
+        fields = [
+          {
+            label: "Attribute Code",
+            type: "text",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("attributeCode", newValue);
+            },
+            id: "attributeCode",
+            disabled: false,
+          },
+          {
+            label: "Key Enabling Attribute",
+            type: "text",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("keyEnablingAttribute", newValue);
+            },
+            id: "keyEnablingAttribute",
+            disabled: false,
+          },
+          {
+            label: "Rating (1-4)",
+            type: "number",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              // Allow empty value for backspace/delete operations
+              if (
+                newValue === "" ||
+                newValue === null ||
+                newValue === undefined
+              ) {
+                handleEditChange("rating", newValue);
+                return;
+              }
+              const numValue = Number(newValue);
+              if (numValue > 4 || numValue < 1) {
+                return;
+              }
+              handleEditChange("rating", newValue);
+            },
+            id: "rating",
+            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            min: 1,
+            max: 4,
+            step: 0.1,
+          },
+          {
+            label: "Comment",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("comment", newValue);
+            },
+            id: "comment",
+            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            rows: 3,
+          },
+          {
+            label: "Any Suggestion",
+            type: "textarea",
+            value: "",
+            onChange: (e: any) => {
+              const newValue = e.target ? e.target.value : e;
+              handleEditChange("anySuggestion", newValue);
+            },
+            id: "anySuggestion",
+            disabled: formData.stage === "Appraisee Rating" ? false : true,
+            rows: 3,
           },
         ];
         break;
@@ -1137,6 +1988,15 @@ function PADetails() {
           documentNo: formData.no,
         };
 
+        // For subordinate strengths & weaknesses, automatically set evaluationType to "Subordinate"
+        if (modalMode === "subordinateStrengthsWeaknesses") {
+          dataWithDocumentNo.evaluationType = "Subordinate";
+        }
+        // For peer strengths & weaknesses, automatically set evaluationType to "Peer"
+        if (modalMode === "peerStrengthsWeaknesses") {
+          dataWithDocumentNo.evaluationType = "Peer";
+        }
+
         switch (modalMode) {
           case "questionQ2":
             response = await createQuestionQ2(companyId, dataWithDocumentNo);
@@ -1159,6 +2019,41 @@ function PADetails() {
               dataWithDocumentNo
             );
             break;
+          case "peerEvaluation":
+            response = await peerEvaluationService.createPeerEvaluation(
+              companyId,
+              dataWithDocumentNo
+            );
+            break;
+          case "subordinatesEvaluation":
+            response =
+              await subordinatesEvaluationService.createSubordinatesEvaluation(
+                companyId,
+                dataWithDocumentNo
+              );
+            break;
+          case "subordinateStrengthsWeaknesses":
+            response =
+              await subordinateStrengthsWeaknessesService.createSubordinateStrengthsWeaknesses(
+                companyId,
+                dataWithDocumentNo
+              );
+            break;
+          case "peerStrengthsWeaknesses":
+            response =
+              await peerStrengthsWeaknessesService.createPeerStrengthsWeaknesses(
+                companyId,
+                dataWithDocumentNo
+              );
+            break;
+          case "trainingNeedsIdentified":
+            response =
+              await trainingNeedsIdentifiedService.createTrainingNeedsIdentified(
+                companyId,
+                dataWithDocumentNo
+              );
+            break;
+
           default:
             toast.error("Unknown section type for adding");
             return;
@@ -1186,6 +2081,21 @@ function PADetails() {
               break;
             case "careerMoveOptions":
               refreshCareerMoveOptions();
+              break;
+            case "peerEvaluation":
+              refreshPeerEvaluation();
+              break;
+            case "subordinatesEvaluation":
+              refreshSubordinatesEvaluation();
+              break;
+            case "subordinateStrengthsWeaknesses":
+              refreshSubordinateStrengthsWeaknesses();
+              break;
+            case "peerStrengthsWeaknesses":
+              refreshPeerStrengthsWeaknesses();
+              break;
+            case "trainingNeedsIdentified":
+              refreshTrainingNeedsIdentified();
               break;
           }
           handleModalClose();
@@ -1263,6 +2173,8 @@ function PADetails() {
             // For Appraiser Rating stage, submit only these fields
             paLineData = {
               appraiserRating: Number(editData.appraiserRating),
+              appraiserLimitingFactors: editData.appraiserLimitingFactors,
+              appraiserSuggestions: editData.appraiserSuggestions,
               // agreedScore: editData.agreedScore,
             };
           } else {
@@ -1272,6 +2184,8 @@ function PADetails() {
               limitingFactor: editData.limitingFactor,
               appraiseeRating: editData.appraiseeRating,
               appraiserRating: editData.appraiserRating,
+              appraiserLimitingFactors: editData.appraiserLimitingFactors,
+              appraiserSuggestions: editData.appraiserSuggestions,
               agreedScore: editData.agreedScore,
             };
           }
@@ -1369,6 +2283,86 @@ function PADetails() {
             processedEditData
           );
           break;
+        case "subordinatesEvaluation":
+          // Only include editable fields for subordinates evaluation
+          const subordinatesEvaluationData = {
+            rating:
+              processedEditData.rating === ""
+                ? undefined
+                : Number(processedEditData.rating),
+            comment: processedEditData.comment,
+            anySuggestion: processedEditData.anySuggestion,
+          };
+          response =
+            await subordinatesEvaluationService.updateSubordinatesEvaluation(
+              companyId,
+              subordinatesEvaluationData,
+              editRow.systemId,
+              editRow["@odata.etag"]
+            );
+          break;
+        case "peerEvaluation":
+          // Only include editable fields for peer evaluation
+          const peerEvaluationData = {
+            rating:
+              processedEditData.rating === ""
+                ? undefined
+                : Number(processedEditData.rating),
+            comment: processedEditData.comment,
+            anySuggestion: processedEditData.anySuggestion,
+          };
+          response = await peerEvaluationService.updatePeerEvaluation(
+            companyId,
+            peerEvaluationData,
+            editRow.systemId,
+            editRow["@odata.etag"]
+          );
+          break;
+        case "subordinateStrengthsWeaknesses":
+          // Automatically set evaluationType to "Subordinate" for updates
+          const updatedData = {
+            ...processedEditData,
+            evaluationType: "Subordinate",
+          };
+          response =
+            await subordinateStrengthsWeaknessesService.updateSubordinateStrengthsWeaknesses(
+              companyId,
+              updatedData,
+              editRow.systemId,
+              editRow["@odata.etag"]
+            );
+          break;
+        case "peerStrengthsWeaknesses":
+          // Automatically set evaluationType to "Peer" for updates
+          const peerUpdatedData = {
+            ...processedEditData,
+            evaluationType: "Peer",
+          };
+          response =
+            await peerStrengthsWeaknessesService.updatePeerStrengthsWeaknesses(
+              companyId,
+              peerUpdatedData,
+              editRow.systemId,
+              editRow["@odata.etag"]
+            );
+          break;
+        case "otherPersonalTraits":
+          response = await otherPersonalTraitsService.updateOtherPersonalTrait(
+            companyId,
+            processedEditData,
+            editRow.systemId,
+            editRow["@odata.etag"]
+          );
+          break;
+        case "trainingNeedsIdentified":
+          response =
+            await trainingNeedsIdentifiedService.updateTrainingNeedsIdentified(
+              companyId,
+              processedEditData,
+              editRow.systemId,
+              editRow["@odata.etag"]
+            );
+          break;
         default:
           toast.error("Unknown section type");
           return;
@@ -1409,6 +2403,24 @@ function PADetails() {
           case "behaviorsPersonalStyle":
             refreshBehaviorsPersonalStyle();
             break;
+          case "subordinatesEvaluation":
+            refreshSubordinatesEvaluation();
+            break;
+          case "peerEvaluation":
+            refreshPeerEvaluation();
+            break;
+          case "subordinateStrengthsWeaknesses":
+            refreshSubordinateStrengthsWeaknesses();
+            break;
+          case "peerStrengthsWeaknesses":
+            refreshPeerStrengthsWeaknesses();
+            break;
+          case "otherPersonalTraits":
+            fetchOtherPersonalTraits();
+            break;
+          case "trainingNeedsIdentified":
+            refreshTrainingNeedsIdentified();
+            break;
         }
         handleModalClose();
       } else {
@@ -1424,10 +2436,10 @@ function PADetails() {
   const [showQuestionQ1, setShowQuestionQ1] = React.useState(true);
   const [showQuestionQ2, setShowQuestionQ2] = React.useState(true);
   const [showAspirations, setShowAspirations] = React.useState(true);
-  const {
-    data: aspirationsData,
-    refresh: refreshAspirations,
-  } = useAspirations(companyId, formData.no);
+  const { data: aspirationsData, refresh: refreshAspirations } = useAspirations(
+    companyId,
+    formData.no
+  );
   const { data: questionQ1Data, refresh: refreshQuestionQ1 } = useQuestionQ1(
     companyId,
     formData.no
@@ -1448,6 +2460,20 @@ function PADetails() {
     React.useState(true);
   const [showBehaviorsPersonalStyle, setShowBehaviorsPersonalStyle] =
     React.useState(true);
+  const [showSubordinatesEvaluation, setShowSubordinatesEvaluation] =
+    React.useState(true);
+  const [showPeerEvaluation, setShowPeerEvaluation] = React.useState(true);
+  const [
+    showSubordinateStrengthsWeaknesses,
+    setShowSubordinateStrengthsWeaknesses,
+  ] = React.useState(true);
+  const [showPeerStrengthsWeaknesses, setShowPeerStrengthsWeaknesses] =
+    React.useState(true);
+  const [showOtherPersonalTraits, setShowOtherPersonalTraits] =
+    React.useState(true);
+  const [showTrainingNeedsIdentified, setShowTrainingNeedsIdentified] =
+    React.useState(true);
+  const [showSection3, setShowSection3] = React.useState(true);
 
   const { data: questionQ3Data, refresh: refreshQuestionQ3 } = useQuestionQ3(
     companyId,
@@ -1467,6 +2493,42 @@ function PADetails() {
     data: behaviorsPersonalStyleData,
     refresh: refreshBehaviorsPersonalStyle,
   } = useBehaviorsPersonalStyle(companyId, formData.no);
+  const {
+    data: subordinatesEvaluationData,
+    refresh: refreshSubordinatesEvaluation,
+  } = useSubordinatesEvaluation(companyId, formData.no);
+  const { data: peerEvaluationData, refresh: refreshPeerEvaluation } =
+    usePeerEvaluation(companyId, formData.no);
+  const {
+    data: subordinateStrengthsWeaknessesData,
+    refresh: refreshSubordinateStrengthsWeaknesses,
+  } = useSubordinateStrengthsWeaknesses(companyId, formData.no);
+  const {
+    data: peerStrengthsWeaknessesData,
+    refresh: refreshPeerStrengthsWeaknesses,
+  } = usePeerStrengthsWeaknesses(companyId, formData.no);
+  const {
+    data: trainingNeedsIdentifiedData,
+    refresh: refreshTrainingNeedsIdentified,
+  } = useTrainingNeedsIdentified(companyId, formData.no);
+  const [otherPersonalTraitsData, setOtherPersonalTraitsData] = React.useState<
+    any[]
+  >([]);
+
+  // Fetch Other Personal Traits data
+  const fetchOtherPersonalTraits = async () => {
+    if (!formData.no) return;
+    try {
+      const filterQuery = `$filter=documentNo eq '${formData.no}'`;
+      const response = await otherPersonalTraitsService.getOtherPersonalTraits(
+        companyId,
+        filterQuery
+      );
+      setOtherPersonalTraitsData(response || []);
+    } catch (error) {
+      console.error("Error fetching other personal traits:", error);
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -1474,20 +2536,31 @@ function PADetails() {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (formData.no) {
+      fetchOtherPersonalTraits();
+    }
+  }, [formData.no]);
+
   return (
     <>
       <HeaderMui
         title="PA Details"
         subtitle="Performance Appraisal"
         breadcrumbItem="Performance Appraisal"
-        handleBack={() => navigate("/performance-appraisal")}
+        handleBack={() => navigate(-1)}
         handleSubmit={() => {}}
         status={formData.status}
         stage={formData.stage}
         currentUser={
           formData.appraiser === employeeNo ? "Appraiser" : "Appraisee"
         }
-        isLoading={false}
+        headOfDepartment={
+          formData.headOfDepartment === employeeNo
+            ? "Head of Department"
+            : "Appraisee"
+        }
+        isLoading={state.isLoading}
         tableId={50452}
         companyId={companyId}
         requestNo={formData.no || ""}
@@ -1514,6 +2587,32 @@ function PADetails() {
             sendToAppraiser(id);
           }
         }}
+        handleSendToHeadOfDepartment={() => {
+          if (id) {
+            sendToHeadOfDepartment(id);
+          }
+        }}
+        handleSendBackToAppraisee={() => {
+          if (id) {
+            sendBackToAppraisee(id);
+          }
+        }}
+        handleSendBackToAppraiser={() => {
+          if (id) {
+            sendBackToAppraiser();
+          }
+        }}
+        handleSubmitPA={() => {
+          if (id) {
+            submitPA(id);
+          }
+        }}
+        onPrintClick={() => {
+          if (id) {
+            printPA(id);
+          }
+        }}
+        onGradingClick={() => setGradingDialogOpen(true)}
         lines={
           <>
             {/* <Lines
@@ -1532,18 +2631,36 @@ function PADetails() {
 
             <Paper
               sx={{
-                background: "#e9f0fb",
+                background: "transparent",
                 borderRadius: 0,
                 boxShadow: "none",
                 mb: 2,
                 p: 0,
               }}
             >
-              <SectionHeader
-                title="Section C: Performance Appraisal Lines"
-                open={showPALines}
-                onToggle={() => setShowPALines((prev) => !prev)}
-              />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <SectionHeader
+                  title="Section A: Performance Appraisal Lines <i style='font-size: 13px; color: #d32f2f;'>(1= Below average, 2=Fair, 3=Good, 4=Very Good)</i>"
+                  open={showPALines}
+                  onToggle={() => setShowPALines((prev) => !prev)}
+                />
+                <IconButton
+                  size="small"
+                  onClick={() => setGradingDialogOpen(true)}
+                  sx={{
+                    bgcolor: "#1976d2",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "#1565c0",
+                    },
+                    width: 24,
+                    height: 24,
+                    marginLeft: 1,
+                  }}
+                >
+                  <InfoIcon fontSize="small" />
+                </IconButton>
+              </Box>
               <Collapse in={showPALines}>
                 <Box px={0} pb={2}>
                   <PerformanceAppraisalLines
@@ -1571,7 +2688,7 @@ function PADetails() {
             </Paper>
             <Paper
               sx={{
-                background: "#e9f0fb",
+                background: "transparent",
                 borderRadius: 0,
                 boxShadow: "none",
                 mb: 2,
@@ -1579,7 +2696,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section D: Question:Q(1)"
+                title="Section B: Question:Q(1)"
                 open={showQuestionQ1}
                 onToggle={() => setShowQuestionQ1((prev) => !prev)}
               />
@@ -1601,10 +2718,18 @@ function PADetails() {
                           <IconButton
                             size="small"
                             onClick={() => handleEditClick(row, "questionQ1")}
+                            disabled={
+                              formData.stage === "Head of Department Review"
+                            }
                           >
                             <EditIcon
                               fontSize="small"
-                              sx={{ color: "#1976d2" }}
+                              sx={{
+                                color:
+                                  formData.stage === "Head of Department Review"
+                                    ? "#ccc"
+                                    : "#1976d2",
+                              }}
                             />
                           </IconButton>
                         ),
@@ -1618,7 +2743,7 @@ function PADetails() {
             </Paper>
             <Paper
               sx={{
-                background: "#e9f0fb",
+                background: "transparent",
                 borderRadius: 0,
                 boxShadow: "none",
                 mb: 4,
@@ -1626,18 +2751,21 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section E: Question:Q(2)"
+                title="Section C: Question:Q(2) What elements of your job do you find most difficult?"
                 open={showQuestionQ2}
                 onToggle={() => setShowQuestionQ2((prev) => !prev)}
                 action={
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleAddNew("questionQ2")}
-                    sx={{ mr: 1 }}
-                  >
-                    Add New
-                  </Button>
+                  formData.stage === "Appraisee Rating" &&
+                  currentUser === "Appraisee" ? (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAddNew("questionQ2")}
+                      sx={{ mr: 1 }}
+                    >
+                      Add New
+                    </Button>
+                  ) : null
                 }
               />
               <Collapse in={showQuestionQ2}>
@@ -1656,15 +2784,40 @@ function PADetails() {
                         dataField: "action",
                         text: "Action",
                         formatter: (_: any, row: any) => (
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEditClick(row, "questionQ2")}
-                          >
-                            <EditIcon
-                              fontSize="small"
-                              sx={{ color: "#1976d2" }}
-                            />
-                          </IconButton>
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEditClick(row, "questionQ2")}
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
+                            >
+                              <EditIcon
+                                fontSize="small"
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
+                              />
+                            </IconButton>
+                            {currentUser === "Appraisee" &&
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleDeleteClick(row, "questionQ2")
+                                  }
+                                  sx={{ color: "#d32f2f" }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                          </Box>
                         ),
                       },
                     ]}
@@ -1676,7 +2829,7 @@ function PADetails() {
             </Paper>
             <Paper
               sx={{
-                background: "#e9f0fb",
+                background: "transparent",
                 borderRadius: 0,
                 boxShadow: "none",
                 mb: 2,
@@ -1684,18 +2837,21 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section F: Question:Q(3)"
+                title="Section D: Question:Q(3) What do you consider to be your most important aims and tasks in the next year?"
                 open={showQuestionQ3}
                 onToggle={() => setShowQuestionQ3((prev) => !prev)}
                 action={
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleAddNew("questionQ3")}
-                    sx={{ mr: 1 }}
-                  >
-                    Add New
-                  </Button>
+                  formData.stage === "Appraisee Rating" &&
+                  currentUser === "Appraisee" ? (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAddNew("questionQ3")}
+                      sx={{ mr: 1 }}
+                    >
+                      Add New
+                    </Button>
+                  ) : null
                 }
               />
               <Collapse in={showQuestionQ3}>
@@ -1715,15 +2871,40 @@ function PADetails() {
                         dataField: "action",
                         text: "Action",
                         formatter: (_: any, row: any) => (
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEditClick(row, "questionQ3")}
-                          >
-                            <EditIcon
-                              fontSize="small"
-                              sx={{ color: "#1976d2" }}
-                            />
-                          </IconButton>
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEditClick(row, "questionQ3")}
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
+                            >
+                              <EditIcon
+                                fontSize="small"
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
+                              />
+                            </IconButton>
+                            {currentUser === "Appraisee" &&
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleDeleteClick(row, "questionQ3")
+                                  }
+                                  sx={{ color: "#d32f2f" }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                          </Box>
                         ),
                       },
                     ]}
@@ -1735,7 +2916,7 @@ function PADetails() {
             </Paper>
             <Paper
               sx={{
-                background: "#e9f0fb",
+                background: "transparent",
                 borderRadius: 0,
                 boxShadow: "none",
                 mb: 2,
@@ -1743,18 +2924,21 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section G: Aspirations (What is your long term personal and career aspiration...)"
+                title="Section E: Aspirations (What is your long term personal and career aspiration...)"
                 open={showAspirations}
                 onToggle={() => setShowAspirations((prev) => !prev)}
                 action={
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleAddNew("aspirations")}
-                    sx={{ mr: 1 }}
-                  >
-                    Add New
-                  </Button>
+                  formData.stage === "Appraisee Rating" &&
+                  currentUser === "Appraisee" ? (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAddNew("aspirations")}
+                      sx={{ mr: 1 }}
+                    >
+                      Add New
+                    </Button>
+                  ) : null
                 }
               />
               <Collapse in={showAspirations}>
@@ -1777,15 +2961,42 @@ function PADetails() {
                         dataField: "action",
                         text: "Action",
                         formatter: (_: any, row: any) => (
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEditClick(row, "aspirations")}
-                          >
-                            <EditIcon
-                              fontSize="small"
-                              sx={{ color: "#1976d2" }}
-                            />
-                          </IconButton>
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleEditClick(row, "aspirations")
+                              }
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
+                            >
+                              <EditIcon
+                                fontSize="small"
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
+                              />
+                            </IconButton>
+                            {currentUser === "Appraisee" &&
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleDeleteClick(row, "aspirations")
+                                  }
+                                  sx={{ color: "#d32f2f" }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                          </Box>
                         ),
                       },
                     ]}
@@ -1806,7 +3017,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section H: Current level of Mobility and working hours preference"
+                title="Section F: Current level of Mobility and working hours preference"
                 open={showMobilityPreference}
                 onToggle={() => setShowMobilityPreference((prev) => !prev)}
               />
@@ -1826,10 +3037,18 @@ function PADetails() {
                             onClick={() =>
                               handleEditClick(row, "mobilityPreference")
                             }
+                            disabled={
+                              formData.stage === "Head of Department Review"
+                            }
                           >
                             <EditIcon
                               fontSize="small"
-                              sx={{ color: "#1976d2" }}
+                              sx={{
+                                color:
+                                  formData.stage === "Head of Department Review"
+                                    ? "#ccc"
+                                    : "#1976d2",
+                              }}
                             />
                           </IconButton>
                         ),
@@ -1843,7 +3062,7 @@ function PADetails() {
             </Paper>
             <Paper
               sx={{
-                background: "#e9f0fb",
+                background: "transparent",
                 borderRadius: 0,
                 boxShadow: "none",
                 mb: 2,
@@ -1851,18 +3070,21 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section I: Language Skills"
+                title="Section G: Language Skills"
                 open={showLanguageSkills}
                 onToggle={() => setShowLanguageSkills((prev) => !prev)}
                 action={
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleAddNew("languageSkills")}
-                    sx={{ mr: 1 }}
-                  >
-                    Add New
-                  </Button>
+                  formData.stage === "Appraisee Rating" &&
+                  currentUser === "Appraisee" ? (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAddNew("languageSkills")}
+                      sx={{ mr: 1 }}
+                    >
+                      Add New
+                    </Button>
+                  ) : null
                 }
               />
               <Collapse in={showLanguageSkills}>
@@ -1880,17 +3102,42 @@ function PADetails() {
                         dataField: "action",
                         text: "Action",
                         formatter: (_: any, row: any) => (
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              handleEditClick(row, "languageSkills")
-                            }
-                          >
-                            <EditIcon
-                              fontSize="small"
-                              sx={{ color: "#1976d2" }}
-                            />
-                          </IconButton>
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleEditClick(row, "languageSkills")
+                              }
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
+                            >
+                              <EditIcon
+                                fontSize="small"
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
+                              />
+                            </IconButton>
+                            {currentUser === "Appraisee" &&
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleDeleteClick(row, "languageSkills")
+                                  }
+                                  sx={{ color: "#d32f2f" }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                          </Box>
                         ),
                       },
                     ]}
@@ -1902,7 +3149,7 @@ function PADetails() {
             </Paper>
             <Paper
               sx={{
-                background: "#e9f0fb",
+                background: "transparent",
                 borderRadius: 0,
                 boxShadow: "none",
                 mb: 2,
@@ -1910,18 +3157,21 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section J: Possible Next Career Move Options"
+                title="Section H: Possible Next Career Move Options"
                 open={showCareerMoveOptions}
                 onToggle={() => setShowCareerMoveOptions((prev) => !prev)}
                 action={
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleAddNew("careerMoveOptions")}
-                    sx={{ mr: 1 }}
-                  >
-                    Add New
-                  </Button>
+                  formData.stage === "Appraisee Rating" &&
+                  currentUser === "Appraisee" ? (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAddNew("careerMoveOptions")}
+                      sx={{ mr: 1 }}
+                    >
+                      Add New
+                    </Button>
+                  ) : null
                 }
               />
               <Collapse in={showCareerMoveOptions}>
@@ -1939,17 +3189,42 @@ function PADetails() {
                         dataField: "action",
                         text: "Action",
                         formatter: (_: any, row: any) => (
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              handleEditClick(row, "careerMoveOptions")
-                            }
-                          >
-                            <EditIcon
-                              fontSize="small"
-                              sx={{ color: "#1976d2" }}
-                            />
-                          </IconButton>
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleEditClick(row, "careerMoveOptions")
+                              }
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
+                            >
+                              <EditIcon
+                                fontSize="small"
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
+                              />
+                            </IconButton>
+                            {currentUser === "Appraisee" &&
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleDeleteClick(row, "careerMoveOptions")
+                                  }
+                                  sx={{ color: "#d32f2f" }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                          </Box>
                         ),
                       },
                     ]}
@@ -1961,7 +3236,7 @@ function PADetails() {
             </Paper>
             <Paper
               sx={{
-                background: "#e9f0fb",
+                background: "transparent",
                 borderRadius: 0,
                 boxShadow: "none",
                 mb: 2,
@@ -1969,7 +3244,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section K: Skills & Work Competency Areas"
+                title="Section I: Skills & Work Competency Areas <i style='font-size: 13px; color: #d32f2f;'>(Score yourself out of 10 for each skill and behavior)</i>"
                 open={showSkillsWorkCompetencyAreas}
                 onToggle={() =>
                   setShowSkillsWorkCompetencyAreas((prev) => !prev)
@@ -2010,10 +3285,18 @@ function PADetails() {
                             onClick={() =>
                               handleEditClick(row, "skillsWorkCompetencyAreas")
                             }
+                            disabled={
+                              formData.stage === "Head of Department Review"
+                            }
                           >
                             <EditIcon
                               fontSize="small"
-                              sx={{ color: "#1976d2" }}
+                              sx={{
+                                color:
+                                  formData.stage === "Head of Department Review"
+                                    ? "#ccc"
+                                    : "#1976d2",
+                              }}
                             />
                           </IconButton>
                         ),
@@ -2027,7 +3310,7 @@ function PADetails() {
             </Paper>
             <Paper
               sx={{
-                background: "#e9f0fb",
+                background: "transparent",
                 borderRadius: 0,
                 boxShadow: "none",
                 mb: 2,
@@ -2035,7 +3318,7 @@ function PADetails() {
               }}
             >
               <SectionHeader
-                title="Section L: Behaviors and Personal Style"
+                title="Section J: Behaviors and Personal Style <i style='font-size: 13px; color: #d32f2f;'>(Score yourself out of 10 for each skill and behavior)</i>"
                 open={showBehaviorsPersonalStyle}
                 onToggle={() => setShowBehaviorsPersonalStyle((prev) => !prev)}
               />
@@ -2074,10 +3357,18 @@ function PADetails() {
                             onClick={() =>
                               handleEditClick(row, "behaviorsPersonalStyle")
                             }
+                            disabled={
+                              formData.stage === "Head of Department Review"
+                            }
                           >
                             <EditIcon
                               fontSize="small"
-                              sx={{ color: "#1976d2" }}
+                              sx={{
+                                color:
+                                  formData.stage === "Head of Department Review"
+                                    ? "#ccc"
+                                    : "#1976d2",
+                              }}
                             />
                           </IconButton>
                         ),
@@ -2086,6 +3377,783 @@ function PADetails() {
                     status={formData.status || ""}
                     mode="questionQ2"
                   />
+                </Box>
+              </Collapse>
+            </Paper>
+            {/* Show sections H, I, J, K, L only during Appraiser Rating or Head of Department Review stages */}
+            {(currentUser === "Appraiser" ||
+              formData.headOfDepartment === employeeNo) && (
+              <>
+                <Paper
+                  sx={{
+                    background: "transparent",
+                    borderRadius: 0,
+                    boxShadow: "none",
+                    mb: 2,
+                    p: 0,
+                  }}
+                >
+                  <SectionHeader
+                    title="Section H: Subordinates Evaluation"
+                    open={showSubordinatesEvaluation}
+                    onToggle={() =>
+                      setShowSubordinatesEvaluation((prev) => !prev)
+                    }
+                  />
+                  <Collapse in={showSubordinatesEvaluation}>
+                    <Box px={0} pb={2}>
+                      <PerformanceAppraisalLines
+                        lines={subordinatesEvaluationData}
+                        columns={[
+                          {
+                            dataField: "attributeCode",
+                            text: "Attribute Code",
+                            sort: true,
+                          },
+                          {
+                            dataField: "keyEnablingAttribute",
+                            text: "Key Enabling Attribute",
+                            sort: true,
+                          },
+                          {
+                            dataField: "rating",
+                            text: "Rating (1-4)",
+                            sort: true,
+                          },
+                          {
+                            dataField: "comment",
+                            text: "Comment",
+                            sort: true,
+                          },
+                          {
+                            dataField: "anySuggestion",
+                            text: "Any Suggestion",
+                            sort: true,
+                          },
+                          {
+                            dataField: "action",
+                            text: "Action",
+                            formatter: (_: any, row: any) => (
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleEditClick(row, "subordinatesEvaluation")
+                                }
+                                disabled={
+                                  formData.stage === "Head of Department Review"
+                                }
+                              >
+                                <EditIcon
+                                  fontSize="small"
+                                  sx={{
+                                    color:
+                                      formData.stage ===
+                                      "Head of Department Review"
+                                        ? "#ccc"
+                                        : "#1976d2",
+                                  }}
+                                />
+                              </IconButton>
+                            ),
+                          },
+                        ]}
+                        status={formData.status || ""}
+                        mode="questionQ2"
+                      />
+                    </Box>
+                  </Collapse>
+                </Paper>
+                <Paper
+                  sx={{
+                    background: "transparent",
+                    borderRadius: 0,
+                    boxShadow: "none",
+                    mb: 2,
+                    p: 0,
+                  }}
+                >
+                  <SectionHeader
+                    title="Section I: Subordinate Strengths & Weaknesses"
+                    open={showSubordinateStrengthsWeaknesses}
+                    onToggle={() =>
+                      setShowSubordinateStrengthsWeaknesses((prev) => !prev)
+                    }
+                    action={
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() =>
+                          handleAddNew("subordinateStrengthsWeaknesses")
+                        }
+                        sx={{ mr: 1 }}
+                      >
+                        Add New
+                      </Button>
+                    }
+                  />
+                  <Collapse in={showSubordinateStrengthsWeaknesses}>
+                    <Box px={0} pb={2}>
+                      <PerformanceAppraisalLines
+                        lines={subordinateStrengthsWeaknessesData || []}
+                        columns={[
+                          {
+                            dataField: "category",
+                            text: "Category",
+                            sort: true,
+                          },
+                          {
+                            dataField: "description",
+                            text: "Description",
+                            sort: true,
+                          },
+                          {
+                            dataField: "action",
+                            text: "Action",
+                            formatter: (_: any, row: any) => (
+                              <Box sx={{ display: "flex", gap: 1 }}>
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleEditClick(
+                                      row,
+                                      "subordinateStrengthsWeaknesses"
+                                    )
+                                  }
+                                  disabled={
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                  }
+                                >
+                                  <EditIcon
+                                    fontSize="small"
+                                    sx={{
+                                      color:
+                                        formData.stage ===
+                                        "Head of Department Review"
+                                          ? "#ccc"
+                                          : "#1976d2",
+                                    }}
+                                  />
+                                </IconButton>
+                                {currentUser === "Appraisee" &&
+                                  formData.stage !== "Appraiser Rating" &&
+                                  formData.stage !==
+                                    "Head of Department Review" && (
+                                    <IconButton
+                                      size="small"
+                                      onClick={() =>
+                                        handleDeleteClick(
+                                          row,
+                                          "subordinateStrengthsWeaknesses"
+                                        )
+                                      }
+                                      sx={{ color: "#d32f2f" }}
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  )}
+                              </Box>
+                            ),
+                          },
+                        ]}
+                        status={formData.status || ""}
+                        mode="questionQ2"
+                      />
+                    </Box>
+                  </Collapse>
+                </Paper>
+                {/* Section I.1: Subordinate Evaluation General Comment - Only visible to Appraiser or Head of Department */}
+                {(currentUser === "Appraiser" ||
+                  formData.headOfDepartment === employeeNo) && (
+                  <Paper
+                    sx={{
+                      background: "transparent",
+                      borderRadius: 0,
+                      boxShadow: "none",
+                      mb: 2,
+                      p: 0,
+                    }}
+                  >
+                    <SectionHeader
+                      title="Section I.1: Subordinate Evaluation General Comment"
+                      open={true}
+                      onToggle={() => {}}
+                    />
+                    <Collapse in={true}>
+                      <Box px={0} pb={2}>
+                        <Row>
+                          <Col sm={12}>
+                            <Label htmlFor="subordinateEvaluationGeneralComment">
+                              Subordinate Evaluation General Comment
+                            </Label>
+                            <Input
+                              type="textarea"
+                              rows={4}
+                              value={
+                                formData.subordinateEvaluationGeneralComment ||
+                                ""
+                              }
+                              onChange={(e) => {
+                                // Update local state only
+                                handleFieldUpdate(
+                                  "subordinateEvaluationGeneralComment",
+                                  e.target.value
+                                );
+                              }}
+                              onBlur={(e) => {
+                                handleInputChange(
+                                  "subordinateEvaluationGeneralComment",
+                                  e.target.value
+                                );
+                              }}
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                                  ? formData.headOfDepartment !== employeeNo
+                                  : isEditingDisabled(
+                                      "Appraiser Rating",
+                                      "Appraiser"
+                                    )
+                              }
+                              id="subordinateEvaluationGeneralComment"
+                            />
+                          </Col>
+                        </Row>
+                      </Box>
+                    </Collapse>
+                  </Paper>
+                )}
+                <Paper
+                  sx={{
+                    background: "transparent",
+                    borderRadius: 0,
+                    boxShadow: "none",
+                    mb: 2,
+                    p: 0,
+                  }}
+                >
+                  <SectionHeader
+                    title="Section J: Peer Evaluation"
+                    open={showPeerEvaluation}
+                    onToggle={() => setShowPeerEvaluation((prev) => !prev)}
+                  />
+                  <Collapse in={showPeerEvaluation}>
+                    <Box px={0} pb={2}>
+                      <PerformanceAppraisalLines
+                        lines={peerEvaluationData || []}
+                        columns={[
+                          {
+                            dataField: "attributeCode",
+                            text: "Attribute Code",
+                            sort: true,
+                          },
+                          {
+                            dataField: "keyEnablingAttribute",
+                            text: "Key Enabling Attribute",
+                            sort: true,
+                          },
+                          {
+                            dataField: "rating",
+                            text: "Rating (1-4)",
+                            sort: true,
+                          },
+                          {
+                            dataField: "comment",
+                            text: "Comment",
+                            sort: true,
+                          },
+                          {
+                            dataField: "anySuggestion",
+                            text: "Any Suggestion",
+                            sort: true,
+                          },
+                          {
+                            dataField: "action",
+                            text: "Action",
+                            formatter: (_: any, row: any) => (
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleEditClick(row, "peerEvaluation")
+                                }
+                                disabled={
+                                  formData.stage === "Head of Department Review"
+                                }
+                              >
+                                <EditIcon
+                                  fontSize="small"
+                                  sx={{
+                                    color:
+                                      formData.stage ===
+                                      "Head of Department Review"
+                                        ? "#ccc"
+                                        : "#1976d2",
+                                  }}
+                                />
+                              </IconButton>
+                            ),
+                          },
+                        ]}
+                        status={formData.status || ""}
+                        mode="questionQ2"
+                      />
+                    </Box>
+                  </Collapse>
+                </Paper>
+                <Paper
+                  sx={{
+                    background: "transparent",
+                    borderRadius: 0,
+                    boxShadow: "none",
+                    mb: 2,
+                    p: 0,
+                  }}
+                >
+                  <SectionHeader
+                    title="Section K: Peer Strengths & Weaknesses"
+                    open={showPeerStrengthsWeaknesses}
+                    onToggle={() =>
+                      setShowPeerStrengthsWeaknesses((prev) => !prev)
+                    }
+                    action={
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleAddNew("peerStrengthsWeaknesses")}
+                        sx={{ mr: 1 }}
+                      >
+                        Add New
+                      </Button>
+                    }
+                  />
+                  <Collapse in={showPeerStrengthsWeaknesses}>
+                    <Box px={0} pb={2}>
+                      <PerformanceAppraisalLines
+                        lines={peerStrengthsWeaknessesData || []}
+                        columns={[
+                          {
+                            dataField: "category",
+                            text: "Category",
+                            sort: true,
+                          },
+                          {
+                            dataField: "description",
+                            text: "Description",
+                            sort: true,
+                          },
+                          {
+                            dataField: "action",
+                            text: "Action",
+                            formatter: (_: any, row: any) => (
+                              <Box sx={{ display: "flex", gap: 1 }}>
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleEditClick(
+                                      row,
+                                      "peerStrengthsWeaknesses"
+                                    )
+                                  }
+                                  disabled={
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                  }
+                                >
+                                  <EditIcon
+                                    fontSize="small"
+                                    sx={{
+                                      color:
+                                        formData.stage ===
+                                        "Head of Department Review"
+                                          ? "#ccc"
+                                          : "#1976d2",
+                                    }}
+                                  />
+                                </IconButton>
+                                {currentUser === "Appraisee" &&
+                                  formData.stage !== "Appraiser Rating" &&
+                                  formData.stage !==
+                                    "Head of Department Review" && (
+                                    <IconButton
+                                      size="small"
+                                      onClick={() =>
+                                        handleDeleteClick(
+                                          row,
+                                          "peerStrengthsWeaknesses"
+                                        )
+                                      }
+                                      sx={{ color: "#d32f2f" }}
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  )}
+                              </Box>
+                            ),
+                          },
+                        ]}
+                        status={formData.status || ""}
+                        mode="questionQ2"
+                      />
+                    </Box>
+                  </Collapse>
+                </Paper>
+
+                {/* Section K.1: Peer Evaluation General Comment - Only visible to Appraiser or Head of Department */}
+                {(currentUser === "Appraiser" ||
+                  formData.headOfDepartment === employeeNo) && (
+                  <Paper
+                    sx={{
+                      background: "transparent",
+                      borderRadius: 0,
+                      boxShadow: "none",
+                      mb: 2,
+                      p: 0,
+                    }}
+                  >
+                    <SectionHeader
+                      title="Section K.1: Peer Evaluation General Comment"
+                      open={true}
+                      onToggle={() => {}}
+                    />
+                    <Collapse in={true}>
+                      <Box px={0} pb={2}>
+                        <Row>
+                          <Col sm={12}>
+                            <Label htmlFor="peerEvaluationGeneralComment">
+                              Peer Evaluation General Comment
+                            </Label>
+                            <Input
+                              type="textarea"
+                              rows={4}
+                              value={
+                                formData.peerEvaluationGeneralComment || ""
+                              }
+                              onChange={(e) => {
+                                // Update local state only
+                                handleFieldUpdate(
+                                  "peerEvaluationGeneralComment",
+                                  e.target.value
+                                );
+                              }}
+                              onBlur={(e) => {
+                                handleInputChange(
+                                  "peerEvaluationGeneralComment",
+                                  e.target.value
+                                );
+                              }}
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                                  ? formData.headOfDepartment !== employeeNo
+                                  : isEditingDisabled(
+                                      "Appraiser Rating",
+                                      "Appraiser"
+                                    )
+                              }
+                              id="peerEvaluationGeneralComment"
+                            />
+                          </Col>
+                        </Row>
+                      </Box>
+                    </Collapse>
+                  </Paper>
+                )}
+
+                {/* Section L: Other Personal Traits */}
+                <Paper
+                  sx={{
+                    background: "transparent",
+                    borderRadius: 0,
+                    boxShadow: "none",
+                    mb: 2,
+                    p: 0,
+                  }}
+                >
+                  <SectionHeader
+                    title="Section L: Other Personal Traits"
+                    open={showOtherPersonalTraits}
+                    onToggle={() => setShowOtherPersonalTraits((prev) => !prev)}
+                  />
+                  <Collapse in={showOtherPersonalTraits}>
+                    <Box px={0} pb={2}>
+                      <PerformanceAppraisalLines
+                        lines={otherPersonalTraitsData || []}
+                        columns={[
+                          {
+                            dataField: "traitDescription",
+                            text: "Trait Description",
+                            sort: true,
+                          },
+                          {
+                            dataField: "description",
+                            text: "Description",
+                            sort: true,
+                          },
+                          {
+                            dataField: "rating",
+                            text: "Rating",
+                            sort: true,
+                          },
+                          {
+                            dataField: "action",
+                            text: "Action",
+                            formatter: (_: any, row: any) => (
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleEditClick(row, "otherPersonalTraits")
+                                }
+                                disabled={
+                                  formData.stage === "Head of Department Review"
+                                }
+                              >
+                                <EditIcon
+                                  fontSize="small"
+                                  sx={{
+                                    color:
+                                      formData.stage ===
+                                      "Head of Department Review"
+                                        ? "#ccc"
+                                        : "#1976d2",
+                                  }}
+                                />
+                              </IconButton>
+                            ),
+                          },
+                        ]}
+                        status={formData.status || ""}
+                        mode="otherPersonalTraits"
+                      />
+                    </Box>
+                  </Collapse>
+                </Paper>
+              </>
+            )}
+
+            {/* Section M: Training Needs Identified */}
+            <Paper
+              sx={{
+                background: "transparent",
+                borderRadius: 0,
+                boxShadow: "none",
+                mb: 2,
+                p: 0,
+              }}
+            >
+              <SectionHeader
+                title="Section M: Training Needs Identified"
+                open={showTrainingNeedsIdentified}
+                onToggle={() => setShowTrainingNeedsIdentified((prev) => !prev)}
+                action={
+                  formData.stage === "Appraisee Rating" &&
+                  currentUser === "Appraisee" ? (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAddNew("trainingNeedsIdentified")}
+                      sx={{ mr: 1 }}
+                    >
+                      Add New
+                    </Button>
+                  ) : null
+                }
+              />
+              <Collapse in={showTrainingNeedsIdentified}>
+                <Box px={0} pb={2}>
+                  <PerformanceAppraisalLines
+                    lines={trainingNeedsIdentifiedData || []}
+                    columns={[
+                      {
+                        dataField: "skillGapNeed",
+                        text: "Skill Gap Need",
+                        sort: true,
+                      },
+                      {
+                        dataField: "typeOfTraining",
+                        text: "Type of Training",
+                        sort: true,
+                      },
+                      {
+                        dataField: "linkageToPerformance",
+                        text: "Linkage to Performance",
+                        sort: true,
+                      },
+                      {
+                        dataField: "action",
+                        text: "Action",
+                        formatter: (_: any, row: any) => (
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleEditClick(row, "trainingNeedsIdentified")
+                              }
+                              disabled={
+                                formData.stage === "Head of Department Review"
+                              }
+                            >
+                              <EditIcon
+                                fontSize="small"
+                                sx={{
+                                  color:
+                                    formData.stage ===
+                                    "Head of Department Review"
+                                      ? "#ccc"
+                                      : "#1976d2",
+                                }}
+                              />
+                            </IconButton>
+                            {currentUser === "Appraisee" &&
+                              formData.stage !== "Appraiser Rating" &&
+                              formData.stage !==
+                                "Head of Department Review" && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleDeleteClick(
+                                      row,
+                                      "trainingNeedsIdentified"
+                                    )
+                                  }
+                                  sx={{ color: "#d32f2f" }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                          </Box>
+                        ),
+                      },
+                    ]}
+                    status={formData.status || ""}
+                    mode="trainingNeedsIdentified"
+                  />
+                </Box>
+              </Collapse>
+            </Paper>
+
+            <Paper
+              sx={{
+                background: "transparent",
+                borderRadius: 0,
+                boxShadow: "none",
+                mb: 2,
+                p: 0,
+              }}
+            >
+              <SectionHeader
+                title="Section 3: Comments and Action Points"
+                open={showSection3}
+                onToggle={() => setShowSection3((prev) => !prev)}
+              />
+              <Collapse in={showSection3}>
+                <Box px={0} pb={2}>
+                  <Row>
+                    <Col sm={6}>
+                      <Label htmlFor="employeeComments">
+                        Employee's Comments
+                      </Label>
+                      <Input
+                        type="textarea"
+                        rows={4}
+                        value={formData.employeeComments || ""}
+                        onChange={(e) => {
+                          // Update local state only
+                          handleFieldUpdate("employeeComments", e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          handleInputChange("employeeComments", e.target.value);
+                        }}
+                        disabled={isEditingDisabled("Appraisee Rating")}
+                        id="employeeComments"
+                      />
+                    </Col>
+                    <Col sm={6}>
+                      <Label htmlFor="lineManagerComments">
+                        Line Manager's Comments
+                      </Label>
+                      <Input
+                        type="textarea"
+                        rows={4}
+                        value={formData.lineManagerComments || ""}
+                        onChange={(e) => {
+                          // Update local state only
+                          handleFieldUpdate(
+                            "lineManagerComments",
+                            e.target.value
+                          );
+                        }}
+                        onBlur={(e) => {
+                          handleInputChange(
+                            "lineManagerComments",
+                            e.target.value
+                          );
+                        }}
+                        disabled={isEditingDisabled(
+                          "Appraiser Rating",
+                          "Appraiser"
+                        )}
+                        id="lineManagerComments"
+                      />
+                    </Col>
+                    <Col sm={6}>
+                      <Label htmlFor="headOfDepartmentComments">
+                        Head of Department Comments
+                      </Label>
+                      <Input
+                        type="textarea"
+                        rows={4}
+                        value={formData.headOfDepartmentComments || ""}
+                        onChange={(e) => {
+                          // Update local state only
+                          handleFieldUpdate(
+                            "headOfDepartmentComments",
+                            e.target.value
+                          );
+                        }}
+                        onBlur={(e) => {
+                          handleInputChange(
+                            "headOfDepartmentComments",
+                            e.target.value
+                          );
+                        }}
+                        disabled={isEditingDisabled(
+                          "Head of Department Review"
+                        )}
+                        id="headOfDepartmentComments"
+                      />
+                    </Col>
+                    <Col sm={6}>
+                      <Label htmlFor="hrActionPoint">
+                        Recommendation to HR
+                      </Label>
+                      <Input
+                        type="textarea"
+                        rows={4}
+                        value={formData.hrActionPoint || ""}
+                        onChange={(e) => {
+                          // Update local state only
+                          handleFieldUpdate("hrActionPoint", e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          console.log(
+                            "HR Action Point onBlur triggered:",
+                            e.target.value
+                          );
+                          console.log("Current formData:", formData);
+                          console.log("Current stage:", formData.stage);
+                          console.log(
+                            "Is Head of Department:",
+                            formData.headOfDepartment === employeeNo
+                          );
+                          handleInputChange("hrActionPoint", e.target.value);
+                        }}
+                        disabled={
+                          formData.stage === "Head of Department Review"
+                            ? formData.headOfDepartment !== employeeNo
+                            : isEditingDisabled("Appraiser Rating", "Appraiser")
+                        }
+                        id="hrActionPoint"
+                      />
+                    </Col>
+                  </Row>
                 </Box>
               </Collapse>
             </Paper>
@@ -2104,6 +4172,168 @@ function PADetails() {
         handleSubmit={handleModalSubmit}
         handleUpdateLine={handleModalSubmit}
       />
+
+      {/* Grading Information Dialog */}
+      <Dialog
+        open={gradingDialogOpen}
+        onClose={() => setGradingDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogContent sx={{ p: 0 }}>
+          <Paper
+            sx={{
+              background: "transparent",
+              borderRadius: 0,
+              boxShadow: "none",
+              mb: 2,
+              p: 0,
+            }}
+          >
+            <Box sx={{ position: "relative" }}>
+              <SectionHeader
+                title="Performance Grading Scale"
+                open={true}
+                onToggle={() => {}}
+              />
+              <IconButton
+                onClick={() => setGradingDialogOpen(false)}
+                sx={{
+                  position: "absolute",
+                  right: 8,
+                  top: 8,
+                  color: "#666",
+                  "&:hover": {
+                    color: "#333",
+                  },
+                }}
+                size="small"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                  />
+                </svg>
+              </IconButton>
+            </Box>
+            <Collapse in={true}>
+              <Box px={2} pb={2} pt={2} sx={{ bgcolor: "white" }}>
+                <Row>
+                  <Col sm={12}>
+                    <div className="table-responsive">
+                      <table className="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th
+                              style={{
+                                backgroundColor: "#f8f9fa",
+                                width: "50%",
+                              }}
+                            >
+                              Overall Rating
+                            </th>
+                            <th
+                              style={{
+                                backgroundColor: "#f8f9fa",
+                                width: "50%",
+                              }}
+                            >
+                              Grade
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr style={{ backgroundColor: "#e8f5e9" }}>
+                            <td
+                              style={{
+                                color: "#2e7d32",
+                                fontWeight: "500",
+                                fontSize: "16px",
+                              }}
+                            >
+                              81 – 100%
+                            </td>
+                            <td
+                              style={{
+                                color: "#2e7d32",
+                                fontWeight: "500",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Excellent Performer
+                            </td>
+                          </tr>
+                          <tr style={{ backgroundColor: "#e3f2fd" }}>
+                            <td
+                              style={{
+                                color: "#1565c0",
+                                fontWeight: "500",
+                                fontSize: "16px",
+                              }}
+                            >
+                              61 - 80%
+                            </td>
+                            <td
+                              style={{
+                                color: "#1565c0",
+                                fontWeight: "500",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Meets Expectations
+                            </td>
+                          </tr>
+                          <tr style={{ backgroundColor: "#fff3e0" }}>
+                            <td
+                              style={{
+                                color: "#ef6c00",
+                                fontWeight: "500",
+                                fontSize: "16px",
+                              }}
+                            >
+                              50% - 60%
+                            </td>
+                            <td
+                              style={{
+                                color: "#ef6c00",
+                                fontWeight: "500",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Averagely meets Expectations
+                            </td>
+                          </tr>
+                          <tr style={{ backgroundColor: "#ffebee" }}>
+                            <td
+                              style={{
+                                color: "#c62828",
+                                fontWeight: "500",
+                                fontSize: "16px",
+                              }}
+                            >
+                              Less than 50%
+                            </td>
+                            <td
+                              style={{
+                                color: "#c62828",
+                                fontWeight: "500",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Below Expectations
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </Col>
+                </Row>
+              </Box>
+            </Collapse>
+          </Paper>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

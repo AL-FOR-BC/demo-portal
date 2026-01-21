@@ -38,6 +38,7 @@ export const usePA = ({
     no: "",
     employeeNo: employeeNo || "",
     appraiser: "",
+    headOfDepartment: "",
     departmentCode: "",
     postingDate: currentDate,
     status: "Open",
@@ -47,6 +48,20 @@ export const usePA = ({
     performanceAppraisalState: "",
     appraisalCycle: "",
     performanceYear: "",
+    // Assessment Score Fields
+    selfAssessmentPerformanceScore: 0,
+    selfAssessmentBehaviorScore: 0,
+    peerAssessmentScore: 0,
+    subordinatesAssessmentScore: 0,
+    lineManagerAssessmentScore: 0,
+    // Assessment Actual Fields
+    selfAssessmentPerformanceActual: 0,
+    selfAssessmentBehaviorActual: 0,
+    peerAssessmentActual: 0,
+    subordinatesAssessmentActual: 0,
+    lineManagerAssessmentActual: 0,
+    // Total Score Field
+    totalScore: 0,
   };
 
   const initialLineFormData: PALineFormData = {
@@ -62,7 +77,9 @@ export const usePA = ({
     comments: "",
   };
 
-  const [state, setState] = useState({});
+  const [state, setState] = useState<{ isLoading: boolean }>({
+    isLoading: false,
+  });
   const [formData, setFormData] = useState<PAFormData>(initialFormData);
   const [lineFormData, setLineFormData] =
     useState<PALineFormData>(initialLineFormData);
@@ -88,26 +105,39 @@ export const usePA = ({
     field: keyof PAFormData,
     value: string | options
   ) => {
+    console.log("handleInputChange called with:", { field, value, mode });
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
     if (mode === "detail") {
+      console.log("Detail mode - checking systemId:", formData.systemId);
       if (!formData.systemId) {
         toast.error("PA systemId is required");
         return;
       }
+      console.log("Making API call to update PA with:", {
+        field,
+        value,
+        systemId: formData.systemId,
+        etag: formData["@odata.etag"],
+      });
+
       const response = await paService.updatePA(
         companyId,
         {
           [field]: value,
         },
         formData.systemId,
-        formData["@odata.etag"]
+        formData["@odata.etag"] || "*"
       );
+      console.log("API response:", response);
       if (response.status === 200) {
         toast.success("PA updated successfully");
         populateDocumentDetail(formData.systemId);
+      } else {
+        console.error("API update failed:", response);
+        toast.error("Failed to update PA");
       }
     }
   };
@@ -283,14 +313,125 @@ export const usePA = ({
         options: [
           { value: "", label: "Select" },
           { value: "Probation Appraisal", label: "Probation Appraisal" },
-          { value: "Full-Year Appraisal", label: "Full Year Appraisal" },
+          { value: "Annual Appraisal", label: "Annual Appraisal" },
           { value: "Mid-Year Appraisal", label: "Mid-Year Appraisal" },
         ],
       },
       ...detailFields,
     ];
 
-    const fields = [[...basicFields, ...editableFields]];
+    // Assessment Score Fields - Always disabled (read-only)
+    const assessmentScoreFields = [
+      {
+        label: "Self-assessment - Performance Score",
+        type: "number",
+        value: formData.selfAssessmentPerformanceScore || "",
+        id: "selfAssessmentPerformanceScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Self-assessment - Behavior Score",
+        type: "number",
+        value: formData.selfAssessmentBehaviorScore || "",
+        id: "selfAssessmentBehaviorScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Peer Assessment Score",
+        type: "number",
+        value: formData.peerAssessmentScore || "",
+        id: "peerAssessmentScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Subordinates Assessment Score",
+        type: "number",
+        value: formData.subordinatesAssessmentScore || "",
+        id: "subordinatesAssessmentScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Line Manager's Assessment Score",
+        type: "number",
+        value: formData.lineManagerAssessmentScore || "",
+        id: "lineManagerAssessmentScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+    ];
+
+    // Assessment Actual Fields - Always disabled (read-only)
+    const assessmentActualFields = [
+      {
+        label: "Self-assessment - Performance Actual",
+        type: "number",
+        value: formData.selfAssessmentPerformanceActual || "",
+        id: "selfAssessmentPerformanceActual",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Self-assessment - Behavior Actual",
+        type: "number",
+        value: formData.selfAssessmentBehaviorActual || "",
+        id: "selfAssessmentBehaviorActual",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Peer Assessment Actual",
+        type: "number",
+        value: formData.peerAssessmentActual || "",
+        id: "peerAssessmentActual",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Subordinates Assessment Actual",
+        type: "number",
+        value: formData.subordinatesAssessmentActual || "",
+        id: "subordinatesAssessmentActual",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Line Manager's Assessment Actual",
+        type: "number",
+        value: formData.lineManagerAssessmentActual || "",
+        id: "lineManagerAssessmentActual",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Total Score",
+        type: "number",
+        value: formData.totalScore || "",
+        id: "totalScore",
+        disabled: true,
+        placeholder: "0.00",
+      },
+      {
+        label: "Overall Rating",
+        type: "text",
+        value: formData.overallRating || "",
+        id: "overallRating",
+        disabled: true,
+        placeholder: "",
+      },
+    ];
+
+    const fields = [
+      [
+        ...basicFields,
+        ...editableFields,
+        ...assessmentScoreFields,
+        ...assessmentActualFields,
+      ],
+    ];
     return fields;
   };
 
@@ -427,36 +568,36 @@ export const usePA = ({
     ];
   };
 
-  const submitPA = async () => {
-    try {
-      setState((prev) => ({ ...prev, isLoading: true }));
+  // const submitPA = async (systemId: string) => {
+  //   try {
+  //     setState((prev) => ({ ...prev, isLoading: true }));
 
-      const missingFields: string[] = [];
-      if (!formData.performanceYear) {
-        missingFields.push("Performance Year");
-      }
-      if (!formData.appraisalPeriod) {
-        missingFields.push("Appraisal Period");
-      }
-      console.log("missingFields", missingFields);
-      if (missingFields.length > 0) {
-        toast.error(`Missing fields: ${missingFields.join(", ")}`);
-        return;
-      }
-      const data = {
-        employeeNo: employeeNo,
-        postingDate: formData.postingDate,
-        appraisalPeriod: formData.performanceYear?.toString(),
-        appraisalType: formData.appraisalType,
-      };
-      const response = await paService.createPA(companyId, data);
-      toast.success("PA created successfully");
-      navigate(`/pa-details/${response.data.systemId}`);
-      return true;
-    } catch (error) {
-      toast.error(`Error creating PA: ${getErrorMessage(error)}`);
-    }
-  };
+  //     const missingFields: string[] = [];
+  //     if (!formData.performanceYear) {
+  //       missingFields.push("Performance Year");
+  //     }
+  //     if (!formData.appraisalPeriod) {
+  //       missingFields.push("Appraisal Period");
+  //     }
+  //     console.log("missingFields", missingFields);
+  //     if (missingFields.length > 0) {
+  //       toast.error(`Missing fields: ${missingFields.join(", ")}`);
+  //       return;
+  //     }
+  //     const data = {
+  //       employeeNo: employeeNo,
+  //       postingDate: formData.postingDate,
+  //       appraisalPeriod: formData.performanceYear?.toString(),
+  //       appraisalType: formData.appraisalType,
+  //     };
+  //     const response = await paService.createPA(companyId, data);
+  //     toast.success("PA created successfully");
+  //     navigate(`/pa-details/${response.data.systemId}`);
+  //     return true;
+  //   } catch (error) {
+  //     toast.error(`Error creating PA: ${getErrorMessage(error)}`);
+  //   }
+  // };
 
   const submitPALines = async (systemId: string) => {
     try {
@@ -565,6 +706,7 @@ export const usePA = ({
       no: data.no,
       employeeNo: data.employeeNo,
       appraiser: data.appraiser,
+      headOfDepartment: data.headOfDepartment,
       departmentCode: data.departmentCode,
       postingDate: data.postingDate,
       status: data.status,
@@ -575,6 +717,30 @@ export const usePA = ({
       stage: data.stage,
       performanceAppraisalState: data.performanceAppraisalState,
       systemId: data.systemId,
+      employeeComments: data.employeeComments || "",
+      lineManagerComments: data.lineManagerComments || "",
+      headOfDepartmentComments: data.headOfDepartmentComments || "",
+      hrActionPoint: data.hrActionPoint || "",
+      peerEvaluationGeneralComment: data.peerEvaluationGeneralComment || "",
+      subordinateEvaluationGeneralComment:
+        data.subordinateEvaluationGeneralComment || "",
+      overallRating: data.overallRating || "",
+      "@odata.etag": data["@odata.etag"],
+      // Assessment Score Fields
+      selfAssessmentPerformanceScore: data.selfAssessmentPerformanceScore || 0,
+      selfAssessmentBehaviorScore: data.selfAssessmentBehaviorScore || 0,
+      peerAssessmentScore: data.peerAssessmentScore || 0,
+      subordinatesAssessmentScore: data.subordinatesAssessmentScore || 0,
+      lineManagerAssessmentScore: data.lineManagerAssessmentScore || 0,
+      // Assessment Actual Fields
+      selfAssessmentPerformanceActual:
+        data.selfAssessmentPerformanceActual || 0,
+      selfAssessmentBehaviorActual: data.selfAssessmentBehaviorActual || 0,
+      peerAssessmentActual: data.peerAssessmentActual || 0,
+      subordinatesAssessmentActual: data.subordinatesAssessmentActual || 0,
+      lineManagerAssessmentActual: data.lineManagerAssessmentActual || 0,
+      // Total Score Field
+      totalScore: data.totalScore || 0,
     };
 
     setFormData(mappedFormData);
@@ -645,22 +811,255 @@ export const usePA = ({
   };
 
   const sendToAppraiser = async (systemId: string) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to send this PA to Appraiser?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+    }).then(async (response) => {
+      try {
+        if (response.isConfirmed) {
+          if (!formData.no) {
+            toast.error("PA No is required");
+            return;
+          }
+          setState((prev) => ({ ...prev, isLoading: true }));
+          const response = await paService.sendToAppraiser(companyId, {
+            no: formData.no,
+          });
+          if (response.status === 204) {
+            toast.success("Appraiser sent successfully");
+            populateDocumentDetail(systemId);
+            // navigate("/performance-appraisal");
+            setState((prev) => ({ ...prev, isLoading: false }));
+          }
+        }
+      } catch (error) {
+        toast.error(`Error sending to appraiser: ${getErrorMessage(error)}`);
+      } finally {
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    });
+  };
+
+  const sendToHeadOfDepartment = async (systemId: string) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to send this PA to Head of Department?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+    }).then(async (response) => {
+      try {
+        if (response.isConfirmed) {
+          if (!formData.no) {
+            toast.error("PA No is required");
+            return;
+          }
+          setState((prev) => ({ ...prev, isLoading: true }));
+          const response = await paService.sendToHeadOfDepartment(companyId, {
+            no: formData.no,
+          });
+          if (response.status === 204) {
+            toast.success("Sent to Head of Department successfully");
+            navigate("/performance-appraisal-review");
+            populateDocumentDetail(systemId);
+            setState((prev) => ({ ...prev, isLoading: false }));
+          }
+        }
+      } catch (error) {
+        toast.error(
+          `Error sending to Head of Department: ${getErrorMessage(error)}`
+        );
+      } finally {
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    });
+  };
+
+  const sendBackToAppraisee = async (systemId: string) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to send this PA back to Appraisee?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+    }).then(async (response) => {
+      try {
+        if (response.isConfirmed) {
+          if (!formData.no) {
+            toast.error("PA No is required");
+            return;
+          }
+          setState((prev) => ({ ...prev, isLoading: true }));
+          const response = await paService.sendBackToAppraisee(companyId, {
+            no: formData.no,
+          });
+          if (response.status === 204) {
+            toast.success("Sent back to Appraisee successfully");
+            navigate("/performance-appraisal-review");
+            populateDocumentDetail(systemId);
+            setState((prev) => ({ ...prev, isLoading: false }));
+          }
+        }
+      } catch (error) {
+        toast.error(
+          `Error sending back to Appraisee: ${getErrorMessage(error)}`
+        );
+      } finally {
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    });
+  };
+
+  const sendBackToAppraiser = async () => {
+    const swalResponse = await Swal.fire({
+      title: "Are you sure?",
+      text: "You want to send this PA back to Appraiser?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+    });
+
+    if (!swalResponse.isConfirmed) {
+      return;
+    }
+
     try {
       if (!formData.no) {
         toast.error("PA No is required");
         return;
       }
+
       setState((prev) => ({ ...prev, isLoading: true }));
-      const response = await paService.sendToAppraiser(companyId, {
+
+      const apiResponse = await paService.sendBackToAppraiser(companyId, {
         no: formData.no,
       });
-      if (response.status === 200) {
-        toast.success("Appraiser sent successfully");
-        populateDocumentDetail(systemId);
-        setState((prev) => ({ ...prev, isLoading: false }));
+
+      if (apiResponse.status === 204) {
+        toast.success("Sent back to Appraiser successfully");
+        // populateDocumentDetail(systemId);
+        navigate("/performance-appraisal-review");
       }
     } catch (error) {
-      toast.error(`Error sending to appraiser: ${getErrorMessage(error)}`);
+      toast.error(`Error sending back to Appraiser: ${getErrorMessage(error)}`);
+    } finally {
+      setState((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const submitPA = async (systemId: string) => {
+    const swalResponse = await Swal.fire({
+      title: "Are you sure?",
+      text: "You want to submit this PA?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+    });
+
+    if (!swalResponse.isConfirmed) {
+      return;
+    }
+
+    try {
+      if (!formData.no) {
+        toast.error("PA No is required");
+        return;
+      }
+
+      setState((prev) => ({ ...prev, isLoading: true }));
+
+      const apiResponse = await paService.submitPA(companyId, {
+        no: formData.no,
+      });
+
+      if (apiResponse.status === 200) {
+        toast.success("Performance Appraisal has been submitted for approval.");
+        populateDocumentDetail(systemId);
+      }
+    } catch (error) {
+      toast.error(
+        `Error submitting Performance Appraisal: ${getErrorMessage(error)}`
+      );
+      setState((prev) => ({ ...prev, isLoading: false }));
+    } finally {
+      setState((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const printPA = async (systemId: string) => {
+    try {
+      setState((prev) => ({ ...prev, isLoading: true }));
+
+      if (!formData.no) {
+        toast.error("PA No is required for printing");
+        setState((prev) => ({ ...prev, isLoading: false }));
+        return;
+      }
+
+      const response = await paService.printPA(companyId, formData.no);
+
+      if (response.data && response.data.value) {
+        try {
+          const base64String = response.data.value;
+
+          // Validate base64 string
+          if (base64String.length === 0) {
+            throw new Error("Base64 string is empty");
+          }
+
+          // Check if it's valid base64
+          try {
+            atob(base64String);
+          } catch (e) {
+            throw new Error("Invalid base64 string");
+          }
+
+          const byteCharacters = atob(base64String);
+
+          // Check if it's actually a PDF (should start with %PDF)
+          if (
+            byteCharacters.length < 4 ||
+            byteCharacters.substring(0, 4) !== "%PDF"
+          ) {
+            console.warn("Warning: Data doesn't start with PDF signature");
+          }
+
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: "application/pdf" });
+
+          // Create download link
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `performance_appraisal_${
+            formData.no || systemId
+          }.pdf`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+
+          toast.success("Performance Appraisal downloaded successfully");
+        } catch (error) {
+          console.error("Error converting PDF:", error);
+          toast.error("Failed to convert PDF response");
+        }
+      } else {
+        console.error("No value in response data:", response.data);
+        toast.error("No PDF data received from server");
+      }
+    } catch (error) {
+      console.error("Error printing PA:", error);
+      toast.error(
+        `Error printing Performance Appraisal: ${getErrorMessage(error)}`
+      );
+    } finally {
+      setState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -684,5 +1083,11 @@ export const usePA = ({
     sendPAForApproval,
     cancelPAApprovalRequest,
     sendToAppraiser,
+    sendToHeadOfDepartment,
+    sendBackToAppraisee,
+    sendBackToAppraiser,
+    handleInputChange,
+    handleFieldUpdate,
+    printPA,
   };
 };

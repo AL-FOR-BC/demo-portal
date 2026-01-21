@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
 import { DocumentTypeMode } from "../../../../@types/documents/base.types";
-import { apiIPALInes, ipaService } from "../../../../services/IpaSerivces";
+import { apiIPALInes } from "../../../../services/IpaSerivces";
+import { ipaService } from "../../../../services/IpaSerivces";
 import { options } from "../../../../@types/common.dto";
 import {
   IPAFormData,
@@ -48,6 +49,8 @@ export const useIPA = ({
     performanceAppraisalState: "",
     appraisalCycle: "",
     performanceYear: "",
+    timeInPresentPosition: "",
+    lengthOfService: "",
   };
 
   const initialLineFormData: IPALineFormData = {
@@ -204,7 +207,24 @@ export const useIPA = ({
         disabled: true,
         id: "empTitle",
       },
-
+      {
+        label: "Time in Present Position",
+        type: "text",
+        value: formData.timeInPresentPosition || "",
+        disabled: isFieldDisabled,
+        id: "timeInPresentPosition",
+        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+          handleInputChange("timeInPresentPosition", e.target.value);
+        },
+        required: true,
+      },
+      {
+        label: "Length of Service",
+        type: "text",
+        value: formData.lengthOfService || "",
+        disabled: true,
+        id: "lengthOfService",
+      },
       {
         label: "Status",
         type: "text",
@@ -277,14 +297,14 @@ export const useIPA = ({
             }
           : { value: "", label: "Select" },
         id: "appraisalPeriod",
-        disabled: false,
+        disabled: isFieldDisabled,
         onChange: (e: options) => {
           handleInputChange("appraisalPeriod", e.value);
         },
         options: [
           { value: "", label: "Select" },
           { value: "Probation", label: "Probation" },
-          { value: "Full-Year Appraisal", label: "Full Year Appraisal" },
+          { value: "Annual Appraisal", label: "Annual Appraisal" },
           { value: "Mid-Year Appraisal", label: "Mid-Year Appraisal" },
         ],
       },
@@ -317,18 +337,7 @@ export const useIPA = ({
           },
           required: true,
         },
-        {
-          label: "Key Performance Indicator(s)",
-          type: "textarea",
-          rows: 5,
-          value: lineFormData.keyPerformanceIndicators || "",
-          id: "keyPerformanceIndicators",
-          disabled: isFieldDisabled,
-          onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-            handleLineFieldUpdate("keyPerformanceIndicators", e.target.value);
-          },
-          required: true,
-        },
+
         {
           label: "Measures/Deliverables",
           type: "textarea",
@@ -342,16 +351,43 @@ export const useIPA = ({
           required: true,
         },
         {
-          label: "By which Target Date?",
-          type: "date",
-          value: lineFormData.byWhichTargetDate || "",
-          id: "byWhichTargetDate",
+          label: "Key Performance Indicator(s)",
+          type: "textarea",
+          rows: 5,
+          value: lineFormData.keyPerformanceIndicators || "",
+          id: "keyPerformanceIndicators",
           disabled: isFieldDisabled,
-          onChange: (date: any) => {
-            const formattedDate = formatDate(date[0]);
-            handleLineFieldUpdate("byWhichTargetDate", formattedDate);
+          onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+            handleLineFieldUpdate("keyPerformanceIndicators", e.target.value);
           },
           required: true,
+        },
+        {
+          label: "By which Target Date?",
+          type: "select",
+          value: lineFormData.byWhichTargetDate
+            ? {
+                value: lineFormData.byWhichTargetDate,
+                label: lineFormData.byWhichTargetDate,
+              }
+            : { value: "", label: "Select target date" },
+          id: "byWhichTargetDate",
+          disabled: isFieldDisabled,
+          onChange: (e: any) => {
+            const newValue = e?.value || e;
+            handleLineFieldUpdate("byWhichTargetDate", newValue);
+          },
+          required: true,
+          options: [
+            { value: "", label: "Select target date" },
+            { value: "As and When", label: "As and When" },
+            { value: "Yearly", label: "Yearly" },
+            { value: "Bi-Yearly", label: "Bi-Yearly" },
+            { value: "Quarterly", label: "Quarterly" },
+            { value: "Monthly", label: "Monthly" },
+            { value: "Weekly", label: "Weekly" },
+            { value: "Daily", label: "Daily" },
+          ],
         },
       ],
     ];
@@ -368,6 +404,9 @@ export const useIPA = ({
       if (!formData.appraisalPeriod) {
         missingFields.push("Appraisal Period");
       }
+      if (!formData.timeInPresentPosition) {
+        missingFields.push("Time in Present Position");
+      }
       console.log("missingFields", missingFields);
       if (missingFields.length > 0) {
         toast.error(`Missing fields: ${missingFields.join(", ")}`);
@@ -378,6 +417,7 @@ export const useIPA = ({
         postingDate: formData.postingDate,
         performanceYear: formData.performanceYear,
         appraisalPeriod: formData.appraisalPeriod,
+        timeInPresentPosition: formData.timeInPresentPosition,
       };
       const response = await ipaService.createIPA(companyId, data);
       toast.success("IPA created successfully");
@@ -494,6 +534,8 @@ export const useIPA = ({
       performanceType: data.performanceType,
       stage: data.stage,
       performanceAppraisalState: data.performanceAppraisalState,
+      timeInPresentPosition: data.timeInPresentPosition,
+      lengthOfService: data.lengthOfService,
       systemId: data.systemId,
     };
 
@@ -510,21 +552,34 @@ export const useIPA = ({
       toast.error("IPA No is required");
       return;
     }
-    setState((prev) => ({ ...prev, isLoading: true }));
-    try {
-      const response = await ipaService.sendIPAForApproval(companyId, {
-        no: formData.no,
-        senderEmailAddress: email,
-      });
-      if (response.status === 200) {
-        toast.success("Approval request sent successfully");
-        populateDocumentDetail(systemId);
+    const response = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, send it!",
+    });
+    if (response.isConfirmed) {
+      setState((prev) => ({ ...prev, isLoading: true }));
+      try {
+        const response = await ipaService.sendIPAForApproval(companyId, {
+          no: formData.no,
+          senderEmailAddress: email,
+        });
+        if (response.status === 200) {
+          toast.success("Approval request sent successfully");
+          populateDocumentDetail(systemId);
+          setState((prev) => ({ ...prev, isLoading: false }));
+        }
+      } catch (error) {
+        toast.error(
+          `Error sending approval request: ${getErrorMessage(error)}`
+        );
+      } finally {
         setState((prev) => ({ ...prev, isLoading: false }));
       }
-    } catch (error) {
-      toast.error(`Error sending approval request: ${getErrorMessage(error)}`);
-    } finally {
-      setState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -548,6 +603,30 @@ export const useIPA = ({
     }
   };
 
+  const convertToPerformanceAppraisal = async () => {
+    setState((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const response = await ipaService.convertToPerformanceAppraisal(
+        companyId,
+        {
+          no: formData.no || "",
+        }
+      );
+      if (response.status === 200) {
+        console.log("response", response);
+        toast.success("Performance appraisal converted successfully");
+        navigate(`/performance-appraisal/`);
+      }
+    } catch (error) {
+      console.error("Full error:", error);
+      toast.error(
+        `Error converting to performance appraisal: ${getErrorMessage(error)}`
+      );
+    } finally {
+      setState((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
   return {
     state,
     formData,
@@ -567,5 +646,6 @@ export const useIPA = ({
     updateIPALines,
     sendIPAForApproval,
     cancelIPAApprovalRequest,
+    convertToPerformanceAppraisal,
   };
 };

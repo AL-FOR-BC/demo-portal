@@ -41,7 +41,11 @@ function Pa() {
       text: "Appraiser Name",
       sort: true,
     },
-    
+    {
+      dataField: "headOfDepartmentNames",
+      text: "Head of Department Name",
+      sort: true,
+    },
     {
       dataField: "appraisalPeriod",
       text: "Appraisal Period",
@@ -55,11 +59,19 @@ function Pa() {
         console.log(row);
         return (
           <>
-            {cell === "Appraisee Rating" ? (
+            {cell === "Appraisee Rating" && (
               <span className="badge bg-info">Appraisee Rating</span>
-            ) : (
+            )}
+            {cell === "Appraiser Rating" && (
               <span className="badge bg-warning">Appraiser Rating</span>
             )}
+            {cell === "Head of Department Review" && (
+              <span className="badge bg-primary">Head of Department Review</span>
+            )}
+            {cell === "Closed" && (
+              <span className="badge bg-success">Closed</span>
+            )}
+         
           </>
         );
       },

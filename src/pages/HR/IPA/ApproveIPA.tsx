@@ -28,6 +28,8 @@ function ApproveIPA() {
   const [convertToAppraisal, setConvertToAppraisal] = useState("");
   const [performanceType, setPerformanceType] = useState("");
   const [stage, setStage] = useState("");
+  const [timeInPresentPosition, setTimeInPresentPosition] = useState("");
+  const [lengthOfService, setLengthOfService] = useState("");
   const [ipaLines, setIpaLines] = useState<IPALine[]>([]);
 
   const fields = [
@@ -73,6 +75,20 @@ function ApproveIPA() {
         value: selectedAppraiser[0]?.label || "",
         disabled: true,
         id: "appraiser",
+      },
+      {
+        label: "Time in Present Position",
+        type: "text",
+        value: timeInPresentPosition,
+        disabled: true,
+        id: "timeInPresentPosition",
+      },
+      {
+        label: "Length of Service",
+        type: "text",
+        value: lengthOfService || "",
+        disabled: true,
+        id: "lengthOfService",
       },
     ],
     [
@@ -159,6 +175,8 @@ function ApproveIPA() {
           setConvertToAppraisal(data.convertToAppraisal);
           setPerformanceType(data.performanceType);
           setStage(data.stage);
+          setTimeInPresentPosition(data.timeInPresentPosition);
+          setLengthOfService(data.lengthOfService);
           setIpaLines(data.ipaLines || []);
 
           // Get appraiser info
