@@ -851,6 +851,7 @@ function TravelRequestDetails() {
         workPlanEntryNo: split(selectedWorkPlanLine[0].value, "::")[0],
         documentNo: requestNo,
         description: lineDescription,
+        workPlanNo: split(selectedWorkPlan[0].value, "::")[0],
       };
       const res = await apiCreateTravelRequestsLines(companyId, data);
       console.log(res.data);

@@ -33,6 +33,8 @@ const Login = () => {
   const { signIn, getToken } = useAuth();
   const { settings } = useSettings();
   const { companyLogo, themeColor } = settings;
+  const isSetupReady =
+    !!settings.shortcutDimCode1?.trim() && !!settings.shortcutDimCode2?.trim();
   const validation = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -47,6 +49,10 @@ const Login = () => {
     }),
     onSubmit: async (values) => {
       try {
+        if (!isSetupReady) {
+          toast.error("System configuration is incomplete. Contact admin.");
+          return;
+        }
         setDisableLogin(true);
         Swal.fire({
           text: "Validating login details...",
@@ -165,7 +171,7 @@ const Login = () => {
                             {showPassword ? <EyeInvisibleIcon /> : <EyeIcon />}
                           </div>
                           {validation.touched.password &&
-                          validation.errors.password ? (
+                            validation.errors.password ? (
                             <FormFeedback type="invalid">
                               {validation.errors.password}
                             </FormFeedback>
@@ -176,7 +182,7 @@ const Login = () => {
 
                       <div className="mb-3 d-grid">
                         <Button
-                          disabled={disableLogin}
+                          disabled={disableLogin || !isSetupReady}
                           type="submit"
                           className="btn btn-block"
                           style={{
@@ -199,6 +205,11 @@ const Login = () => {
                           Log In Here
                         </Button>
                       </div>
+                      {!isSetupReady && (
+                        <div className="mt-2 text-center text-danger">
+                          System configuration is incomplete. Please contact admin.
+                        </div>
+                      )}
                     </Form>
                     <div className="mt-4 text-center align-items-center">
                       <Link to="/register" className="text-muted">
@@ -209,6 +220,12 @@ const Login = () => {
                     <div className="mt-4 text-center align-items-center">
                       <Link to="/single-sign-on" className="text-muted">
                         Single Sign On ?{" "}
+                        <span style={{ color: themeColor }}>Click Here</span>
+                      </Link>
+                    </div>
+                    <div className="mt-4 text-center align-items-center">
+                      <Link to="/system-config/login" className="text-muted">
+                        System Configuration?{" "}
                         <span style={{ color: themeColor }}>Click Here</span>
                       </Link>
                     </div>

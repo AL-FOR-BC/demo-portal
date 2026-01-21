@@ -300,4 +300,10 @@ export const navbarOptions: NavigationTree[] = [
       },
     ],
   },
+  {
+    id: 99,
+    name: "System Config",
+    path: "/system-config",
+    icon: "settings",
+  },
 ];

@@ -5,6 +5,9 @@ export async function getSetupSettings() {
     allowCompanyChange: boolean;
     themeColor: string;
     companyLogo: string | null;
+    favicon: string | null;
+    shortcutDimCode1?: string | null;
+    shortcutDimCode2?: string | null;
     id: string;
   }>({
     url: "/api/admin/settings/",
@@ -16,11 +19,17 @@ export async function updateSetupSettings(settings: {
   allowCompanyChange: boolean;
   themeColor?: string;
   companyLogo?: string | null;
+  favicon?: string | null;
+  shortcutDimCode1?: string | null;
+  shortcutDimCode2?: string | null;
 }) {
   return ApiService.fetchData<{
     allowCompanyChange: boolean;
     themeColor?: string;
     companyLogo?: string | null;
+    favicon?: string | null;
+    shortcutDimCode1?: string | null;
+    shortcutDimCode2?: string | null;
   }>({
     url: "/api/admin/settings/",
     method: "put",
@@ -33,6 +42,9 @@ export async function getAllowCompanyChangeSetting() {
     allowCompanyChange: boolean;
     themeColor: string;
     companyLogo: string | null;
+    favicon: string | null;
+    shortcutDimCode1?: string | null;
+    shortcutDimCode2?: string | null;
     id: string;
   }>({
     url: "/api/admin/settings/",

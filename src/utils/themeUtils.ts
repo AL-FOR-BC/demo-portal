@@ -113,3 +113,40 @@ export function initializeTheme(): void {
   const savedColor = loadThemeColor();
   applyThemeColors(savedColor);
 }
+
+// Function to update favicon dynamically
+export function updateFavicon(faviconData: string | null): void {
+  const existingLinks = document.querySelectorAll(
+    'link[rel="icon"], link[rel="shortcut icon"]'
+  );
+  existingLinks.forEach((link) => link.remove());
+
+  if (faviconData) {
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.type = faviconData.startsWith("data:image")
+      ? faviconData.split(";")[0].split(":")[1]
+      : "image/x-icon";
+    link.href = faviconData;
+    document.head.appendChild(link);
+    localStorage.setItem("favicon", faviconData);
+  } else {
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.type = "image/x-icon";
+    link.href = "/favicon.ico";
+    document.head.appendChild(link);
+    localStorage.removeItem("favicon");
+  }
+}
+
+export function loadFavicon(): string | null {
+  return localStorage.getItem("favicon");
+}
+
+export function initializeFavicon(faviconData?: string | null): void {
+  const favicon = faviconData || loadFavicon();
+  if (favicon) {
+    updateFavicon(favicon);
+  }
+}

@@ -13,33 +13,39 @@ import {
   apiWorkPlans,
 } from "../../services/CommonServices";
 import { numberFormatter } from "../../Components/ui/Table/TableUtils";
+import { useSettings } from "../../contexts/SettingsContext";
 
 function ApprovePurchaseRequisition() {
   const navigate = useNavigate();
   const { documentNo } = useParams();
   console.log("documentNo:", documentNo);
   const { companyId } = useAppSelector((state) => state.auth.session);
+  const { settings } = useSettings();
+  const shortcutDimCode1Label =
+    settings.shortcutDimCode1?.trim() || "Department";
+  const shortcutDimCode2Label =
+    settings.shortcutDimCode2?.trim() || "Cost Center";
   // const { employeeNo, employeeName } = useAppSelector(state => state.auth.user);
   const [isLoading, setIsLoading] = useState(false);
 
   // Form states
-  const [selectedCurrency, setSelectedCurrency] = useState<string>("");
-  const [selectedWorkPlan, setSelectedWorkPlan] = useState<string>("");
-  const [selectedLocation, setSelectedLocation] = useState<string>("");
-  const [selectedDimension, setSelectedDimension] = useState<string>("");
-  const [subjectOfProcurement, setSubjectOfProcurement] = useState<string>("");
-  const [expectedReceiptDate, setExpectedReceiptDate] = useState<Date>(
+  const [selectedCurrency, setSelectedCurrency] = useState < string > ("");
+  const [selectedWorkPlan, setSelectedWorkPlan] = useState < string > ("");
+  const [selectedLocation, setSelectedLocation] = useState < string > ("");
+  const [selectedDimension, setSelectedDimension] = useState < string > ("");
+  const [subjectOfProcurement, setSubjectOfProcurement] = useState < string > ("");
+  const [expectedReceiptDate, setExpectedReceiptDate] = useState < Date > (
     new Date()
   );
-  const [budgetCode, setBudgetCode] = useState<string>("");
-  const [requestNo, setRequestNo] = useState<string>("");
-  const [purchaseRequisitionLines, setPurchaseRequisitionLines] = useState<
+  const [budgetCode, setBudgetCode] = useState < string > ("");
+  const [requestNo, setRequestNo] = useState < string > ("");
+  const [purchaseRequisitionLines, setPurchaseRequisitionLines] = useState <
     PurchaseRequisitionLineType[]
-  >([]);
-  const [status, setStatus] = useState<string>("");
-  const [requestorName, setRequestorName] = useState<string>("");
-  const [requestorNo, setRequestorNo] = useState<string>("");
-  const [totalAmount, setTotalAmount] = useState<string>("");
+    > ([]);
+  const [status, setStatus] = useState < string > ("");
+  const [requestorName, setRequestorName] = useState < string > ("");
+  const [requestorNo, setRequestorNo] = useState < string > ("");
+  const [totalAmount, setTotalAmount] = useState < string > ("");
 
   const fields = [
     [
@@ -175,12 +181,12 @@ function ApprovePurchaseRequisition() {
     },
     {
       dataField: "ShortcutDimCode1",
-      text: "Department",
+      text: shortcutDimCode1Label,
       sort: true,
     },
     {
       dataField: "ShortcutDimCode2",
-      text: "Cost Center",
+      text: shortcutDimCode2Label,
       sort: true,
     },
   ];
@@ -295,9 +301,9 @@ function ApprovePurchaseRequisition() {
             addLink={""}
             addLabel={""}
             iconClassName="fa fa-file-text"
-            handleSubmitLines={() => {}}
-            handleSubmitUpdatedLine={() => {}}
-            clearLineFields={() => {}}
+            handleSubmitLines={() => { }}
+            handleSubmitUpdatedLine={() => { }}
+            clearLineFields={() => { }}
             handleValidateHeaderFields={() => {
               return true;
             }}

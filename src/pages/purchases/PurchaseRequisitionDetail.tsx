@@ -46,12 +46,18 @@ import {
 } from "../../store/slices/Requisitions";
 import { handleSendForApproval } from "../../actions/actions";
 import HeaderMui from "../../Components/ui/Header/HeaderMui";
+import { useSettings } from "../../contexts/SettingsContext";
 
 function PurchaseRequisitionDetail() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { email } = useAppSelector((state) => state.auth.user);
   const { id } = useParams();
+  const { settings } = useSettings();
+  const shortcutDimCode1Label =
+    settings.shortcutDimCode1?.trim() || "Department";
+  const shortcutDimCode2Label =
+    settings.shortcutDimCode2?.trim() || "Cost Center";
   console.log("id:", id);
 
   const { companyId } = useAppSelector((state) => state.auth.session);
@@ -60,60 +66,60 @@ function PurchaseRequisitionDetail() {
   );
   const [isLoading, setIsLoading] = useState(false);
   const documentType = "Purchase Requisition";
-  const [selectedCurrency, setSelectedCurrency] = useState<options[]>([]);
-  const [selectedWorkPlan, setSelectedWorkPlan] = useState<options[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<options[]>([]);
-  const [selectedDimension, setSelectedDimension] = useState<options[]>([]);
-  const [unitOfMeasure, setUnitOfMeasure] = useState<options[]>([]);
-  const [selectedUnitOfMeasure, setSelectedUnitOfMeasure] = useState<options[]>(
+  const [selectedCurrency, setSelectedCurrency] = useState < options[] > ([]);
+  const [selectedWorkPlan, setSelectedWorkPlan] = useState < options[] > ([]);
+  const [selectedLocation, setSelectedLocation] = useState < options[] > ([]);
+  const [selectedDimension, setSelectedDimension] = useState < options[] > ([]);
+  const [unitOfMeasure, setUnitOfMeasure] = useState < options[] > ([]);
+  const [selectedUnitOfMeasure, setSelectedUnitOfMeasure] = useState < options[] > (
     []
   );
-  const [currencyOptions, setCurrencyOptions] = useState<
+  const [currencyOptions, setCurrencyOptions] = useState <
     { label: string; value: string }[]
-  >([]);
-  const [workPlans, setWorkPlans] = useState<
+    > ([]);
+  const [workPlans, setWorkPlans] = useState <
     { label: string; value: string }[]
-  >([]);
-  const [locationOptions, setLocationOptions] = useState<
+    > ([]);
+  const [locationOptions, setLocationOptions] = useState <
     { label: string; value: string }[]
-  >([]);
-  const [subjectOfProcurement, setSubjectOfProcurement] = useState<string>("");
-  const [expectedReceiptDate, setExpectedReceiptDate] = useState<Date>(
+    > ([]);
+  const [subjectOfProcurement, setSubjectOfProcurement] = useState < string > ("");
+  const [expectedReceiptDate, setExpectedReceiptDate] = useState < Date > (
     new Date()
   );
-  const [budgetCode, setBudgetCode] = useState<string>("");
-  const [dimensionValues, setDimensionValues] = useState<options[]>([]);
-  const [requestNo, setRequestNo] = useState<string>("");
-  const [purchaseRequisitionLines, setpurchaseRequisitionLines] = useState<
+  const [budgetCode, setBudgetCode] = useState < string > ("");
+  const [dimensionValues, setDimensionValues] = useState < options[] > ([]);
+  const [requestNo, setRequestNo] = useState < string > ("");
+  const [purchaseRequisitionLines, setpurchaseRequisitionLines] = useState <
     PurchaseRequisitionLineType[]
-  >([]);
-  const [status, setStatus] = useState<string>("");
-  const [lineSystemId, setLineSystemId] = useState<string>("");
-  const [lineEtag, setLineEtag] = useState<string>("");
+    > ([]);
+  const [status, setStatus] = useState < string > ("");
+  const [lineSystemId, setLineSystemId] = useState < string > ("");
+  const [lineEtag, setLineEtag] = useState < string > ("");
 
-  const [selectedAccountNo, setSelectedAccountNo] = useState<options[]>([]);
-  const [selectedWorkPlanLine, setSelectedWorkPlanLine] = useState<options[]>(
+  const [selectedAccountNo, setSelectedAccountNo] = useState < options[] > ([]);
+  const [selectedWorkPlanLine, setSelectedWorkPlanLine] = useState < options[] > (
     []
   );
-  const [selectedVendor, setSelectedVendor] = useState<options[]>([]);
+  const [selectedVendor, setSelectedVendor] = useState < options[] > ([]);
 
   console.log("Selected Vendor", selectedVendor);
-  const [accountType, setAccountType] = useState<options[]>([]);
+  const [accountType, setAccountType] = useState < options[] > ([]);
 
-  const [quantity, setQuantity] = useState<number>(0);
-  const [directUnitCost, setDirectUnitCost] = useState<number>(0);
-  const [description, setDescription] = useState<string>("");
+  const [quantity, setQuantity] = useState < number > (0);
+  const [directUnitCost, setDirectUnitCost] = useState < number > (0);
+  const [description, setDescription] = useState < string > ("");
 
-  const [glAccounts, setGlAccounts] = useState<options[]>([]);
-  const [workPlanLines, setWorkPlanLines] = useState<options[]>([]);
+  const [glAccounts, setGlAccounts] = useState < options[] > ([]);
+  const [workPlanLines, setWorkPlanLines] = useState < options[] > ([]);
 
   const accountTypeOptions = [
     { label: "G/L Account", value: "G/L Account" },
     { label: "Item", value: "Item" },
   ];
 
-  const [workPlansList, setWorkPlansList] = useState<any[]>([]);
-  const [totalAmount, setTotalAmount] = useState<string>("");
+  const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
+  const [totalAmount, setTotalAmount] = useState < string > ("");
 
   const fields = [
     [
@@ -438,139 +444,139 @@ function PurchaseRequisitionDetail() {
   const columns =
     status == "Open"
       ? [
-          {
-            dataField: "accountType",
-            text: "Account Type",
-            sort: true,
-            formatter: (cell: any) => decodeValue(cell),
-          },
-          {
-            dataField: "no",
-            text: "No",
-            sort: true,
-          },
-          // {
-          //     dataField: 'faPostingGroup',
-          //     text: 'FA Posting Group',
-          //     sort: true,
-          // },
-          {
-            dataField: "description",
-            text: "Description",
-            sort: true,
-          },
-          {
-            dataField: "description2",
-            text: "Activity Description",
-            sort: true,
-          },
-          {
-            dataField: "quantity",
-            text: "Quantity",
-            sort: true,
-          },
-          {
-            dataField: "directUnitCost",
-            text: "Direct Unit Cost",
-            sort: true,
-            formatter: numberFormatter,
-          },
-          {
-            dataField: "lineAmount",
-            text: "Line Amount",
-            sort: true,
-            formatter: numberFormatter,
-          },
-          {
-            dataField: "ShortcutDimCode1",
-            text: "Department",
-            sort: true,
-          },
-          {
-            dataField: "ShortcutDimCode2",
-            text: "Cost Center",
-            sort: true,
-          },
-          {
-            dataField: "ShortcutDimCode4",
-            text: "Activity Code",
-            sort: true,
-          },
-          {
-            dataField: "action",
-            isDummyField: true,
-            text: "Action",
+        {
+          dataField: "accountType",
+          text: "Account Type",
+          sort: true,
+          formatter: (cell: any) => decodeValue(cell),
+        },
+        {
+          dataField: "no",
+          text: "No",
+          sort: true,
+        },
+        // {
+        //     dataField: 'faPostingGroup',
+        //     text: 'FA Posting Group',
+        //     sort: true,
+        // },
+        {
+          dataField: "description",
+          text: "Description",
+          sort: true,
+        },
+        {
+          dataField: "description2",
+          text: "Activity Description",
+          sort: true,
+        },
+        {
+          dataField: "quantity",
+          text: "Quantity",
+          sort: true,
+        },
+        {
+          dataField: "directUnitCost",
+          text: "Direct Unit Cost",
+          sort: true,
+          formatter: numberFormatter,
+        },
+        {
+          dataField: "lineAmount",
+          text: "Line Amount",
+          sort: true,
+          formatter: numberFormatter,
+        },
+        {
+          dataField: "ShortcutDimCode1",
+          text: shortcutDimCode1Label,
+          sort: true,
+        },
+        {
+          dataField: "ShortcutDimCode2",
+          text: shortcutDimCode2Label,
+          sort: true,
+        },
+        {
+          dataField: "ShortcutDimCode4",
+          text: "Activity Code",
+          sort: true,
+        },
+        {
+          dataField: "action",
+          isDummyField: true,
+          text: "Action",
 
-            formatter: (cellContent: any, row: any) => {
-              console.log("Cell Content:", cellContent);
-              return (
-                <ActionFormatterLines
-                  row={row}
-                  companyId={companyId}
-                  apiHandler={apiPurchaseRequisitionLines}
-                  handleDeleteLine={handleDelteLine}
-                  handleEditLine={handleEditLine}
-                  populateData={populateData}
-                />
-              );
-            },
+          formatter: (cellContent: any, row: any) => {
+            console.log("Cell Content:", cellContent);
+            return (
+              <ActionFormatterLines
+                row={row}
+                companyId={companyId}
+                apiHandler={apiPurchaseRequisitionLines}
+                handleDeleteLine={handleDelteLine}
+                handleEditLine={handleEditLine}
+                populateData={populateData}
+              />
+            );
           },
-        ]
+        },
+      ]
       : [
-          {
-            dataField: "accountType",
-            text: "Account Type",
-            sort: true,
-            formatter: (cell: any) => decodeValue(cell),
-          },
-          {
-            dataField: "no",
-            text: "No",
-            sort: true,
-          },
-          {
-            dataField: "description",
-            text: "Description",
-            sort: true,
-          },
-          {
-            dataField: "description2",
-            text: "Activity Description",
-            sort: true,
-          },
-          {
-            dataField: "quantity",
-            text: "Quantity",
-            sort: true,
-          },
-          {
-            dataField: "directUnitCost",
-            text: "Direct Unit Cost",
-            sort: true,
-            formatter: numberFormatter,
-          },
-          {
-            dataField: "lineAmount",
-            text: "Line Amount",
-            sort: true,
-            formatter: numberFormatter,
-          },
-          {
-            dataField: "ShortcutDimCode1",
-            text: "Department",
-            sort: true,
-          },
-          {
-            dataField: "ShortcutDimCode2",
-            text: "Cost Center",
-            sort: true,
-          },
-          {
-            dataField: "ShortcutDimCode4",
-            text: "Activity Code",
-            sort: true,
-          },
-        ];
+        {
+          dataField: "accountType",
+          text: "Account Type",
+          sort: true,
+          formatter: (cell: any) => decodeValue(cell),
+        },
+        {
+          dataField: "no",
+          text: "No",
+          sort: true,
+        },
+        {
+          dataField: "description",
+          text: "Description",
+          sort: true,
+        },
+        {
+          dataField: "description2",
+          text: "Activity Description",
+          sort: true,
+        },
+        {
+          dataField: "quantity",
+          text: "Quantity",
+          sort: true,
+        },
+        {
+          dataField: "directUnitCost",
+          text: "Direct Unit Cost",
+          sort: true,
+          formatter: numberFormatter,
+        },
+        {
+          dataField: "lineAmount",
+          text: "Line Amount",
+          sort: true,
+          formatter: numberFormatter,
+        },
+        {
+          dataField: "ShortcutDimCode1",
+          text: shortcutDimCode1Label,
+          sort: true,
+        },
+        {
+          dataField: "ShortcutDimCode2",
+          text: shortcutDimCode2Label,
+          sort: true,
+        },
+        {
+          dataField: "ShortcutDimCode4",
+          text: "Activity Code",
+          sort: true,
+        },
+      ];
   const modalFields = [
     [
       {
@@ -634,9 +640,8 @@ function PurchaseRequisitionDetail() {
           } else {
             setSelectedAccountNo([{ label: e.label, value: e.value }]);
             dispatch(modelLoadingRequisition(true));
-            const filterQuery = `$filter=workPlanNo eq '${
-              split(selectedWorkPlan[0].value, "::")[0]
-            }' and accountNo eq '${e?.value}'`;
+            const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, "::")[0]
+              }' and accountNo eq '${e?.value}'`;
             const workPlanLines = await apiWorkPlanLines(
               companyId,
               filterQuery
@@ -750,12 +755,12 @@ function PurchaseRequisitionDetail() {
         selectedAccountNo[0]?.value == ""
           ? "Account No"
           : selectedWorkPlanLine[0]?.value == ""
-          ? "Work Entry No"
-          : quantity == 0
-          ? "Quantity"
-          : directUnitCost == 0
-          ? "Direct Unit Cost"
-          : "Description";
+            ? "Work Entry No"
+            : quantity == 0
+              ? "Quantity"
+              : directUnitCost == 0
+                ? "Direct Unit Cost"
+                : "Description";
       toast.error(`Please fill in ${missingField}`);
       return;
     }
@@ -869,13 +874,12 @@ function PurchaseRequisitionDetail() {
       const glAccountData = glAccountsOptions.filter((e) => e.value === row.no);
       glAccountData.length > 0
         ? setSelectedAccountNo([
-            { label: glAccountData[0].label, value: glAccountData[0].value },
-          ])
+          { label: glAccountData[0].label, value: glAccountData[0].value },
+        ])
         : setSelectedAccountNo([{ label: "", value: "" }]);
 
-      const filterQuery = `$filter=workPlanNo eq '${
-        split(selectedWorkPlan[0].value, "::")[0]
-      }' and accountNo eq '${row.no}'`;
+      const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, "::")[0]
+        }' and accountNo eq '${row.no}'`;
       const workPlanEntryNoRes = await apiWorkPlanLines(companyId, filterQuery);
 
       const workPlanLines = workPlanEntryNoRes.data.value.map((plan) => ({
@@ -893,13 +897,12 @@ function PurchaseRequisitionDetail() {
       const itemData = itemOptions.filter((e) => e.value === row.no);
       itemData.length > 0
         ? setSelectedAccountNo([
-            { label: itemData[0].label, value: itemData[0].value },
-          ])
+          { label: itemData[0].label, value: itemData[0].value },
+        ])
         : setSelectedAccountNo([{ label: "", value: "" }]);
 
-      const filterQuery = `$filter=workPlanNo eq '${
-        split(selectedWorkPlan[0].value, "::")[0]
-      }' and accountNo eq '${row.chargeAccount}'`;
+      const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, "::")[0]
+        }' and accountNo eq '${row.chargeAccount}'`;
       const workPlanEntryNoRes = await apiWorkPlanLines(companyId, filterQuery);
 
       const workPlanLines = workPlanEntryNoRes.data.value.map((plan) => ({
@@ -914,8 +917,8 @@ function PurchaseRequisitionDetail() {
     const vendorData = vendors.filter((e) => e.value === row.buyFromVendorNo);
     vendorData.length > 0
       ? setSelectedVendor([
-          { label: vendorData[0].label, value: vendorData[0].value },
-        ])
+        { label: vendorData[0].label, value: vendorData[0].value },
+      ])
       : setSelectedVendor([{ label: "", value: "" }]);
 
     const workPlanEntryNo = workPlanLines.filter(
@@ -923,8 +926,8 @@ function PurchaseRequisitionDetail() {
     );
     workPlanEntryNo.length > 0
       ? setSelectedWorkPlanLine([
-          { label: workPlanEntryNo[0].label, value: workPlanEntryNo[0].value },
-        ])
+        { label: workPlanEntryNo[0].label, value: workPlanEntryNo[0].value },
+      ])
       : setSelectedWorkPlanLine([{ label: "", value: "" }]);
 
     const unitOfMeasureRes = await apiUnitOfMeasure(companyId);
@@ -938,11 +941,11 @@ function PurchaseRequisitionDetail() {
     );
     unitOfMeasureData.length > 0
       ? setSelectedUnitOfMeasure([
-          {
-            label: unitOfMeasureData[0].label,
-            value: unitOfMeasureData[0].value,
-          },
-        ])
+        {
+          label: unitOfMeasureData[0].label,
+          value: unitOfMeasureData[0].value,
+        },
+      ])
       : setSelectedUnitOfMeasure([{ label: "", value: "" }]);
 
     setAccountType([
@@ -971,16 +974,16 @@ function PurchaseRequisitionDetail() {
         selectedAccountNo[0]?.value == ""
           ? "Account No"
           : selectedWorkPlanLine[0]?.value == ""
-          ? "Work Entry No"
-          : quantity == 0
-          ? "Quantity"
-          : directUnitCost == 0
-          ? "Direct Unit Cost"
-          : description == ""
-          ? "Description"
-          : selectedUnitOfMeasure[0]?.value == ""
-          ? "Unit of Measure"
-          : "";
+            ? "Work Entry No"
+            : quantity == 0
+              ? "Quantity"
+              : directUnitCost == 0
+                ? "Direct Unit Cost"
+                : description == ""
+                  ? "Description"
+                  : selectedUnitOfMeasure[0]?.value == ""
+                    ? "Unit of Measure"
+                    : "";
       toast.error(`Please fill in ${missingField}`);
       return;
     }
@@ -1032,8 +1035,7 @@ function PurchaseRequisitionDetail() {
         if (response.status == 201) {
           const workPlanEntryNo = await apiWorkPlanLines(
             companyId,
-            `$filter=workPlanNo eq '${
-              split(selectedWorkPlan[0].value, "::")[0]
+            `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, "::")[0]
             }' and accountNo eq '${response.data.chargeAccount}'`
           );
           setWorkPlanLines(
@@ -1056,7 +1058,7 @@ function PurchaseRequisitionDetail() {
           }
         }
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleCancelApproval = async () => {
@@ -1074,7 +1076,7 @@ function PurchaseRequisitionDetail() {
       if (response) {
         console.log("cancel response", response);
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleDeletePurchaseRequisition = async () => {
@@ -1166,21 +1168,21 @@ function PurchaseRequisitionDetail() {
     ) {
       const missingField =
         subjectOfProcurement == null ||
-        subjectOfProcurement == "" ||
-        subjectOfProcurement == undefined
+          subjectOfProcurement == "" ||
+          subjectOfProcurement == undefined
           ? "Subject of Procurement"
           : selectedCurrency[0]?.value == null ||
             selectedCurrency[0]?.value == undefined
-          ? "Currency"
-          : selectedWorkPlan[0]?.value == null ||
-            selectedWorkPlan[0]?.value == "" ||
-            selectedWorkPlan[0]?.value == undefined
-          ? "Work Plan"
-          : selectedDimension[0]?.value == null ||
-            selectedDimension[0]?.value == "" ||
-            selectedDimension[0]?.value == undefined
-          ? "Dimension"
-          : "";
+            ? "Currency"
+            : selectedWorkPlan[0]?.value == null ||
+              selectedWorkPlan[0]?.value == "" ||
+              selectedWorkPlan[0]?.value == undefined
+              ? "Work Plan"
+              : selectedDimension[0]?.value == null ||
+                selectedDimension[0]?.value == "" ||
+                selectedDimension[0]?.value == undefined
+                ? "Dimension"
+                : "";
       if (missingField) {
         toast.error(`Please fill in ${missingField}`);
         return false;

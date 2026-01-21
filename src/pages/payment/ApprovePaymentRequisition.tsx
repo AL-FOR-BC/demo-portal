@@ -9,11 +9,17 @@ import HeaderMui from "../../Components/ui/Header/HeaderMui";
 import Lines from "../../Components/ui/Lines/Lines";
 import { apiDimensionValue, apiWorkPlans } from "../../services/CommonServices";
 import { numberFormatter } from "../../Components/ui/Table/TableUtils";
+import { useSettings } from "../../contexts/SettingsContext";
 
 function ApprovePaymentRequisition() {
   const navigate = useNavigate();
   const { documentNo } = useParams();
   const { companyId } = useAppSelector((state) => state.auth.session);
+  const { settings } = useSettings();
+  const shortcutDimCode1Label =
+    settings.shortcutDimCode1?.trim() || "Department";
+  const shortcutDimCode2Label =
+    settings.shortcutDimCode2?.trim() || "Cost Center";
   // const { employeeNo, employeeName } = useAppSelector(state => state.auth.user);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -184,12 +190,12 @@ function ApprovePaymentRequisition() {
     },
     {
       dataField: "ShortcutDimCode1",
-      text: "Department",
+        text: shortcutDimCode1Label,
       sort: true,
     },
     {
       dataField: "ShortcutDimCode2",
-      text: "Cost Center",
+        text: shortcutDimCode2Label,
       sort: true,
     },
   ];

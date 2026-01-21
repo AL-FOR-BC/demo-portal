@@ -28,6 +28,7 @@ import Lines from "../../Components/ui/Lines/Lines";
 import { cancelApprovalButton, getErrorMessage } from "../../utils/common";
 import { ActionFormatterLines } from "../../Components/ui/Table/TableUtils";
 import Swal from "sweetalert2";
+import { useSettings } from "../../contexts/SettingsContext";
 import {
   closeModalRequisition,
   editRequisitionLine,
@@ -50,59 +51,64 @@ function PaymentRequisitionDetail() {
   );
   const navigate = useNavigate();
   const { id } = useParams();
+  const { settings } = useSettings();
+  const shortcutDimCode1Label =
+    settings.shortcutDimCode1?.trim() || "Department";
+  const shortcutDimCode2Label =
+    settings.shortcutDimCode2?.trim() || "Cost Center";
 
   const [isLoading, setIsLoading] = useState(false);
   // const [docError, setDocError] = useState('');
   // const [showError, setShowError] = useState(false);
 
-  const [selectedCurrency, setSelectedCurrency] = useState<options[]>([]);
-  const [selectedWorkPlan, setSelectedWorkPlan] = useState<options[]>([]);
-  const [selectedPaymentCategory, setSelectedPaymentCategory] = useState<
+  const [selectedCurrency, setSelectedCurrency] = useState < options[] > ([]);
+  const [selectedWorkPlan, setSelectedWorkPlan] = useState < options[] > ([]);
+  const [selectedPaymentCategory, setSelectedPaymentCategory] = useState <
     options[]
-  >([]);
-  const [selectedDimension, setSelectedDimension] = useState<options[]>([]);
-  const [selectedSubCategory, setSelectedSubCategory] = useState<options[]>([]);
-  const [payeeName, setPayeeName] = useState<string>("");
+    > ([]);
+  const [selectedDimension, setSelectedDimension] = useState < options[] > ([]);
+  const [selectedSubCategory, setSelectedSubCategory] = useState < options[] > ([]);
+  const [payeeName, setPayeeName] = useState < string > ("");
 
-  const [customerOptions, setCustomerOptions] = useState<options[]>([]);
-  const [dimensionValues, setDimensionValues] = useState<options[]>([]);
-  const [paymentSubCategoryOptions, setPaymentSubCategoryOptions] = useState<
+  const [customerOptions, setCustomerOptions] = useState < options[] > ([]);
+  const [dimensionValues, setDimensionValues] = useState < options[] > ([]);
+  const [paymentSubCategoryOptions, setPaymentSubCategoryOptions] = useState <
     options[]
-  >([]);
-  const [bankAccountOptions, setBankAccountOptions] = useState<options[]>([]);
-  const [requestNo, setRequest] = useState<string>("");
+    > ([]);
+  const [bankAccountOptions, setBankAccountOptions] = useState < options[] > ([]);
+  const [requestNo, setRequest] = useState < string > ("");
 
-  const [workPlansList, setWorkPlansList] = useState<any[]>([]);
-  const [currencyOptions, setCurrencyOptions] = useState<
+  const [workPlansList, setWorkPlansList] = useState < any[] > ([]);
+  const [currencyOptions, setCurrencyOptions] = useState <
     { label: string; value: string }[]
-  >([]);
-  const [workPlans, setWorkPlans] = useState<
+    > ([]);
+  const [workPlans, setWorkPlans] = useState <
     { label: string; value: string }[]
-  >([]);
-  const [paymentCategoryOptions, setPaymentCategoryOptions] = useState<
+    > ([]);
+  const [paymentCategoryOptions, setPaymentCategoryOptions] = useState <
     { label: string; value: string }[]
-  >([]);
-  const [description, setDescription] = useState<string>("");
-  const [expectedReceiptDate, setExpectedReceiptDate] = useState<Date>(
+    > ([]);
+  const [description, setDescription] = useState < string > ("");
+  const [expectedReceiptDate, setExpectedReceiptDate] = useState < Date > (
     new Date()
   );
-  const [budgetCode, setBudgetCode] = useState<string>("");
-  const [status, setStatus] = useState<string>("");
-  const [paymentRequisitionLines, setPaymentRequisitionLines] = useState<
+  const [budgetCode, setBudgetCode] = useState < string > ("");
+  const [status, setStatus] = useState < string > ("");
+  const [paymentRequisitionLines, setPaymentRequisitionLines] = useState <
     PaymentRequisitionLineType[]
-  >([]);
-  const [lineSystemId, setLineSystemId] = useState<string>("");
-  const [lineEtag, setLineEtag] = useState<string>("");
-  const [selectedPayee, setSelectedPayee] = useState<options[]>([]);
-  const [vendorOptions, setVendorOptions] = useState<options[]>([]);
-  const [lineDescription, setLineDescription] = useState<string>("");
+    > ([]);
+  const [lineSystemId, setLineSystemId] = useState < string > ("");
+  const [lineEtag, setLineEtag] = useState < string > ("");
+  const [selectedPayee, setSelectedPayee] = useState < options[] > ([]);
+  const [vendorOptions, setVendorOptions] = useState < options[] > ([]);
+  const [lineDescription, setLineDescription] = useState < string > ("");
 
   // -------------------------------- line modal --------------------------------
-  const [glAccounts, setGlAccounts] = useState<options[]>([]);
-  const [workPlanLines, setWorkPlanLines] = useState<options[]>([]);
+  const [glAccounts, setGlAccounts] = useState < options[] > ([]);
+  const [workPlanLines, setWorkPlanLines] = useState < options[] > ([]);
 
-  const [selectedAccountNo, setSelectedAccountNo] = useState<options[]>([]);
-  const [selectedWorkPlanLine, setSelectedWorkPlanLine] = useState<options[]>(
+  const [selectedAccountNo, setSelectedAccountNo] = useState < options[] > ([]);
+  const [selectedWorkPlanLine, setSelectedWorkPlanLine] = useState < options[] > (
     []
   );
   const accountTypeOptions: options[] = [
@@ -111,12 +117,12 @@ function PaymentRequisitionDetail() {
     { label: "Vendor", value: "Vendor" },
     { label: "Customer", value: "Customer" },
   ];
-  const [accountType, setAccountType] = useState<options[]>([]);
+  const [accountType, setAccountType] = useState < options[] > ([]);
 
-  const [quantity, setQuantity] = useState<number>(0);
-  const [totalAmount, setTotalAmount] = useState<string>("");
+  const [quantity, setQuantity] = useState < number > (0);
+  const [totalAmount, setTotalAmount] = useState < string > ("");
 
-  const [rate, setRate] = useState<number>(0);
+  const [rate, setRate] = useState < number > (0);
   const fields = [
     [
       {
@@ -375,26 +381,26 @@ function PaymentRequisitionDetail() {
       },
 
       ...(split(selectedPaymentCategory[0]?.value, "::")[1] === "Imprest" ||
-      split(selectedPaymentCategory[0]?.value, "::")[1] === "Petty Cash"
+        split(selectedPaymentCategory[0]?.value, "::")[1] === "Petty Cash"
         ? [
-            {
-              label: "Payee",
-              type: "select",
-              value: selectedPayee,
-              disabled: status === "Open" ? false : true,
-              options: customerOptions,
-              onChange: (e: options) => {
-                setSelectedPayee([{ label: e.label, value: e.value }]),
-                  quickUpdate({
-                    payeeNo: e.value,
-                  });
-              },
-              id: "payee",
+          {
+            label: "Payee",
+            type: "select",
+            value: selectedPayee,
+            disabled: status === "Open" ? false : true,
+            options: customerOptions,
+            onChange: (e: options) => {
+              setSelectedPayee([{ label: e.label, value: e.value }]),
+                quickUpdate({
+                  payeeNo: e.value,
+                });
             },
-          ]
+            id: "payee",
+          },
+        ]
         : split(selectedPaymentCategory[0]?.value, "::")[1] === "Bank" ||
           split(selectedPaymentCategory[0]?.value, "::")[1] === "Bank Transfer"
-        ? [
+          ? [
             {
               label: "Payee",
               type: "select",
@@ -410,80 +416,80 @@ function PaymentRequisitionDetail() {
               id: "bankAccount",
             },
           ]
-        : split(selectedPaymentCategory[0]?.value, "::")[1] === "Supplier" ||
-          split(selectedPaymentCategory[0]?.value, "::")[1] ===
+          : split(selectedPaymentCategory[0]?.value, "::")[1] === "Supplier" ||
+            split(selectedPaymentCategory[0]?.value, "::")[1] ===
             "Supplier Payment" ||
-          split(selectedPaymentCategory[0]?.value, "::")[1] === "Vendor"
-        ? [
-            {
-              label: "Payee",
-              type: "select",
-              value: selectedPayee,
-              disabled: status === "Open" ? false : true,
-              options: vendorOptions,
-              onChange: (e: options) => {
-                setSelectedPayee([{ label: e.label, value: e.value }]);
-                quickUpdate({
-                  payeeNo: e.value,
-                });
+            split(selectedPaymentCategory[0]?.value, "::")[1] === "Vendor"
+            ? [
+              {
+                label: "Payee",
+                type: "select",
+                value: selectedPayee,
+                disabled: status === "Open" ? false : true,
+                options: vendorOptions,
+                onChange: (e: options) => {
+                  setSelectedPayee([{ label: e.label, value: e.value }]);
+                  quickUpdate({
+                    payeeNo: e.value,
+                  });
+                },
+                id: "vendor",
               },
-              id: "vendor",
-            },
-          ]
-        : split(selectedPaymentCategory[0]?.value, "::")[1] === "Employee"
-        ? [
-            {
-              label: "Payee",
-              type: "select",
-              value: selectedPayee,
-              disabled: status === "Open" ? false : true,
-              options: customerOptions,
-              onChange: (e: options) => {
-                setSelectedPayee([{ label: e.label, value: e.value }]);
-                quickUpdate({
-                  payeeNo: e.value,
-                });
-              },
-              id: "payee",
-            },
-          ]
-        : split(selectedPaymentCategory[0]?.value, "::")[1] === "Statutory"
-        ? [
-            {
-              label: "Payee Name",
-              type: "text",
-              value: payeeName,
-              onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                setPayeeName(e.target.value),
-              disabled: status === "Open" ? false : true,
-              onBlur: (e: React.ChangeEvent<HTMLInputElement>) => {
-                quickUpdate({
-                  payeeName: e.target.value,
-                });
-              },
-              id: "payeeName",
-            },
-          ]
-        : []),
+            ]
+            : split(selectedPaymentCategory[0]?.value, "::")[1] === "Employee"
+              ? [
+                {
+                  label: "Payee",
+                  type: "select",
+                  value: selectedPayee,
+                  disabled: status === "Open" ? false : true,
+                  options: customerOptions,
+                  onChange: (e: options) => {
+                    setSelectedPayee([{ label: e.label, value: e.value }]);
+                    quickUpdate({
+                      payeeNo: e.value,
+                    });
+                  },
+                  id: "payee",
+                },
+              ]
+              : split(selectedPaymentCategory[0]?.value, "::")[1] === "Statutory"
+                ? [
+                  {
+                    label: "Payee Name",
+                    type: "text",
+                    value: payeeName,
+                    onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+                      setPayeeName(e.target.value),
+                    disabled: status === "Open" ? false : true,
+                    onBlur: (e: React.ChangeEvent<HTMLInputElement>) => {
+                      quickUpdate({
+                        payeeName: e.target.value,
+                      });
+                    },
+                    id: "payeeName",
+                  },
+                ]
+                : []),
     ],
     // Third row of inputs
     [
       ...(selectedPaymentCategory[0]?.value === "IMPREST"
         ? [
-            {
-              label: "Work Plan",
-              type: "select",
-              value: selectedWorkPlan,
-              onChange: (e: options) =>
-                setSelectedWorkPlan([{ label: e.label, value: e.value }]),
-              options: workPlans.filter(
-                (plan) =>
-                  split(plan.value, "::")[1] == selectedDimension[0]?.value
-              ),
-              id: "workPlan",
-              disabled: status === "Open" ? false : true,
-            },
-          ]
+          {
+            label: "Work Plan",
+            type: "select",
+            value: selectedWorkPlan,
+            onChange: (e: options) =>
+              setSelectedWorkPlan([{ label: e.label, value: e.value }]),
+            options: workPlans.filter(
+              (plan) =>
+                split(plan.value, "::")[1] == selectedDimension[0]?.value
+            ),
+            id: "workPlan",
+            disabled: status === "Open" ? false : true,
+          },
+        ]
         : []),
 
       {
@@ -765,81 +771,81 @@ function PaymentRequisitionDetail() {
   const columns =
     status == "Open"
       ? [
-          {
-            dataField: "accountType",
-            text: "Account Type",
-            sort: true,
+        {
+          dataField: "accountType",
+          text: "Account Type",
+          sort: true,
+        },
+        {
+          dataField: "accountNo",
+          text: "Account No",
+          sort: true,
+        },
+        {
+          dataField: "accountName",
+          text: "Account Name",
+          sort: true,
+        },
+        {
+          dataField: "description",
+          text: "Description",
+          sort: true,
+        },
+        {
+          dataField: "quantity",
+          text: "Quantity",
+          sort: true,
+        },
+        {
+          dataField: "rate",
+          text: "Rate",
+          sort: true,
+          formatter: (cell) => {
+            return parseInt(cell).toLocaleString();
           },
-          {
-            dataField: "accountNo",
-            text: "Account No",
-            sort: true,
+        },
+        {
+          dataField: "amount",
+          text: "Amount",
+          sort: true,
+          formatter: (cell) => {
+            return parseInt(cell).toLocaleString();
           },
-          {
-            dataField: "accountName",
-            text: "Account Name",
-            sort: true,
+        },
+        {
+          dataField: "ShortcutDimCode1",
+          text: shortcutDimCode1Label,
+          sort: true,
+        },
+        {
+          dataField: "ShortcutDimCode2",
+          text: shortcutDimCode2Label,
+          sort: true,
+        },
+        {
+          dataField: "ShortcutDimCode4",
+          text: "Activity Code",
+          sort: true,
+        },
+        {
+          dataField: "action",
+          isDummyField: true,
+          text: "Action",
+          formatter: (cellContent, row) => {
+            console.log("Cell Content:", cellContent);
+            return (
+              <ActionFormatterLines
+                row={row}
+                companyId={companyId}
+                apiHandler={apiPaymentRequisitionLines}
+                handleEditLine={handleEditLine}
+                handleDeleteLine={handleDelteLine}
+                populateData={populateData}
+              />
+            );
           },
-          {
-            dataField: "description",
-            text: "Description",
-            sort: true,
-          },
-          {
-            dataField: "quantity",
-            text: "Quantity",
-            sort: true,
-          },
-          {
-            dataField: "rate",
-            text: "Rate",
-            sort: true,
-            formatter: (cell) => {
-              return parseInt(cell).toLocaleString();
-            },
-          },
-          {
-            dataField: "amount",
-            text: "Amount",
-            sort: true,
-            formatter: (cell) => {
-              return parseInt(cell).toLocaleString();
-            },
-          },
-          {
-            dataField: "ShortcutDimCode1",
-            text: "Department",
-            sort: true,
-          },
-          {
-            dataField: "ShortcutDimCode2",
-            text: "Cost Center",
-            sort: true,
-          },
-          {
-            dataField: "ShortcutDimCode4",
-            text: "Activity Code",
-            sort: true,
-          },
-          {
-            dataField: "action",
-            isDummyField: true,
-            text: "Action",
-            formatter: (cellContent, row) => {
-              console.log("Cell Content:", cellContent);
-              return (
-                <ActionFormatterLines
-                  row={row}
-                  companyId={companyId}
-                  apiHandler={apiPaymentRequisitionLines}
-                  handleEditLine={handleEditLine}
-                  handleDeleteLine={handleDelteLine}
-                  populateData={populateData}
-                />
-              );
-            },
-          },
-        ]
+        },
+      ]
       : [
           {
             dataField: "accountType",
@@ -884,12 +890,12 @@ function PaymentRequisitionDetail() {
           },
           {
             dataField: "ShortcutDimCode1",
-            text: "Department",
+            text: shortcutDimCode1Label,
             sort: true,
           },
           {
             dataField: "ShortcutDimCode2",
-            text: "Cost Center",
+            text: shortcutDimCode2Label,
             sort: true,
           },
           {
@@ -966,9 +972,8 @@ function PaymentRequisitionDetail() {
           dispatch(modelLoadingRequisition(true));
           setSelectedWorkPlanLine([]);
           setSelectedAccountNo([{ label: e.label, value: e.value }]);
-          const filterQuery = `$filter=workPlanNo eq '${
-            split(selectedWorkPlan[0].value, "::")[0]
-          }' and accountNo eq '${e?.value}'`;
+          const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, "::")[0]
+            }' and accountNo eq '${e?.value}'`;
           const workPlanLines = await apiWorkPlanLines(companyId, filterQuery);
           let workPlanLinesOptions: options[] = [];
           workPlanLines.data.value.map((e) => {
@@ -1086,10 +1091,10 @@ function PaymentRequisitionDetail() {
         selectedAccountNo[0]?.value == ""
           ? "Account No"
           : selectedWorkPlanLine[0]?.value == ""
-          ? "Work Plan Line"
-          : quantity == 0
-          ? "Quantity"
-          : "Rate";
+            ? "Work Plan Line"
+            : quantity == 0
+              ? "Quantity"
+              : "Rate";
       toast.error(`Please fill in the missing field: ${missingField}`);
       return;
     }
@@ -1155,9 +1160,8 @@ function PaymentRequisitionDetail() {
 
     console.log("accountType", row.accountType);
     if (row.accountType === "G/L Account") {
-      const filterQuery = `$filter=workPlanNo eq '${
-        split(selectedWorkPlan[0].value, "::")[0]
-      }' and accountNo eq '${row.accountNo}'`;
+      const filterQuery = `$filter=workPlanNo eq '${split(selectedWorkPlan[0].value, "::")[0]
+        }' and accountNo eq '${row.accountNo}'`;
       const workPlanEntryNoRes = await apiWorkPlanLines(companyId, filterQuery);
       const workPlanLines = workPlanEntryNoRes.data.value.map((plan) => ({
         label: `${plan.entryNo}::${plan.activityDescription}`,
@@ -1168,18 +1172,18 @@ function PaymentRequisitionDetail() {
       );
       workPlanEntryNo.length > 0
         ? setSelectedWorkPlanLine([
-            {
-              label: workPlanEntryNo[0].label,
-              value: workPlanEntryNo[0].value,
-            },
-          ])
+          {
+            label: workPlanEntryNo[0].label,
+            value: workPlanEntryNo[0].value,
+          },
+        ])
         : setSelectedWorkPlanLine([{ label: "", value: "" }]);
 
       const glAccount = glAccounts.filter((e) => e.value === row.accountNo);
       glAccount.length > 0
         ? setSelectedAccountNo([
-            { label: glAccount[0].label, value: glAccount[0].value },
-          ])
+          { label: glAccount[0].label, value: glAccount[0].value },
+        ])
         : setSelectedAccountNo([{ label: "", value: "" }]);
     } else if (row.accountType === "Bank Account") {
       const bankAccount = bankAccountOptions.filter(
@@ -1187,23 +1191,23 @@ function PaymentRequisitionDetail() {
       );
       bankAccount.length > 0
         ? setSelectedAccountNo([
-            { label: bankAccount[0].label, value: bankAccount[0].value },
-          ])
+          { label: bankAccount[0].label, value: bankAccount[0].value },
+        ])
         : setSelectedAccountNo([{ label: "", value: "" }]);
     } else if (row.accountType === "Vendor") {
       console.log("Vendor");
       const vendor = vendorOptions.filter((e) => e.value === row.accountNo);
       vendor.length > 0
         ? setSelectedAccountNo([
-            { label: vendor[0].label, value: vendor[0].value },
-          ])
+          { label: vendor[0].label, value: vendor[0].value },
+        ])
         : setSelectedAccountNo([{ label: "", value: "" }]);
     } else if (row.accountType === "Customer") {
       const customer = customerOptions.filter((e) => e.value === row.accountNo);
       customer.length > 0
         ? setSelectedAccountNo([
-            { label: customer[0].label, value: customer[0].value },
-          ])
+          { label: customer[0].label, value: customer[0].value },
+        ])
         : setSelectedAccountNo([{ label: "", value: "" }]);
     }
     setAccountType([{ label: row.accountType, value: row.accountType }]);
@@ -1246,22 +1250,22 @@ function PaymentRequisitionDetail() {
     ) {
       const missingField =
         accountType[0]?.value == "" ||
-        accountType[0]?.value == null ||
-        accountType[0]?.value == undefined
+          accountType[0]?.value == null ||
+          accountType[0]?.value == undefined
           ? "Account Type"
           : selectedAccountNo[0]?.value == "" ||
             selectedAccountNo[0]?.value == null ||
             selectedAccountNo[0]?.value == undefined
-          ? "Account No"
-          : selectedWorkPlanLine[0]?.value == "" ||
-            selectedWorkPlanLine[0]?.value == null ||
-            selectedWorkPlanLine[0]?.value == undefined
-          ? "Work Plan Line"
-          : quantity == 0
-          ? "Quantity"
-          : description == "" || description == null || description == undefined
-          ? "Description"
-          : "Rate";
+            ? "Account No"
+            : selectedWorkPlanLine[0]?.value == "" ||
+              selectedWorkPlanLine[0]?.value == null ||
+              selectedWorkPlanLine[0]?.value == undefined
+              ? "Work Plan Line"
+              : quantity == 0
+                ? "Quantity"
+                : description == "" || description == null || description == undefined
+                  ? "Description"
+                  : "Rate";
       toast.error(`Please fill in the missing field: ${missingField}`);
       return;
     }
@@ -1392,28 +1396,28 @@ function PaymentRequisitionDetail() {
     ) {
       const missingFields =
         selectedDimension[0]?.value == "" ||
-        selectedDimension[0]?.value == null ||
-        selectedDimension[0]?.value == undefined
+          selectedDimension[0]?.value == null ||
+          selectedDimension[0]?.value == undefined
           ? "Dimension"
           : selectedPaymentCategory[0]?.value == "" ||
             selectedPaymentCategory[0]?.value == null ||
             selectedPaymentCategory[0]?.value == undefined
-          ? "Payment Category"
-          : selectedWorkPlan[0]?.value == "" ||
-            selectedWorkPlan[0]?.value == null ||
-            selectedWorkPlan[0]?.value == undefined
-          ? "Work Plan"
-          : description == "" || description == null || description == undefined
-          ? "Description"
-          : selectedCurrency[0]?.value == "" ||
-            selectedCurrency[0]?.value == null ||
-            selectedCurrency[0]?.value == undefined
-          ? "Currency"
-          : selectedSubCategory[0]?.value == "" ||
-            selectedSubCategory[0]?.value == null ||
-            selectedSubCategory[0]?.value == undefined
-          ? "Sub Category"
-          : "";
+            ? "Payment Category"
+            : selectedWorkPlan[0]?.value == "" ||
+              selectedWorkPlan[0]?.value == null ||
+              selectedWorkPlan[0]?.value == undefined
+              ? "Work Plan"
+              : description == "" || description == null || description == undefined
+                ? "Description"
+                : selectedCurrency[0]?.value == "" ||
+                  selectedCurrency[0]?.value == null ||
+                  selectedCurrency[0]?.value == undefined
+                  ? "Currency"
+                  : selectedSubCategory[0]?.value == "" ||
+                    selectedSubCategory[0]?.value == null ||
+                    selectedSubCategory[0]?.value == undefined
+                    ? "Sub Category"
+                    : "";
       toast.error(`Please fill in the missing field: ${missingFields}`);
       return false;
     }

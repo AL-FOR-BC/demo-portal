@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -29,6 +29,7 @@ import {
   applyThemeColors,
   saveThemeColor,
   loadThemeColor,
+  updateFavicon,
 } from "../../utils/themeUtils";
 
 function Setup() {
@@ -37,22 +38,26 @@ function Setup() {
   const { isBcAdmin } = useAppSelector((state) => state.auth.user);
   const { refreshSettings } = useSettings();
   const [isLoading, setIsLoading] = useState(false);
+  const faviconInputRef = useRef<HTMLInputElement | null>(null);
   const [settings, setSettings] = useState({
     allowCompanyChange: false,
     themeColor: "#556ee6",
     companyLogo: null as string | null,
+    favicon: null as string | null,
   });
   const [initialSettings, setInitialSettings] = useState({
     allowCompanyChange: false,
     themeColor: "#556ee6",
     companyLogo: null as string | null,
+    favicon: null as string | null,
   });
 
   const hasUnsavedChanges = React.useMemo(() => {
     return (
       initialSettings.allowCompanyChange !== settings.allowCompanyChange ||
       initialSettings.themeColor !== settings.themeColor ||
-      initialSettings.companyLogo !== settings.companyLogo
+      initialSettings.companyLogo !== settings.companyLogo ||
+      initialSettings.favicon !== settings.favicon
     );
   }, [settings, initialSettings]);
 
@@ -88,10 +93,17 @@ function Setup() {
         ...response.data,
         themeColor: response.data.themeColor || savedThemeColor,
         companyLogo: response.data.companyLogo || null,
+        favicon: response.data.favicon || null,
       };
 
       setSettings(settingsData);
       setInitialSettings(settingsData);
+      if (settingsData.themeColor) {
+        applyThemeColors(settingsData.themeColor);
+      }
+      if (settingsData.favicon) {
+        updateFavicon(settingsData.favicon);
+      }
     } catch (error) {
       toast.error("Error fetching settings");
     } finally {
@@ -174,6 +186,44 @@ function Setup() {
     }));
   };
 
+  const handleFaviconUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Favicon size should be less than 5MB");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload a valid image file");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setSettings((prev) => ({
+        ...prev,
+        favicon: result,
+      }));
+      updateFavicon(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveFavicon = () => {
+    setSettings((prev) => ({
+      ...prev,
+      favicon: null,
+    }));
+    updateFavicon(null);
+  };
+
+  const handleFaviconUploadClick = () => {
+    faviconInputRef.current?.click();
+  };
+
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
@@ -186,6 +236,7 @@ function Setup() {
         allowCompanyChange: settings.allowCompanyChange,
         themeColor: settings.themeColor,
         companyLogo: settings.companyLogo,
+        favicon: settings.favicon,
       });
 
       dispatch(setAllowCompanyChange(settings.allowCompanyChange));
@@ -524,6 +575,134 @@ function Setup() {
                   </div>
                   <FormHelperText className="text-muted">
                     Upload a company logo (PNG, JPG, SVG). Maximum size: 5MB.
+                  </FormHelperText>
+                </div>
+
+                <hr className="my-4" />
+
+                {/* Favicon Section */}
+                <div className="mb-4">
+                  <div className="d-flex align-items-center mb-2">
+                    <h5 className="card-title mb-0 me-2">Favicon</h5>
+                    <InfoIcon
+                      fontSize="small"
+                      className="text-muted"
+                      style={{ cursor: "help" }}
+                      titleAccess="Upload or change the favicon (browser tab icon)"
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    {settings.favicon && settings.favicon.length > 1000 ? (
+                      <div className="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                        <div>
+                          <img
+                            src={settings.favicon}
+                            alt="Favicon"
+                            style={{
+                              width: 32,
+                              height: 32,
+                              objectFit: "contain",
+                              border: "1px solid #ddd",
+                              borderRadius: 4,
+                              padding: 4,
+                              backgroundColor: "#fff",
+                            }}
+                            onError={(event) => {
+                              event.currentTarget.style.display = "none";
+                              toast.error("Failed to load favicon preview");
+                            }}
+                          />
+                          <small className="text-muted d-block mt-1">
+                            Favicon data length: {settings.favicon.length} characters
+                          </small>
+                        </div>
+                        <Button
+                          color="danger"
+                          size="sm"
+                          onClick={handleRemoveFavicon}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : settings.favicon ? (
+                      <div className="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                        <div>
+                          <div
+                            style={{
+                              width: 32,
+                              height: 32,
+                              border: "2px dashed #ff6b6b",
+                              borderRadius: 4,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor: "#fff3f3",
+                            }}
+                          >
+                            <div className="text-center">
+                              <p className="text-danger mb-1" style={{ fontSize: 10 }}>
+                                ⚠️ Favicon data corrupted
+                              </p>
+                              <p className="text-muted mb-0" style={{ fontSize: 8 }}>
+                                Length: {settings.favicon.length} chars
+                              </p>
+                            </div>
+                          </div>
+                          <small className="text-muted d-block mt-1">
+                            Backend truncation detected. Please re-upload the favicon.
+                          </small>
+                        </div>
+                        <Button
+                          color="danger"
+                          size="sm"
+                          onClick={handleRemoveFavicon}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-center p-3 border rounded bg-light">
+                        <p className="text-muted mb-0">No favicon uploaded</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="d-flex gap-2 flex-wrap">
+                    <Button
+                      color="primary"
+                      outline
+                      size="sm"
+                      onClick={handleFaviconUploadClick}
+                      style={{ transition: "all 0.2s ease" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor =
+                          "var(--primary-color, #556ee6)";
+                        e.currentTarget.style.color = "#fff";
+                        e.currentTarget.style.borderColor =
+                          "var(--primary-color, #556ee6)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color =
+                          "var(--primary-color, #556ee6)";
+                        e.currentTarget.style.borderColor =
+                          "var(--primary-color, #556ee6)";
+                      }}
+                    >
+                      Upload Favicon
+                    </Button>
+                    <input
+                      ref={faviconInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFaviconUpload}
+                      style={{ display: "none" }}
+                    />
+                  </div>
+                  <FormHelperText className="text-muted">
+                    Upload a favicon (PNG, JPG, ICO, SVG). Recommended size: 32x32px
+                    or 16x16px. Maximum size: 5MB.
                   </FormHelperText>
                 </div>
 

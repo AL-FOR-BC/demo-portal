@@ -21,8 +21,14 @@ function SingleSignOn() {
   const { signInWithAzure } = UseAuth();
   const { settings } = useSettings();
   const { companyLogo, themeColor } = settings;
+  const isSetupReady =
+    !!settings.shortcutDimCode1?.trim() && !!settings.shortcutDimCode2?.trim();
   const handleSignIn = async () => {
     try {
+      if (!isSetupReady) {
+        toast.error("System configuration is incomplete. Contact admin.");
+        return;
+      }
       // Clear any existing auth state first
       await instance.clearCache();
       localStorage.clear();
@@ -50,6 +56,11 @@ function SingleSignOn() {
     const signIn = async () => {
       setLoading(true);
       if (isAuthenticated) {
+        if (!isSetupReady) {
+          toast.error("System configuration is incomplete. Contact admin.");
+          setLoading(false);
+          return;
+        }
         const response = await signInWithAzure();
         if (response.status === "success") {
           toast.success(response.message);
@@ -64,7 +75,7 @@ function SingleSignOn() {
       setLoading(false);
     };
     signIn();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isSetupReady]);
 
   // const isAuthenticated = useIsAuthenticated();
 
@@ -148,6 +159,7 @@ function SingleSignOn() {
                           <Button
                             type="button"
                             className="btn btn-block"
+                            disabled={!isSetupReady}
                             style={{
                               backgroundColor: themeColor,
                               borderColor: themeColor,
@@ -171,6 +183,11 @@ function SingleSignOn() {
                             Sign In With Microsoft Azure
                           </Button>
                         </div>
+                        {!isSetupReady && (
+                          <div className="mt-2 text-center text-danger">
+                            System configuration is incomplete. Please contact admin.
+                          </div>
+                        )}
                         <div className="mt-4 text-center">
                           <Link to="/login" className="text-muted">
                             <LoginVariantIcon />{" "}

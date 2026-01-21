@@ -9,6 +9,11 @@ const appRoutes: Routes = [
     component: lazy(() => import("../../pages/setup/Setup.js")),
   },
   {
+    key: "system-config",
+    path: "/system-config",
+    component: lazy(() => import("../../features/admin/pages/SystemConfigPage")),
+  },
+  {
     key: "dashboard",
     path: "/dashboard",
     component: lazy(() => import("../../pages/dashboard/Dashboard.tsx")),

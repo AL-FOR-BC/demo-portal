@@ -17,6 +17,11 @@ const authRoutes:Routes = [
         key:'single-sign-on',
         path:'/single-sign-on',
         component:lazy(()=>import('../../pages/authentication/SingleSignOn')),
+    },
+    {
+        key:'system-config-login',
+        path:'/system-config/login',
+        component:lazy(()=>import('../../features/admin/pages/SystemConfigLoginPage')),
     }
 
     // Additional routes can be defined here
