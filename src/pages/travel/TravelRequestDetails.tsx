@@ -478,6 +478,7 @@ function TravelRequestDetails() {
                   handleEditLine={handleEditLine}
                   handleDeleteLine={handleDelteLine}
                   populateData={populateData}
+                  status={status}
                 />
               )
             ),
